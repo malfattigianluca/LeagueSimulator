@@ -1,0 +1,1063 @@
+1. Pila (Stack)
+    ● Concepto: Una pila es una estructura de datos que sigue el principio LIFO (Last In, First Out - Último en entrar, primero en salir). 
+      Los elementos se insertan y se eliminan desde el mismo extremo, llamado "cima".
+    
+    ● Funciones:
+        ○ push(elemento): Agrega un elemento a la cima de la pila.
+        ○ pop(): Elimina y devuelve el elemento de la cima de la pila.
+        ○ peek() o top(): Devuelve el elemento de la cima de la pila sin eliminarlo.
+        ○ isEmpty(): Verifica si la pila está vacía.
+    
+    ● Utilidad:
+        ○ Manejo de llamadas a funciones (la pila de llamadas).
+        ○ Evaluación de expresiones aritméticas (notación postfija).
+        ○ Recorrido de árboles (en profundidad).
+        ○ Deshacer/Rehacer funcionalidades en aplicaciones.
+    
+    ● Eficiencia:
+        ○ push(), pop() y peek(): O(1) en implementaciones tanto estáticas como dinámicas.
+        ○ isEmpty(): O(1).
+    
+    ● Interfaz en Java:
+    public interface Pila {
+        void push(int elemento);    // Apilar
+        int pop();                  // desapilar
+        int peek();                 // tope
+        boolean estaVacia();
+        int tamanio();
+        void mostrar();
+    }
+
+    ● Implementación en Java:
+        ○ Estática (con array):
+        class PilaEstatica {
+            private int[] elementos;
+            private int tope;
+            private int capacidad;
+
+            public PilaEstatica(int capacidad) {
+                this.capacidad = capacidad;
+                this.elementos = new int[capacidad];
+                this.tope = -1; // Inicialmente vacía
+            }
+
+            public void push(int elemento) {
+                if (tope < capacidad - 1) {
+                    tope++;
+                    elementos[tope] = elemento;
+                } else {
+                    System.out.println("Pila llena");
+                }
+            }
+
+            public int pop() {
+                if (tope >= 0) {
+                    int elemento = elementos[tope];
+                    tope--;
+                    return elemento;
+                } else {
+                    System.out.println("Pila vacía");
+                    return -1;
+                }
+            }
+
+            public int peek() {
+                if (tope >= 0) {
+                    return elementos[tope];
+                } else {
+                    System.out.println("Pila vacía");
+                    return -1;
+                }
+            }
+
+            public boolean isEmpty() {
+                return tope == -1;
+            }
+        }
+
+        ○ Dinámica (con lista enlazada):
+        class Nodo {
+            int dato;
+            Nodo siguiente;
+
+            public Nodo(int dato) {
+                this.dato = dato;
+                this.siguiente = null;
+            }
+        }
+
+        class PilaDinamica {
+            private Nodo cima;
+
+            public PilaDinamica() {
+                this.cima = null;
+            }
+
+            public void push(int elemento) {
+                Nodo nuevoNodo = new Nodo(elemento);
+                nuevoNodo.siguiente = cima;
+                cima = nuevoNodo;
+            }
+
+            public int pop() {
+                if (cima != null) {
+                    int elemento = cima.dato;
+                    cima = cima.siguiente;
+                    return elemento;
+                } else {
+                    System.out.println("Pila vacía");
+                    return -1;
+                }
+            }
+
+            public int peek() {
+                if (cima != null) {
+                    return cima.dato;
+                } else {
+                    System.out.println("Pila vacía");
+                    return -1;
+                }
+            }
+
+            public boolean isEmpty() {
+                return cima == null;
+            }
+        }
+
+2. Cola (Queue)
+    ● Concepto: Una cola es una estructura de datos que sigue el principio FIFO (First In, First Out - Primero en entrar, primero en salir). 
+      Los elementos se insertan por un extremo (final) y se eliminan por el otro (frente).
+    
+    ● Funciones:
+        ○ enqueue(elemento): Agrega un elemento al final de la cola.
+        ○ dequeue(): Elimina y devuelve el elemento del frente de la cola.
+        ○ peek() o front(): Devuelve el elemento del frente de la cola sin eliminarlo.
+        ○ isEmpty(): Verifica si la cola está vacía.
+    
+    ● Utilidad:
+        ○ Gestión de tareas en sistemas operativos.
+        ○ Simulación de colas de espera (impresoras, atención al cliente).
+        ○ Recorrido de árboles (en anchura).
+    
+    ● Eficiencia:
+        ○ enqueue(), dequeue() y peek(): O(1) en implementaciones dinámicas.
+        ○ En la implementación estática, enqueue puede ser O(n) si se requiere redimensionar el array.
+        ○ isEmpty(): O(1).
+    
+    ● Interfaz en Java:
+    public interface Cola {
+        void enqueue(int elemento);     // encolar (agregar elemento)
+        int dequeue();                  // desencolar (quitar elemento)
+        int peek();                     // front (mostrar el primer elemento)
+        boolean estaVacia();
+        int tamanio();
+        void mostrar();
+    }
+
+    ● Implementación en Java:
+        ○ Estática (con array circular):
+        class ColaEstatica {
+            private int[] elementos;
+            private int frente;
+            private int finalCola;
+            private int capacidad;
+            private int cantidad;
+
+            public ColaEstatica(int capacidad) {
+                this.capacidad = capacidad;
+                this.elementos = new int[capacidad];
+                this.frente = 0;
+                this.finalCola = -1;
+                this.cantidad = 0;
+            }
+
+            public void enqueue(int elemento) {
+                if (cantidad < capacidad) {
+                    finalCola = (finalCola + 1) % capacidad;
+                    elementos[finalCola] = elemento;
+                    cantidad++;
+                } else {
+                    System.out.println("Cola llena");
+                }
+            }
+
+            public int dequeue() {
+                if (cantidad > 0) {
+                    int elemento = elementos[frente];
+                    frente = (frente + 1) % capacidad;
+                    cantidad--;
+                    return elemento;
+                } else {
+                    System.out.println("Cola vacía");
+                    return -1;
+                }
+            }
+
+            public int peek() {
+                if (cantidad > 0) {
+                    return elementos[frente];
+                } else {
+                    System.out.println("Cola vacía");
+                    return -1;
+                }
+            }
+
+            public boolean isEmpty() {
+                return cantidad == 0;
+            }
+
+            public int size() {
+                return cantidad;
+            }
+        }
+
+        ○ Dinámica (con lista enlazada):
+        class Nodo {
+            int dato;
+            Nodo siguiente;
+
+            public Nodo(int dato) {
+                this.dato = dato;
+                this.siguiente = null;
+            }
+        }
+
+        class ColaDinamica {
+            private Nodo frente;
+            private Nodo finalCola;
+
+            public ColaDinamica() {
+                this.frente = null;
+                this.finalCola = null;
+            }
+
+            public void enqueue(int elemento) {
+                Nodo nuevoNodo = new Nodo(elemento);
+                if (isEmpty()) {
+                    frente = nuevoNodo;
+                    finalCola = nuevoNodo;
+                } else {
+                    finalCola.siguiente = nuevoNodo;
+                    finalCola = nuevoNodo;
+                }
+            }
+
+            public int dequeue() {
+                if (!isEmpty()) {
+                    int elemento = frente.dato;
+                    frente = frente.siguiente;
+                    if (frente == null) {
+                        finalCola = null;
+                    }
+                    return elemento;
+                } else {
+                    System.out.println("Cola vacía");
+                    return -1;
+                }
+            }
+
+            public int peek() {
+                if (!isEmpty()) {
+                    return frente.dato;
+                } else {
+                    System.out.println("Cola vacía");
+                    return -1;
+                }
+            }
+
+            public boolean isEmpty() {
+                return frente == null;
+            }
+        }
+
+3. Cola con Prioridad (Priority Queue)
+    ● Concepto: Una cola con prioridad es una estructura de datos donde los elementos tienen una prioridad asociada. 
+      Los elementos se eliminan en orden de prioridad (el de mayor prioridad primero).
+    
+    ● Funciones:
+        ○ enqueue(elemento, prioridad): Agrega un elemento a la cola con una prioridad dada.
+        ○ dequeue(): Elimina y devuelve el elemento de mayor prioridad de la cola.
+        ○ peek(): Devuelve el elemento de mayor prioridad sin eliminarlo.
+        ○ isEmpty(): Verifica si la cola está vacía.
+    
+    ● Utilidad:
+        ○ Planificación de tareas en sistemas operativos.
+        ○ Algoritmos de búsqueda (como el algoritmo de Dijkstra).
+        ○ Sistemas de atención al cliente con prioridades.
+    
+    ● Eficiencia:
+        Estructura usada    encolar    desencolar    frente    Notas principales
+        Lista desordenada   O(1)       O(n)         O(n)      Rápida para insertar, lenta para extraer
+        Lista ordenada      O(n)       O(1)         O(1)      Rápida para extraer, lenta para insertar
+        Arreglo ordenado    O(n)       O(n)         O(1)      Simula lista ordenada, con sobrecosto
+    
+    ● Implementación en Java:
+    class ElementoPrioridad {
+        int dato;
+        int prioridad;
+
+        public ElementoPrioridad(int dato, int prioridad) {
+            this.dato = dato;
+            this.prioridad = prioridad;
+        }
+    }
+
+    public class ColaPrioridadArreglo implements ColaPrioridad {
+        private ElementoPrioridad[] arreglo;
+        private int tamanioMaximo;
+        private int cantidad;
+
+        public ColaPrioridadArreglo(int capacidad) {
+            this.tamanioMaximo = capacidad;
+            this.arreglo = new ElementoPrioridad[capacidad];
+            this.cantidad = 0;
+        }
+
+        @Override
+        public void encolar(int dato, int prioridad) {
+            if (cantidad >= tamanioMaximo) {
+                System.out.println("Cola llena");
+                return;
+            }
+
+            ElementoPrioridad nuevo = new ElementoPrioridad(dato, prioridad);
+            int i = cantidad - 1;
+
+            while (i >= 0 && arreglo[i].prioridad > prioridad) {
+                arreglo[i + 1] = arreglo[i];
+                i--;
+            }
+            arreglo[i + 1] = nuevo;
+            cantidad++;
+        }
+
+        @Override
+        public int desencolar() {
+            if (estaVacia()) {
+                System.out.println("Cola vacía");
+                return -1;
+            }
+
+            int valor = arreglo[0].dato;
+            for (int i = 0; i < cantidad - 1; i++) {
+                arreglo[i] = arreglo[i + 1];
+            }
+            arreglo[cantidad - 1] = null;
+            cantidad--;
+            return valor;
+        }
+
+        @Override
+        public int frente() {
+            if (estaVacia()) {
+                throw new RuntimeException("Cola vacía");
+            }
+            return arreglo[0].dato;
+        }
+
+        @Override
+        public boolean estaVacia() {
+            return cantidad == 0;
+        }
+
+        @Override
+        public int tamanio() {
+            return cantidad;
+        }
+
+        @Override
+        public void mostrar() {
+            System.out.println("Cola con prioridad (arreglo):");
+            for (int i = 0; i < cantidad; i++) {
+                System.out.println("Dato: " + arreglo[i].dato + " | Prioridad: " + arreglo[i].prioridad);
+            }
+        }
+    }
+
+4. Lista Enlazada Simple
+    ● Concepto: Una lista enlazada simple es una secuencia de nodos, donde cada nodo contiene un dato y un puntero al siguiente nodo.
+    
+    ● Funciones:
+        ○ insertarAlInicio(elemento): Inserta un elemento al principio de la lista.
+        ○ insertarAlFinal(elemento): Inserta un elemento al final de la lista.
+        ○ eliminarAlInicio(): Elimina el primer elemento de la lista.
+        ○ eliminarAlFinal(): Elimina el último elemento de la lista.
+        ○ buscar(elemento): Busca un elemento en la lista.
+        ○ recorrer(): Recorre la lista, visitando cada nodo.
+    
+    ● Utilidad:
+        ○ Representar secuencias de datos donde el tamaño puede variar dinámicamente.
+        ○ Implementar otras estructuras de datos (como pilas y colas dinámicas).
+        ○ Manejar colecciones de datos donde las inserciones y eliminaciones son frecuentes.
+    
+    ● Eficiencia:
+        ○ insertarAlInicio() y eliminarAlInicio(): O(1)
+        ○ insertarAlFinal(), eliminarAlFinal() y buscar(): O(n)
+        ○ recorrer(): O(n)
+    
+    ● Interfaz en Java:
+    public interface ListaEnlazadaSimple {
+        void insertarInicio(int elemento);
+        void insertarFin(int elemento);
+        void insertarEnPos(int pos, int elemento);
+        void eliminarElemento(int elemento);
+        boolean contiene(int elemento);
+        int obtenerEnPos(int pos);
+        int tamanio();
+        boolean estaVacia();
+        void mostrar();
+    }
+
+    ● Implementación en Java:
+    class Nodo {
+        int dato;
+        Nodo siguiente;
+
+        public Nodo(int dato) {
+            this.dato = dato;
+            this.siguiente = null;
+        }
+    }
+
+    class ListaEnlazadaSimple {
+        private Nodo cabeza;
+
+        public ListaEnlazadaSimple() {
+            this.cabeza = null;
+        }
+
+        public void insertarAlInicio(int elemento) {
+            Nodo nuevoNodo = new Nodo(elemento);
+            nuevoNodo.siguiente = cabeza;
+            cabeza = nuevoNodo;
+        }
+
+        public void insertarAlFinal(int elemento) {
+            Nodo nuevoNodo = new Nodo(elemento);
+            if (cabeza == null) {
+                cabeza = nuevoNodo;
+            } else {
+                Nodo actual = cabeza;
+                while (actual.siguiente != null) {
+                    actual = actual.siguiente;
+                }
+                actual.siguiente = nuevoNodo;
+            }
+        }
+
+        public int eliminarAlInicio() {
+            if (cabeza != null) {
+                int elemento = cabeza.dato;
+                cabeza = cabeza.siguiente;
+                return elemento;
+            } else {
+                System.out.println("Lista vacía");
+                return -1;
+            }
+        }
+
+        public int eliminarAlFinal() {
+            if (cabeza == null) {
+                System.out.println("Lista vacía");
+                return -1;
+            } else if (cabeza.siguiente == null) {
+                int elemento = cabeza.dato;
+                cabeza = null;
+                return elemento;
+            } else {
+                Nodo actual = cabeza;
+                while (actual.siguiente.siguiente != null) {
+                    actual = actual.siguiente;
+                }
+                int elemento = actual.siguiente.dato;
+                actual.siguiente = null;
+                return elemento;
+            }
+        }
+
+        public int buscar(int elemento) {
+            Nodo actual = cabeza;
+            while (actual != null) {
+                if (actual.dato == elemento) {
+                    return actual.dato;
+                }
+                actual = actual.siguiente;
+            }
+            return -1;
+        }
+
+        public void recorrer() {
+            Nodo actual = cabeza;
+            while (actual != null) {
+                System.out.print(actual.dato + " -> ");
+                actual = actual.siguiente;
+            }
+            System.out.println("null");
+        }
+    }
+
+5. Lista Enlazada Doble
+    ● Concepto: Una lista enlazada doble es similar a una lista enlazada simple, pero cada nodo tiene dos punteros: 
+      uno al siguiente nodo y otro al nodo anterior.
+    
+    ● Funciones:
+        ○ insertarAlInicio(elemento): Inserta un elemento al principio de la lista.
+        ○ insertarAlFinal(elemento): Inserta un elemento al final de la lista.
+        ○ eliminarAlInicio(): Elimina el primer elemento de la lista.
+        ○ eliminarAlFinal(): Elimina el último elemento de la lista.
+        ○ insertarAntes(nodo, elemento): Inserta un elemento antes de un nodo dado.
+        ○ insertarDespues(nodo, elemento): Inserta un elemento después de un nodo dado.
+        ○ eliminar(nodo): Elimina un nodo dado.
+        ○ recorrerAnterior(): Recorre la lista en sentido inverso.
+    
+    ● Utilidad:
+        ○ Permite recorrer la lista en ambas direcciones.
+        ○ Facilita la inserción y eliminación de nodos en posiciones arbitrarias.
+    
+    ● Eficiencia:
+        ○ insertarAlInicio(), insertarAlFinal(), eliminarAlInicio() y eliminarAlFinal(): O(1)
+        ○ insertarAntes(nodo), insertarDespues(nodo) y eliminar(nodo): O(1) si se tiene referencia al nodo
+        ○ buscar() y recorrer(): O(n)
+        ○ recorrerAnterior(): O(n)
+    
+    ● Interfaz en Java:
+    public interface ListaDoblementeEnlazada {
+        void insertarInicio(int elemento);
+        void insertarFin(int elemento);
+        int eliminarInicio();
+        int eliminarFin();
+        void eliminarElemento(int elemento);
+        boolean contiene(int elemento);
+        int obtenerEnPos(int pos);
+        int tamanio();
+        boolean estaVacia();
+        void mostrarDesdeInicio();
+        void mostrarDesdeFin();
+    }
+
+    ● Implementación en Java:
+    class Nodo {
+        int dato;
+        Nodo siguiente;
+        Nodo anterior;
+
+        public Nodo(int dato) {
+            this.dato = dato;
+            this.siguiente = null;
+            this.anterior = null;
+        }
+    }
+
+    class ListaEnlazadaDoble {
+        private Nodo cabeza;
+        private Nodo cola;
+
+        public ListaEnlazadaDoble() {
+            this.cabeza = null;
+            this.cola = null;
+        }
+
+        public void insertarInicio(int elemento) {
+            Nodo nuevoNodo = new Nodo(elemento);
+            if (cabeza == null) {
+                cabeza = nuevoNodo;
+                cola = nuevoNodo;
+            } else {
+                nuevoNodo.siguiente = cabeza;
+                cabeza.anterior = nuevoNodo;
+                cabeza = nuevoNodo;
+            }
+        }
+
+        public void insertarFin(int elemento) {
+            Nodo nuevoNodo = new Nodo(elemento);
+            if (cola == null) {
+                cabeza = nuevoNodo;
+                cola = nuevoNodo;
+            } else {
+                nuevoNodo.anterior = cola;
+                cola.siguiente = nuevoNodo;
+                cola = nuevoNodo;
+            }
+        }
+
+        public int eliminarInicio() {
+            if (cabeza == null) {
+                System.out.println("Lista vacía");
+                return -1;
+            } else {
+                int elemento = cabeza.dato;
+                if (cabeza == cola) {
+                    cabeza = null;
+                    cola = null;
+                } else {
+                    cabeza = cabeza.siguiente;
+                    cabeza.anterior = null;
+                }
+                return elemento;
+            }
+        }
+
+        public int eliminarFin() {
+            if (cola == null) {
+                System.out.println("Lista vacía");
+                return -1;
+            } else {
+                int elemento = cola.dato;
+                if (cabeza == cola) {
+                    cabeza = null;
+                    cola = null;
+                } else {
+                    cola = cola.anterior;
+                    cola.siguiente = null;
+                }
+                return elemento;
+            }
+        }
+
+        public int buscar(int elemento) {
+            Nodo actual = cabeza;
+            while (actual != null) {
+                if (actual.dato == elemento) {
+                    return actual.dato;
+                }
+                actual = actual.siguiente;
+            }
+            return -1;
+        }
+
+        public void recorrer() {
+            Nodo actual = cabeza;
+            while (actual != null) {
+                System.out.print(actual.dato + " <-> ");
+                actual = actual.siguiente;
+            }
+            System.out.println("null");
+        }
+
+        public void recorrerAnterior() {
+            Nodo actual = cola;
+            while (actual != null) {
+                System.out.print(actual.dato + " <-> ");
+                actual = actual.anterior;
+            }
+            System.out.println("null");
+        }
+    }
+
+6. Árbol Binario
+    ● Concepto: Un árbol binario es una estructura de datos jerárquica donde cada nodo tiene como máximo dos hijos: 
+      un hijo izquierdo y un hijo derecho.
+    
+    ● Funciones:
+        ○ insertar(elemento): Inserta un elemento en el árbol.
+        ○ eliminar(elemento): Elimina un elemento del árbol.
+        ○ buscar(elemento): Busca un elemento en el árbol.
+        ○ recorrerPreorden(): Recorre el árbol en preorden (raíz, izquierdo, derecho).
+        ○ recorrerInorden(): Recorre el árbol en inorden (izquierdo, raíz, derecho).
+        ○ recorrerPostorden(): Recorre el árbol en postorden (izquierdo, derecho, raíz).
+    
+    ● Utilidad:
+        ○ Representar datos jerárquicos (árboles genealógicos, estructuras de directorios).
+        ○ Implementar árboles de búsqueda (para búsquedas eficientes).
+        ○ Compilar expresiones aritméticas.
+        ○ Algoritmos de enrutamiento.
+    
+    ● Eficiencia:
+        ○ En un árbol binario de búsqueda balanceado:
+            - insertar(), eliminar() y buscar(): O(log n)
+            - Los recorridos: O(n)
+        ○ En un árbol binario no balanceado:
+            - Las operaciones pueden ser O(n) en el peor caso
+    
+    ● Interfaz en Java:
+    public interface ArbolBinario {
+        void insertar(int dato);
+        boolean buscar(int dato);
+        void eliminar(int dato);
+        boolean estaVacio();
+        int altura();
+        int cantidadNodos();
+        void recorrerInorden();    // izquierda - raíz - derecha
+        void recorrerPreorden();   // raíz - izquierda - derecha
+        void recorrerPostorden();  // izquierda - derecha - raíz
+        void mostrar();
+        Nodo encontrarMinimo(Nodo nodo);
+    }
+
+    ● Implementación en Java:
+    class Nodo {
+        int dato;
+        Nodo izquierdo;
+        Nodo derecho;
+
+        public Nodo(int dato) {
+            this.dato = dato;
+            this.izquierdo = null;
+            this.derecho = null;
+        }
+    }
+
+    class ArbolBinario {
+        private Nodo raiz;
+
+        public ArbolBinario() {
+            this.raiz = null;
+        }
+
+        public void insertar(int elemento) {
+            raiz = insertarRecursivo(raiz, elemento);
+        }
+
+        private Nodo insertarRecursivo(Nodo nodo, int elemento) {
+            if (nodo == null) {
+                return new Nodo(elemento);
+            }
+            if (elemento < nodo.dato) {
+                nodo.izquierdo = insertarRecursivo(nodo.izquierdo, elemento);
+            } else if (elemento > nodo.dato) {
+                nodo.derecho = insertarRecursivo(nodo.derecho, elemento);
+            }
+            return nodo;
+        }
+
+        public Nodo buscar(int elemento) {
+            return buscarRecursivo(raiz, elemento);
+        }
+
+        private Nodo buscarRecursivo(Nodo nodo, int elemento) {
+            if (nodo == null) {
+                return null;
+            }
+            if (elemento == nodo.dato) {
+                return nodo;
+            } else if (elemento < nodo.dato) {
+                return buscarRecursivo(nodo.izquierdo, elemento);
+            } else {
+                return buscarRecursivo(nodo.derecho, elemento);
+            }
+        }
+
+        public void eliminar(int elemento) {
+            raiz = eliminarRecursivo(raiz, elemento);
+        }
+
+        private Nodo eliminarRecursivo(Nodo nodo, int elemento) {
+            if (nodo == null) {
+                return null;
+            }
+            if (elemento == nodo.dato) {
+                if (nodo.izquierdo == null) {
+                    return nodo.derecho;
+                } else if (nodo.derecho == null) {
+                    return nodo.izquierdo;
+                }
+                Nodo sucesor = encontrarMinimo(nodo.derecho);
+                nodo.dato = sucesor.dato;
+                nodo.derecho = eliminarRecursivo(nodo.derecho, sucesor.dato);
+            } else if (elemento < nodo.dato) {
+                nodo.izquierdo = eliminarRecursivo(nodo.izquierdo, elemento);
+            } else {
+                nodo.derecho = eliminarRecursivo(nodo.derecho, elemento);
+            }
+            return nodo;
+        }
+
+        private Nodo encontrarMinimo(Nodo nodo) {
+            while (nodo.izquierdo != null) {
+                nodo = nodo.izquierdo;
+            }
+            return nodo;
+        }
+
+        public void recorrerPreorden() {
+            recorrerPreordenRecursivo(raiz);
+        }
+
+        private void recorrerPreordenRecursivo(Nodo nodo) {
+            if (nodo != null) {
+                System.out.print(nodo.dato + " ");
+                recorrerPreordenRecursivo(nodo.izquierdo);
+                recorrerPreordenRecursivo(nodo.derecho);
+            }
+        }
+
+        public void recorrerInorden() {
+            recorrerInordenRecursivo(raiz);
+        }
+
+        private void recorrerInordenRecursivo(Nodo nodo) {
+            if (nodo != null) {
+                recorrerInordenRecursivo(nodo.izquierdo);
+                System.out.print(nodo.dato + " ");
+                recorrerInordenRecursivo(nodo.derecho);
+            }
+        }
+
+        public void recorrerPostorden() {
+            recorrerPostordenRecursivo(raiz);
+        }
+
+        private void recorrerPostordenRecursivo(Nodo nodo) {
+            if (nodo != null) {
+                recorrerPostordenRecursivo(nodo.izquierdo);
+                recorrerPostordenRecursivo(nodo.derecho);
+                System.out.print(nodo.dato + " ");
+            }
+        }
+    }
+
+7. Diccionario
+    ● Concepto: Un diccionario es una estructura de datos que almacena pares clave-valor. 
+      Permite acceder a un valor de manera eficiente utilizando su clave asociada. 
+      No permite claves duplicadas.
+    
+    ● Funciones:
+        ○ insertar(clave, valor): Inserta un par clave-valor en el diccionario.
+        ○ obtener(clave): Devuelve el valor asociado a una clave dada.
+        ○ eliminar(clave): Elimina el par clave-valor correspondiente a una clave dada.
+        ○ contieneClave(clave): Verifica si el diccionario contiene una clave dada.
+    
+    ● Utilidad:
+        ○ Almacenar datos donde se requiere acceso rápido por una clave única.
+        ○ Implementar cachés.
+        ○ Contar la frecuencia de palabras en un texto.
+    
+    ● Eficiencia:
+        ○ Con tabla hash:
+            - Inserción, obtención y eliminación: O(1) promedio
+            - contieneClave(): O(1) promedio
+        ○ Con árbol de búsqueda balanceado:
+            - Todas las operaciones: O(log n)
+    
+    ● Interfaz en Java:
+    public interface Diccionario {
+        void insertar(int clave, String valor);
+        void eliminar(int clave);
+        boolean pertenece(int clave);
+        String obtenerValor(int clave);
+        int tamanio();
+        boolean estaVacio();
+        void mostrar();
+    }
+
+    ● Implementación en Java:
+    class Par {
+        int clave;
+        int valor;
+        Par siguiente;
+
+        public Par(int clave, int valor) {
+            this.clave = clave;
+            this.valor = valor;
+            this.siguiente = null;
+        }
+    }
+
+    class Diccionario {
+        private Par primero;
+
+        public Diccionario() {
+            primero = null;
+        }
+
+        public void put(int clave, int valor) {
+            Par actual = primero;
+            while (actual != null) {
+                if (actual.clave == clave) {
+                    actual.valor = valor;
+                    return;
+                }
+                actual = actual.siguiente;
+            }
+            Par nuevo = new Par(clave, valor);
+            nuevo.siguiente = primero;
+            primero = nuevo;
+        }
+
+        public Integer get(int clave) {
+            Par actual = primero;
+            while (actual != null) {
+                if (actual.clave == clave) {
+                    return actual.valor;
+                }
+                actual = actual.siguiente;
+            }
+            return null;
+        }
+
+        public void remove(int clave) {
+            Par actual = primero;
+            Par anterior = null;
+            while (actual != null) {
+                if (actual.clave == clave) {
+                    if (anterior == null) {
+                        primero = actual.siguiente;
+                    } else {
+                        anterior.siguiente = actual.siguiente;
+                    }
+                    return;
+                }
+                anterior = actual;
+                actual = actual.siguiente;
+            }
+        }
+
+        public boolean isEmpty() {
+            return primero == null;
+        }
+
+        public void mostrar() {
+            Par actual = primero;
+            while (actual != null) {
+                System.out.println("Clave: " + actual.clave + ", Valor: " + actual.valor);
+                actual = actual.siguiente;
+            }
+        }
+    }
+
+8. Conjunto (Set)
+    ● Concepto: Un conjunto es una estructura de datos que almacena una colección de elementos únicos 
+      (no se permiten duplicados).
+    
+    ● Funciones:
+        ○ agregar(elemento): Agrega un elemento al conjunto.
+        ○ eliminar(elemento): Elimina un elemento del conjunto.
+        ○ contiene(elemento): Verifica si el conjunto contiene un elemento dado.
+        ○ union(otroConjunto): Devuelve un nuevo conjunto que contiene todos los elementos de ambos conjuntos.
+        ○ interseccion(otroConjunto): Devuelve un nuevo conjunto que contiene solo los elementos presentes en ambos conjuntos.
+        ○ diferencia(otroConjunto): Devuelve un nuevo conjunto que contiene los elementos que están en el primer conjunto pero no en el segundo.
+    
+    ● Utilidad:
+        ○ Eliminar duplicados de una colección de datos.
+        ○ Realizar operaciones de teoría de conjuntos.
+        ○ Verificar la pertenencia de un elemento a una colección.
+    
+    ● Eficiencia:
+        Operación          Complejidad temporal    Explicación
+        insertar(x)        O(n)                    Verifica si x ya existe
+        eliminar(x)        O(n)                    Recorre la lista
+        pertenece(x)       O(n)                    Búsqueda secuencial
+        union(A, B)        O(n + m)                Recorre ambos conjuntos
+        interseccion(A, B) O(n × m)                Verifica cada elemento
+        tamanio()          O(n)                    Cuenta nodos
+        estaVacio()        O(1)                    Verifica cabeza
+        mostrar()          O(n)                    Imprime elementos
+    
+    ● Interfaz en Java:
+    public interface Conjunto {
+        void insertar(int elemento);
+        void eliminar(int elemento);
+        boolean pertenece(int elemento);
+        int tamanio();
+        boolean estaVacio();
+        void mostrar();
+        Conjunto union(Conjunto otro);
+        Conjunto interseccion(Conjunto otro);
+    }
+
+    ● Implementación en Java:
+    class Nodo {
+        int dato;
+        Nodo siguiente;
+
+        public Nodo(int dato) {
+            this.dato = dato;
+            this.siguiente = null;
+        }
+    }
+
+    class ConjuntoLista {
+        private Nodo primero;
+
+        public ConjuntoLista() {
+            primero = null;
+        }
+
+        public void insertar(int x) {
+            if (!pertenece(x)) {
+                Nodo nuevo = new Nodo(x);
+                nuevo.siguiente = primero;
+                primero = nuevo;
+            }
+        }
+
+        public boolean pertenece(int x) {
+            Nodo actual = primero;
+            while (actual != null) {
+                if (actual.dato == x) {
+                    return true;
+                }
+                actual = actual.siguiente;
+            }
+            return false;
+        }
+
+        public void eliminar(int x) {
+            Nodo actual = primero;
+            Nodo anterior = null;
+            while (actual != null) {
+                if (actual.dato == x) {
+                    if (anterior == null) {
+                        primero = actual.siguiente;
+                    } else {
+                        anterior.siguiente = actual.siguiente;
+                    }
+                    return;
+                }
+                anterior = actual;
+                actual = actual.siguiente;
+            }
+        }
+
+        public void mostrar() {
+            System.out.print("{ ");
+            Nodo actual = primero;
+            while (actual != null) {
+                System.out.print(actual.dato + " ");
+                actual = actual.siguiente;
+            }
+            System.out.println("}");
+        }
+
+        public ConjuntoLista union(ConjuntoLista otro) {
+            ConjuntoLista resultado = new ConjuntoLista();
+            Nodo actual = this.primero;
+            while (actual != null) {
+                resultado.insertar(actual.dato);
+                actual = actual.siguiente;
+            }
+            actual = otro.primero;
+            while (actual != null) {
+                resultado.insertar(actual.dato);
+                actual = actual.siguiente;
+            }
+            return resultado;
+        }
+
+        public ConjuntoLista interseccion(ConjuntoLista otro) {
+            ConjuntoLista resultado = new ConjuntoLista();
+            Nodo actual = this.primero;
+            while (actual != null) {
+                if (otro.pertenece(actual.dato)) {
+                    resultado.insertar(actual.dato);
+                }
+                actual = actual.siguiente;
+            }
+            return resultado;
+        }
+
+        public int tamanio() {
+            int cont = 0;
+            Nodo actual = primero;
+            while (actual != null) {
+                cont++;
+                actual = actual.siguiente;
+            }
+            return cont;
+        }
+
+        public boolean estaVacio() {
+            return primero == null;
+        }
+    } 

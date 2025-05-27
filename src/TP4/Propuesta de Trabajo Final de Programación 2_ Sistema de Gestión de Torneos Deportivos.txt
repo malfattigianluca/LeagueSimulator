@@ -1,0 +1,53 @@
+﻿Propuesta de Trabajo Final de Programación 2: Sistema de Gestión de Torneos Deportivos
+Objetivo: Desarrollar una aplicación en Java que permita simular torneos deportivos entre equipos de diferentes ligas del mundo. La aplicación permitirá seleccionar equipos predefinidos por liga, organizar torneos personalizados, simular encuentros en base a probabilidades, registrar estadísticas generales e individuales, y consultar historial entre equipos.
+Requerimientos Funcionales
+1. Gestión de Equipos:
+* Permitir al usuario seleccionar equipos participantes desde diccionarios predefinidos por liga (ej: Primera División Argentina, Premier League, LaLiga, etc.).
+
+* Los equipos estarán organizados por diccionario por liga, y contendrán datos como nombre, ID único, país, escudo, etc.
+
+* Los equipos seleccionados se almacenarán en una estructura accesible para la configuración del torneo.
+2. Gestión de Torneos:
+   * Permitir crear torneos personalizados con nombre, tipo de formato (fase de grupos, eliminación directa o mixto) y número de equipos.
+
+   * Almacenar el historial de torneos jugados, incluyendo resultados y estadísticas.
+
+   * Simular automáticamente los emparejamientos, y registrar los partidos disputados.
+3. Simulación de Partidos:
+      * Simular resultados en base a una probabilidad (ej: fuerza relativa del equipo, racha, nivel de liga).
+
+      * Registrar goles, asistencias, ganadores, empates, goleadores y jugadores destacados de cada partido.
+
+      * Permitir ingresar manualmente resultados también como alternativa.
+4. Registro de Estadísticas:
+         * Almacenar estadísticas del torneo (partidos jugados, ganados, perdidos, goles a favor y en contra, etc.).
+
+         * Registrar estadísticas individuales de cada jugador (goles, asistencias) por torneo.
+
+         * Almacenar y consultar el historial de enfrentamientos entre equipos (ej: Boca vs Real Madrid, 2 partidos, 1 ganado por cada uno).
+
+5. Consulta de Resultados:
+            * Permitir consultar el fixture completo del torneo.
+
+            * Mostrar tabla de posiciones de fase de grupos (como en Promiedos).
+
+            * Permitir ver el árbol de eliminación directa.
+
+            * Mostrar goleadores y asistentes del torneo ordenados por cantidad.
+
+Estructuras de Datos a Utilizar
+Diccionario: Almacenamiento de equipos predefinidos entre las principales ligas internacionales, también para calcular las estadísticas por equipo y jugador.
+Lista enlazada doble:         Consultar lista de partidos del torneo, permitiendo recorrer resultados entre fechas.
+Árbol binario: Para llaves de eliminación directa, cada nodo es un partido.
+Cola: Para equipos clasificados desde la fase de grupos que esperan emparejamiento en la fase final
+Conjunto: Registrar historial entre equipos
+Posibles Extensiones
+               * Permitir configurar torneos reales con fechas y horarios.
+
+               * Agregar una capa gráfica con Swing o exportar resultados a HTML.
+
+               * Implementar rankings históricos por equipo o jugador.
+
+               * Simular rachas, lesiones, tarjetas y rendimiento variable.
+
+               * Integración con archivos .csv o .json para importar/exportar torneos y equipos.

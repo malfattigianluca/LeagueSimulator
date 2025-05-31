@@ -1,0 +1,110 @@
+LaLiga;LL01;Alavés;España;[⚪🔵];1400
+LaLiga;LL02;Athletic Club;España;[🔴⚪];2200
+LaLiga;LL03;Atlético de Madrid;España;[🔴⚪];2700
+LaLiga;LL04;Barcelona;España;[🔵🔴];2850
+LaLiga;LL05;Betis;España;[🟢⚪];2100
+LaLiga;LL06;Celta Vigo;España;[🔵];1800
+LaLiga;LL07;Espanyol;España;[⚪🔵];1600
+LaLiga;LL08;Getafe;España;[🔵];1500
+LaLiga;LL09;Girona;España;[🔴⚪];1900
+LaLiga;LL10;Las Palmas;España;[🟡🔵];1400
+LaLiga;LL11;Leganés;España;[🔵⚪];1300
+LaLiga;LL12;Mallorca;España;[🔴⚫];1700
+LaLiga;LL13;Osasuna;España;[🔴];1800
+LaLiga;LL14;Rayo Vallecano;España;[🔴⚪];1600
+LaLiga;LL15;Real Madrid;España;[⚪];2900
+LaLiga;LL16;Real Sociedad;España;[🔵⚪];2300
+LaLiga;LL17;Sevilla;España;[⚪🔴];2150
+LaLiga;LL18;Valencia;España;[🟠];2000
+LaLiga;LL19;Valladolid;España;[🟣⚪];1450
+LaLiga;LL20;Villarreal;España;[🟡];2250
+Serie A;SA01;AC Milan;Italia;[🔴⚫];2650
+Serie A;SA02;Atalanta;Italia;[🔵⚫];2300
+Serie A;SA03;Bologna;Italia;[🔴🔵];2100
+Serie A;SA04;Cagliari;Italia;[🔴🔵];1600
+Serie A;SA05;Como;Italia;[🔵⚪];1400
+Serie A;SA06;Empoli;Italia;[🔵];1500
+Serie A;SA07;Fiorentina;Italia;[🟣];2200
+Serie A;SA08;Genoa;Italia;[🔴🔵];1700
+Serie A;SA09;Hellas Verona;Italia;[🔵];1500
+Serie A;SA10;Inter de Milán;Italia;[🔵⚫];2850
+Serie A;SA11;Juventus;Italia;[⚪⚫];2750
+Serie A;SA12;Lazio;Italia;[🔵⚪];2300
+Serie A;SA13;Lecce;Italia;[🟡🔴];1400
+Serie A;SA14;Monza;Italia;[🔴⚪];1450
+Serie A;SA15;Napoli;Italia;[🔵];2600
+Serie A;SA16;Parma;Italia;[🟡🔵];1600
+Serie A;SA17;Roma;Italia;[🟡🔴];2500
+Serie A;SA18;Torino;Italia;[🔴];1800
+Serie A;SA19;Udinese;Italia;[⚪⚫];1700
+Serie A;SA20;Venezia;Italia;[🟢🟠];1400
+Premier League;PL01;Arsenal;Inglaterra;[🔴⚪];2700
+Premier League;PL02;Aston Villa;Inglaterra;[🟣🔵];2350
+Premier League;PL03;Bournemouth;Inglaterra;[🔴⚫];1600
+Premier League;PL04;Brentford;Inglaterra;[🔴⚪];1700
+Premier League;PL05;Brighton;Inglaterra;[🔵⚪];2100
+Premier League;PL06;Chelsea;Inglaterra;[🔵];2450
+Premier League;PL07;Crystal Palace;Inglaterra;[🔴🔵];1800
+Premier League;PL08;Everton;Inglaterra;[🔵];2000
+Premier League;PL09;Fulham;Inglaterra;[⚪⚫];1750
+Premier League;PL10;Ipswich Town;Inglaterra;[🔵⚪];1350
+Premier League;PL11;Leicester City;Inglaterra;[🔵];1600
+Premier League;PL12;Liverpool;Inglaterra;[🔴];2800
+Premier League;PL13;Manchester City;Inglaterra;[🔵];2900
+Premier League;PL14;Manchester United;Inglaterra;[🔴];2600
+Premier League;PL15;Newcastle United;Inglaterra;[⚪⚫];2300
+Premier League;PL16;Nottingham Forest;Inglaterra;[🔴];1650
+Premier League;PL17;Southampton;Inglaterra;[🔴⚪];1500
+Premier League;PL18;Tottenham Hotspur;Inglaterra;[⚪];2400
+Premier League;PL19;West Ham United;Inglaterra;[🟣🔵];2150
+Premier League;PL20;Wolverhampton;Inglaterra;[🟠⚫];1800
+Liga Argentina de Futbol;AR01;Aldosivi;Argentina;[🟢🟡];1400
+Liga Argentina de Futbol;AR02;Argentinos Juniors;Argentina;[🔴];1750
+Liga Argentina de Futbol;AR03;Atlético Tucumán;Argentina;[🔵⚪];1600
+Liga Argentina de Futbol;AR04;Banfield;Argentina;[🟢⚪];1600
+Liga Argentina de Futbol;AR05;Barracas Central;Argentina;[🔴⚪];1500
+Liga Argentina de Futbol;AR06;Belgrano;Argentina;[🔵];1700
+Liga Argentina de Futbol;AR07;Boca Juniors;Argentina;[🔵🟡];2400
+Liga Argentina de Futbol;AR08;Central Córdoba;Argentina;[⚫⚪];1500
+Liga Argentina de Futbol;AR09;Defensa y Justicia;Argentina;[🟢🟡];1850
+Liga Argentina de Futbol;AR10;Deportivo Riestra;Argentina;[⚫⚪];1400
+Liga Argentina de Futbol;AR11;Estudiantes;Argentina;[🔴⚪];2100
+Liga Argentina de Futbol;AR12;Gimnasia y Esgrima;Argentina;[🔵⚪];1850
+Liga Argentina de Futbol;AR13;Godoy Cruz;Argentina;[🔵⚪];1700
+Liga Argentina de Futbol;AR14;Huracán;Argentina;[⚪🔴];1750
+Liga Argentina de Futbol;AR15;Independiente;Argentina;[🔴];2150
+Liga Argentina de Futbol;AR16;Independiente Rivadavia;Argentina;[🔵];1600
+Liga Argentina de Futbol;AR17;Instituto;Argentina;[🔴⚪];1650
+Liga Argentina de Futbol;AR18;Lanús;Argentina;[🟤];2100
+Liga Argentina de Futbol;AR19;Newell's Old Boys;Argentina;[🔴⚫];1900
+Liga Argentina de Futbol;AR20;Platense;Argentina;[🟤⚪];1500
+Liga Argentina de Futbol;AR21;Racing Club;Argentina;[🔵⚪];2250
+Liga Argentina de Futbol;AR22;River Plate;Argentina;[⚪🔴];2500
+Liga Argentina de Futbol;AR23;Rosario Central;Argentina;[🔵🟡];1950
+Liga Argentina de Futbol;AR24;San Lorenzo;Argentina;[🔵🔴];2200
+Liga Argentina de Futbol;AR25;San Martín;Argentina;[🔴⚪];1400
+Liga Argentina de Futbol;AR26;Sarmiento;Argentina;[🟢⚪];1400
+Liga Argentina de Futbol;AR27;Talleres;Argentina;[🔵⚪];2200
+Liga Argentina de Futbol;AR28;Tigre;Argentina;[🔵🔴];1700
+Liga Argentina de Futbol;AR29;Unión;Argentina;[🔴⚪];1600
+Liga Argentina de Futbol;AR30;Vélez Sarsfield;Argentina;[🔵];1900
+Ligue 1;FR01;Paris Saint-Germain;Francia;[🔴🔵];2800
+Ligue 1;FR02;Olympique de Marsella;Francia;[🔵⚪];2500
+Ligue 1;FR03;AS Monaco;Francia;[🔴⚪];2450
+Ligue 1;FR04;LOSC Lille;Francia;[🔴⚪];2400
+Ligue 1;FR05;Olympique Lyonnais;Francia;[🔴🔵];2400
+Ligue 1;FR06;RC Strasbourg;Francia;[🔵⚪];1900
+Ligue 1;FR07;RC Lens;Francia;[🔴🔵];2200
+Ligue 1;FR08;Stade Brestois;Francia;[🔴⚪];2100
+Ligue 1;FR09;OGC Nice;Francia;[🔴⚫];2300
+Ligue 1;FR10;Stade de Reims;Francia;[🔴⚪];2000
+Ligue 1;FR11;Toulouse FC;Francia;[🟣⚪];1900
+Ligue 1;FR12;FC Nantes;Francia;[🟡🟢];1800
+Ligue 1;FR13;Montpellier HSC;Francia;[🔵🟠];1800
+Ligue 1;FR14;Clermont Foot;Francia;[🔴🔵];1600
+Ligue 1;FR15;Le Havre AC;Francia;[🔵⚪];1700
+Ligue 1;FR16;FC Metz;Francia;[🟤];1650
+Ligue 1;FR17;Lorient;Francia;[🟠⚫];1700
+Ligue 1;FR18;ESTAC Troyes;Francia;[🔵];1500
+Ligue 1;FR19;AC Ajaccio;Francia;[⚪🔴];1400
+Ligue 1;FR20;Angers SCO;Francia;[⚪⚫];1450

@@ -1,13 +1,16 @@
 package TP4;
 
 import TP4.Modelo.GestorEquipos;
+import TP4.Modelo.GestorJugadores;
+
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) {
-        GestorEquipos gestor = new GestorEquipos();
-        gestor.cargarEquiposPorLiga("files/teams.txt");
-        gestor.listarEquipos();
+        GestorEquipos gestorequipo = new GestorEquipos();
+        GestorJugadores gestorjugador = new GestorJugadores();
+        gestorequipo.cargarEquiposPorLiga("files/teams.txt");
+        gestorequipo.listarEquipos();
         Scanner scanner = new Scanner(System.in);
         boolean salir = false;
 
@@ -80,19 +83,19 @@ public class App {
                         scanner.nextLine();
                         switch (opcionLiga) {
                             case 1:
-                                gestor.mostrarEquiposPorLiga("Premier League");
+                                gestorequipo.mostrarEquiposPorLiga("Premier League");
                                 break;
                             case 2:
-                                gestor.mostrarEquiposPorLiga("LaLiga");
+                                gestorequipo.mostrarEquiposPorLiga("LaLiga");
                                 break;
                             case 3:
-                                gestor.mostrarEquiposPorLiga("Liga Argentina de Futbol");
+                                gestorequipo.mostrarEquiposPorLiga("Liga Argentina de Futbol");
                                 break;
                             case 4:
-                                gestor.mostrarEquiposPorLiga("Serie A");
+                                gestorequipo.mostrarEquiposPorLiga("Serie A");
                                 break;
                             case 5:
-                                gestor.mostrarEquiposPorLiga("Ligue 1");
+                                gestorequipo.mostrarEquiposPorLiga("Ligue 1");
                                 break;
                             case 0:
                                 System.out.println("Volviendo al menú principal...");
@@ -107,7 +110,7 @@ public class App {
                     break;
                 case 4:
                     System.out.println("--- Ver equipos ---");
-                    gestor.listarEquipos();
+                    gestorequipo.listarEquipos();
                     break;
                 case 5:
                     System.out.println("--- Ver jugadores ---");

@@ -21,7 +21,7 @@ public class Validador {
   public static void validarLiga(String liga) throws TorneoException {
     boolean ligaValida = false;
     for (String ligaDisponible : Constantes.LIGAS_DISPONIBLES) {
-      if (ligaDisponible.equals(liga)) {
+      if (ligaDisponible.equalsIgnoreCase(liga)) {
         ligaValida = true;
         break;
       }

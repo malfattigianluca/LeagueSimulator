@@ -9,7 +9,7 @@ public class GestorJugadores {
   private ConjuntoGenericoTDA<Jugador> jugadores;
   private int ultimoId;
 
-  private GestorJugadores() {
+  public GestorJugadores() {
     this.jugadores = new ConjuntoGenericoImpl<>();
     this.ultimoId = 0;
   }
@@ -46,6 +46,24 @@ public class GestorJugadores {
     if (jugador != null && jugador.getEquipo() == null) {
       jugadores.eliminar(jugador);
     }
+  }
+
+  public void mostrarJugadores() {
+    for (Jugador j : jugadores.getVertices()) {
+      System.out.println("ID: " + j.getId() + " | Nombre: " + j.getNombre() +
+              " | Nº Camiseta: " + j.getNumeroCamiseta() +
+              " | Posición: " + j.getPosicion() +
+              (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
+    }
+  }
+
+  public Jugador buscarJugadorPorNombre(String nombre) {
+    for (Jugador j : jugadores.getVertices()) {
+      if (j.getNombre().equalsIgnoreCase(nombre)) {
+        return j;
+      }
+    }
+    return null;
   }
 
   public boolean existeJugador(Jugador jugador) {

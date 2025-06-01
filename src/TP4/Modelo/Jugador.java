@@ -10,7 +10,8 @@ public class Jugador {
   private Equipo equipo;
   private int goles;
   private int asistencias;
-  private int partidosJugados;
+  private int amarillas;
+  private int rojas;
 
   public Jugador(int id, String nombre, int numeroCamiseta, String posicion) {
     this.id = id;
@@ -20,7 +21,8 @@ public class Jugador {
     this.equipo = null;
     this.goles = 0;
     this.asistencias = 0;
-    this.partidosJugados = 0;
+    this.amarillas = 0;
+    this.rojas=0;
   }
 
   public void unirseAEquipo(Equipo nuevoEquipo) throws TorneoException {
@@ -57,9 +59,11 @@ public class Jugador {
     this.asistencias++;
   }
 
-  public void registrarPartido() {
-    this.partidosJugados++;
+  public void registrarAmarilla() {
+    this.amarillas++;
   }
+
+  public void registrarRoja(){ this.rojas++;}
 
   public int getId() {
     return id;
@@ -89,10 +93,13 @@ public class Jugador {
     return asistencias;
   }
 
-  public int getPartidosJugados() {
-    return partidosJugados;
+  public int getAmarillas() {
+    return amarillas;
   }
 
+  public int getRojas(){
+    return rojas;
+  }
   @Override
   public String toString() {
     String equipoStr = (equipo != null) ? " - " + equipo.getNombre() : " (Sin equipo)";

@@ -10,6 +10,9 @@ public class Equipo {
   private int id;
   private String nombre;
   private String liga;
+  private String escudo;
+  private String pais;
+  private int elo;
   private int puntos;
   private int golesAFavor;
   private int golesEnContra;
@@ -20,11 +23,14 @@ public class Equipo {
   private ConjuntoGenericoTDA<Jugador> jugadores;
   private static final int MAX_JUGADORES = 25; 
 
-  public Equipo(int id, String nombreEquipo, String liga) throws TorneoException {
+  public Equipo(int id, String nombreEquipo, int elo, String liga, String escudo, String pais) throws TorneoException {
     this.id = id;
     this.nombre = nombreEquipo;
     Validador.validarLiga(liga);
+    this.elo=elo;
     this.liga = liga;
+    this.escudo=escudo;
+    this.pais=pais;
     this.puntos = 0;
     this.golesAFavor = 0;
     this.golesEnContra = 0;
@@ -114,8 +120,19 @@ public class Equipo {
     return nombre;
   }
 
+  public String getEscudo(){
+    return escudo;
+  }
   public String getLiga() {
     return liga;
+  }
+
+  public String getPais(){
+    return pais;
+  }
+
+  public int getElo(){
+    return elo;
   }
 
   public int getPuntos() {
@@ -152,6 +169,7 @@ public class Equipo {
 
   @Override
   public String toString() {
-    return nombre + " (" + liga + ") - Jugadores: " + cantidadJugadores();
+    return String.format("Escudo: %s, Nombre: %s, Elo: %d, Liga: %s",
+            escudo, nombre, elo, liga);
   }
 }

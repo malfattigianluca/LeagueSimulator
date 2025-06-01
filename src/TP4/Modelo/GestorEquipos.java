@@ -24,15 +24,18 @@ public class GestorEquipos {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = linea.split(";");
-                if (datos.length >= 2) {
+                if (datos.length >= 3) {
                     String liga = datos[0];
-                    String nombre = datos[1];
-
-                    Equipo equipo = new Equipo(idEquipo, nombre, liga);
-                    equipo.setId(idEquipo++); // Asignar ID
+                    String nombre = datos[2];
+                    String pais = datos[3];
+                    String escudo = datos[4];
+                    int elo = (int) Double.parseDouble(datos[5].trim());
+                    Equipo equipo = new Equipo(idEquipo, nombre, elo, liga, escudo, pais);
+                    equipo.setId(idEquipo++);
                     equiposPorLiga.computeIfAbsent(liga, k -> new ArrayList<>()).add(equipo);
                 }
             }
+            System.out.println("---Archivo cargado correctamente---");
         } catch (IOException e) {
             System.err.println("Error al leer equipos: " + e.getMessage());
         } catch (TorneoException e) {
@@ -101,12 +104,19 @@ public class GestorEquipos {
         return buscarEquipoPorNombre(nombre) != null;
     }
 
-    public void mostrarEquiposPorLiga() {
+    public void mostrarEquiposPorLiga(String nombreLiga) {
         for (String liga : equiposPorLiga.keySet()) {
-            System.out.println("Liga: " + liga);
-            for (Equipo e : equiposPorLiga.get(liga)) {
-                System.out.println(" - [ID: " + e.getId() + "] " + e.getNombre());
+            if (liga.equalsIgnoreCase(nombreLiga)) {
+                System.out.println("\nLiga: " + liga);
+                System.out.printf("%-5s %-20s %-30s %-10s%n", "ID", "Escudo", "Nombre", "Elo");
+                System.out.println("---------------------------------------------------------------");
+                for (Equipo e : equiposPorLiga.get(liga)) {
+                    System.out.printf("%-5d %-20s %-30s %-10d%n",
+                            e.getId(), e.getEscudo(), e.getNombre(), e.getElo());
+                }
+                return;
             }
         }
+        System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
     }
 }

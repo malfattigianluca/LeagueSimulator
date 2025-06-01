@@ -37,10 +37,10 @@ public class App {
                 case 1:
                     System.out.println("--- Simular liga ---");
                     System.out.println("1. Premier League");
-                    System.out.println("2. La Liga");
-                    System.out.println("3. Liga Argentina");
+                    System.out.println("2. LaLiga");
+                    System.out.println("3. Liga Argentina de Futbol");
                     System.out.println("4. Serie A");
-                    System.out.println("5. Ligue 1 de Francia");
+                    System.out.println("5. Ligue 1");
                     System.out.println("0. Volver");
                     System.out.print("Seleccione una liga: ");
                     try {
@@ -70,7 +70,7 @@ public class App {
                     System.out.println("--- Ver ligas ---");
                     System.out.println("1. Premier League");
                     System.out.println("2. La Liga");
-                    System.out.println("3. Liga Argentina");
+                    System.out.println("3. Liga Argentina de Futbol");
                     System.out.println("4. Serie A");
                     System.out.println("5. Ligue 1 de Francia");
                     System.out.println("0. Volver");
@@ -83,7 +83,7 @@ public class App {
                                 gestor.mostrarEquiposPorLiga("Premier League");
                                 break;
                             case 2:
-                                gestor.mostrarEquiposPorLiga("La Liga");
+                                gestor.mostrarEquiposPorLiga("LaLiga");
                                 break;
                             case 3:
                                 gestor.mostrarEquiposPorLiga("Liga Argentina de Futbol");
@@ -92,7 +92,7 @@ public class App {
                                 gestor.mostrarEquiposPorLiga("Serie A");
                                 break;
                             case 5:
-                                gestor.mostrarEquiposPorLiga("Ligue 1 de Francia");
+                                gestor.mostrarEquiposPorLiga("Ligue 1");
                                 break;
                             case 0:
                                 System.out.println("Volviendo al menú principal...");

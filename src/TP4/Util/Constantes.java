@@ -8,11 +8,11 @@ public class Constantes {
   public static final int MAX_GOLES = 10;
 
   public static final String[] LIGAS_DISPONIBLES = {
-      "Primera División Argentina",
+      "Liga Argentina de Futbol",
       "Premier League",
       "LaLiga",
       "Serie A",
-      "Bundesliga"
+      "Ligue 1"
   };
 
   public static final String TORNEO_GRUPOS = "Fase de Grupos";

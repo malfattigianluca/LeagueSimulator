@@ -20,9 +20,9 @@ public class Equipo {
   private ConjuntoGenericoTDA<Jugador> jugadores;
   private static final int MAX_JUGADORES = 25; 
 
-  public Equipo(int id, String nombre, String liga) throws TorneoException {
+  public Equipo(int id, String nombreEquipo, String liga) throws TorneoException {
     this.id = id;
-    this.nombre = nombre;
+    this.nombre = nombreEquipo;
     Validador.validarLiga(liga);
     this.liga = liga;
     this.puntos = 0;

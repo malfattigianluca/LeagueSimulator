@@ -16,4 +16,5 @@ public interface ConjuntoGenericoTDA<T> {
   void mostrar();
 
   List<T> getVertices();
+
 }

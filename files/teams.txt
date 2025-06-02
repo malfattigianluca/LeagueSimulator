@@ -92,7 +92,7 @@ Ligue 1;FR01;Paris Saint-Germain;Francia;[🔴🔵];2800
 Ligue 1;FR02;Olympique de Marsella;Francia;[🔵⚪];2500
 Ligue 1;FR03;AS Monaco;Francia;[🔴⚪];2450
 Ligue 1;FR04;LOSC Lille;Francia;[🔴⚪];2400
-Ligue 1;FR05;Olympique Lyonnais;Francia;[🔴🔵];2400
+Ligue 1;FR05;Olympique de Lyon;Francia;[🔴🔵];2400
 Ligue 1;FR06;RC Strasbourg;Francia;[🔵⚪];1900
 Ligue 1;FR07;RC Lens;Francia;[🔴🔵];2200
 Ligue 1;FR08;Stade Brestois;Francia;[🔴⚪];2100
@@ -103,8 +103,8 @@ Ligue 1;FR12;FC Nantes;Francia;[🟡🟢];1800
 Ligue 1;FR13;Montpellier HSC;Francia;[🔵🟠];1800
 Ligue 1;FR14;Clermont Foot;Francia;[🔴🔵];1600
 Ligue 1;FR15;Le Havre AC;Francia;[🔵⚪];1700
-Ligue 1;FR16;FC Metz;Francia;[🟤];1650
-Ligue 1;FR17;Lorient;Francia;[🟠⚫];1700
-Ligue 1;FR18;ESTAC Troyes;Francia;[🔵];1500
+Ligue 1;FR16;AS Saint-Étienne;Francia;[🟤];1650
+Ligue 1;FR17;Stade Rennais FC;Francia;[🟠⚫];1700
+Ligue 1;FR18;AJ Auxerre;Francia;[🔵];1500
 Ligue 1;FR19;AC Ajaccio;Francia;[⚪🔴];1400
 Ligue 1;FR20;Angers SCO;Francia;[⚪⚫];1450

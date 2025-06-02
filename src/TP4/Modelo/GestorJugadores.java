@@ -141,7 +141,7 @@ public class GestorJugadores {
     }
   }
 
-  public void agregarJugadorManually(Scanner scanner) throws TorneoException {
+  public void agregarJugadorManualmente(Scanner scanner) throws TorneoException {
     System.out.println("\n--- Agregar Jugador Manualmente ---");
     System.out.print("Ingrese el nombre del jugador: ");
     String nombreJugador = scanner.nextLine().trim();
@@ -257,15 +257,15 @@ public class GestorJugadores {
 
   public Jugador buscarJugadorPorNombre(String nombre) {
     for (Jugador j : jugadores.getVertices()) {
-      if (j.getNombre().equalsIgnoreCase(nombre)) {
+      if (j.getNombre().contains(nombre)) {
         return j;
       }
     }
     return null;
   }
 
-  public boolean existeJugador(Jugador jugador) {
-    return jugadores.pertenece(jugador);
+  public boolean existeJugador(String jugador) {
+    return buscarJugadorPorNombre(jugador)!=null;
   }
 
   public int cantidadJugadores() {

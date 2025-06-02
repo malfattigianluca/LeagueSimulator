@@ -8,6 +8,8 @@ import java.util.*;
 import TP4.Excepciones.TorneoException;
 import TP4.Modelo.Jugador;
 import TP4.Modelo.Equipo;
+import TP4.TDA.ConjuntoGenericoTDA;
+import TP4.Implementacion.ConjuntoGenericoImpl;
 
 
 public class GestorEquipos {
@@ -24,7 +26,7 @@ public class GestorEquipos {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = linea.split(";");
-                if (datos.length >= 3) {
+                if (datos.length >= 2) {
                     String liga = datos[0];
                     String nombre = datos[2];
                     String pais = datos[3];
@@ -118,5 +120,40 @@ public class GestorEquipos {
             }
         }
         System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
+    }
+
+
+    public void mostrarEquipo(String nombreEquipo) {
+        boolean encontrado = false;
+        for (String liga : equiposPorLiga.keySet()) {
+            for (Equipo equipo : equiposPorLiga.get(liga)) {
+                if (equipo.getNombre().equalsIgnoreCase(nombreEquipo)) {
+                    System.out.println("\nEquipo: " + equipo.getNombre() + " (" + liga + ")");
+                    ConjuntoGenericoTDA<Jugador> jugadoresConjunto = equipo.getJugadores();
+                    if (jugadoresConjunto.estaVacio()) {
+                        System.out.println("No hay jugadores registrados para este equipo.");
+                    } else {
+                        System.out.printf("%-20s %-30s %-30s %-15s %-10s %-10s %-10s%n",
+                                "Liga", "Equipo", "Nombre", "Posición", "Camiseta", "Edad", "Altura");
+                        System.out.println("------------------------------------------------------------------------------------");
+                        List<Jugador> jugadores = jugadoresConjunto.getVertices(); // Obtener la lista
+                        for (Jugador jugador : jugadores) {
+                            System.out.printf("%-20s %-30s %-30s %-15s %-10d %-10d %-10.2f%n",
+                                    jugador.getLiga(), jugador.getEquipo(), jugador.getNombre(),
+                                    jugador.getPosicion(), jugador.getNumeroCamiseta(), jugador.getEdad(), jugador.getAltura());
+                        }
+                    }
+                    encontrado = true;
+                    return;
+                }
+            }
+        }
+        if (!encontrado) {
+            System.out.println("No se encontró el equipo: " + nombreEquipo);
+        }
+    }
+
+    public Map<String, List<Equipo>> getEquiposPorLiga() {
+        return equiposPorLiga;
     }
 }

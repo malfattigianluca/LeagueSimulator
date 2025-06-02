@@ -1,6 +1,5 @@
 package TP4.Modelo;
 
-import TP4.Util.Constantes;
 import TP4.Excepciones.TorneoException;
 import TP4.Util.Validador;
 import TP4.TDA.ConjuntoGenericoTDA;
@@ -21,7 +20,7 @@ public class Equipo {
   private int partidosEmpatados;
   private int partidosPerdidos;
   private ConjuntoGenericoTDA<Jugador> jugadores;
-  private static final int MAX_JUGADORES = 25; 
+  private static final int MAX_JUGADORES = 40;
 
   public Equipo(int id, String nombreEquipo, int elo, String liga, String escudo, String pais) throws TorneoException {
     this.id = id;
@@ -45,19 +44,15 @@ public class Equipo {
     if (cantidadJugadores() >= MAX_JUGADORES) {
       throw new TorneoException("El equipo ya tiene el máximo de jugadores permitidos");
     }
-
     if (jugador == null) {
       throw new TorneoException("El jugador no puede ser nulo");
     }
-
     if (jugador.getEquipo() != null) {
       throw new TorneoException("El jugador ya pertenece a un equipo");
     }
-
     if (tieneNumeroCamiseta(jugador.getNumeroCamiseta())) {
       throw new TorneoException("El número de camiseta " + jugador.getNumeroCamiseta() + " ya está en uso");
     }
-
     jugadores.insertar(jugador);
     jugador.unirseAEquipo(this);
   }
@@ -77,6 +72,9 @@ public class Equipo {
   }
 
   public boolean tieneNumeroCamiseta(int numeroCamiseta) {
+    if (numeroCamiseta == -1) {
+      return false;
+    }
     for (Jugador jugador : jugadores.getVertices()) {
       if (jugador.getNumeroCamiseta() == numeroCamiseta) {
         return true;
@@ -165,6 +163,10 @@ public class Equipo {
 
   public int getDiferenciaGoles() {
     return golesAFavor - golesEnContra;
+  }
+
+  public ConjuntoGenericoTDA<Jugador> getJugadores(){
+    return jugadores;
   }
 
   @Override

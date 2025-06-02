@@ -5,6 +5,9 @@ import TP4.Util.Validador;
 import TP4.TDA.ConjuntoGenericoTDA;
 import TP4.Implementacion.ConjuntoGenericoImpl;
 
+import java.util.IllegalFormatConversionException;
+import java.util.List;
+
 public class Equipo {
   private int id;
   private String nombre;
@@ -55,6 +58,46 @@ public class Equipo {
     }
     jugadores.insertar(jugador);
     jugador.unirseAEquipo(this);
+  }
+
+  public void mostrarJugadores() {
+    System.out.println("\nEquipo: " + getNombre() + " (" + getLiga() + ")");
+    if (jugadores.estaVacio()) {
+      System.out.println("No hay jugadores registrados para este equipo.");
+      return;
+    }
+
+    // Imprimir cabecera
+    System.out.printf("%-30s %-15s %-10s %-10s %-10s%n",
+            "Nombre", "Posición", "Camiseta", "Edad", "Altura");
+    System.out.println("------------------------------------------------------------------------------------");
+
+    // Obtener la lista de jugadores
+    List<Jugador> listaJugadores = jugadores.getVertices();
+    if (listaJugadores == null) {
+      System.out.println("Error: La lista de jugadores es nula.");
+      return;
+    }
+
+    // Iterar sobre los jugadores
+    for (Jugador jugador : listaJugadores) {
+      try {
+        // Manejar valores null
+        String nombreJugador = (jugador.getNombre() != null) ? jugador.getNombre() : "N/A";
+        String posicionJugador = (jugador.getPosicion() != null) ? jugador.getPosicion() : "N/A";
+        int camisetaJugador = jugador.getNumeroCamiseta() != -1 ? jugador.getNumeroCamiseta() : 0;
+        int edadJugador = jugador.getEdad() != -1 ? jugador.getEdad() : 0;
+        String alturaJugador = (jugador.getAltura() != null) ? jugador.getAltura() : "N/A";
+
+        System.out.printf("%-30s %-25s %-10d %-10d %-10s%n", nombreJugador, posicionJugador, camisetaJugador, edadJugador, alturaJugador);
+      } catch (NullPointerException e) {
+        System.out.println("Error al procesar jugador: " + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
+        e.printStackTrace();
+      } catch (IllegalFormatConversionException e) {
+        System.out.println("Error de formato para jugador: " + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
+        e.printStackTrace();
+      }
+    }
   }
 
   public void eliminarJugador(Jugador jugador) {

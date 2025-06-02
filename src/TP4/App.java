@@ -1,16 +1,17 @@
 package TP4;
 
+import TP4.Excepciones.TorneoException;
 import TP4.Modelo.GestorEquipos;
 import TP4.Modelo.GestorJugadores;
 
 import java.util.Scanner;
 
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws TorneoException {
         GestorEquipos gestorequipo = new GestorEquipos();
-        GestorJugadores gestorjugador = new GestorJugadores();
+        GestorJugadores gestorjugador = new GestorJugadores(gestorequipo);
         gestorequipo.cargarEquiposPorLiga("files/teams.txt");
-        gestorequipo.listarEquipos();
+        gestorjugador.cargarJugadores("files/players.txt");
         Scanner scanner = new Scanner(System.in);
         boolean salir = false;
 
@@ -49,6 +50,24 @@ public class App {
                     try {
                         int opcionSimular = scanner.nextInt();
                         scanner.nextLine();
+                        switch (opcionSimular){
+                            case 1:
+
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            case 4:
+                                break;
+                            case 5:
+                                break;
+                            case 0:
+                                System.out.println("Volviendo al menú principal...");
+                                break;
+                            default:
+                                System.out.println("Opción inválida. Intente nuevamente.");
+                        }
                     } catch (Exception e) {
                         System.out.println("Entrada inválida. Intente nuevamente.");
                         scanner.nextLine();
@@ -114,7 +133,7 @@ public class App {
                     break;
                 case 5:
                     System.out.println("--- Ver jugadores ---");
-                    // gestorJugadores.mostrarJugadores();
+                    gestorjugador.mostrarJugadores();
                     break;
                 case 6:
                     System.out.println("--- Buscar equipos ---");
@@ -139,6 +158,20 @@ public class App {
                     try {
                         int opcionBuscarJugador = scanner.nextInt();
                         scanner.nextLine();
+                        switch (opcionBuscarJugador){
+                            case 1: //Buscar jugador por nombre
+                                System.out.println("Ingrese el nombre o apellido de un jugador: ");
+                                String jugadorNombre = scanner.toString();
+                                gestorjugador.buscarJugadorPorNombre(jugadorNombre);
+                                break;
+                            case 2: //Buscar jugador por equipo
+                                System.out.println("Ingrese el club para buscar jugadores: ");
+                                String jugadorClub = scanner.toString();
+                                gestorjugador.buscarJugadorPorNombre(jugadorClub);
+                                break;
+                            case 3:
+                                break;
+                        }
                     } catch (Exception e) {
                         System.out.println("Entrada inválida. Intente nuevamente.");
                         scanner.nextLine();

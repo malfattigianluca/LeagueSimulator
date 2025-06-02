@@ -2,9 +2,10 @@ package TP4.Implementacion;
 
 import TP4.TDA.ConjuntoGenericoTDA;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class ConjuntoGenericoImpl<T> implements ConjuntoGenericoTDA<T> {
+public class ConjuntoGenericoImpl<T> implements ConjuntoGenericoTDA<T>{
   private class Nodo {
     T elemento;
     Nodo siguiente;

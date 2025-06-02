@@ -4,6 +4,7 @@ import TP4.Excepciones.TorneoException;
 import TP4.Modelo.GestorEquipos;
 import TP4.Modelo.GestorJugadores;
 
+import java.util.IllegalFormatConversionException;
 import java.util.Scanner;
 
 public class App {
@@ -160,14 +161,44 @@ public class App {
                         scanner.nextLine();
                         switch (opcionBuscarJugador){
                             case 1: //Buscar jugador por nombre
-                                System.out.println("Ingrese el nombre o apellido de un jugador: ");
-                                String jugadorNombre = scanner.toString();
-                                gestorjugador.buscarJugadorPorNombre(jugadorNombre);
+                                try {
+                                    System.out.println("Ingrese el nombre o apellido de un jugador: ");
+                                    String jugadorNombre = scanner.nextLine();
+                                    if (gestorjugador.existeJugador(jugadorNombre)){
+                                        gestorjugador.buscarJugadorPorNombre(jugadorNombre);
+                                    } else {
+                                        System.out.println("El jugador '" + jugadorNombre + "' no se encuentra en el sistema.");
+                                    }
+                                }catch (NullPointerException e) {
+                                    System.out.println("Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
+                                    e.printStackTrace();
+                                } catch (IllegalFormatConversionException e) {
+                                    System.out.println("Error: Formato incorrecto en la salida de datos.");
+                                    e.printStackTrace();
+                                } catch (Exception e) {
+                                    System.out.println("Error inesperado: " + e.getMessage());
+                                    e.printStackTrace();
+                                }
                                 break;
-                            case 2: //Buscar jugador por equipo
-                                System.out.println("Ingrese el club para buscar jugadores: ");
-                                String jugadorClub = scanner.toString();
-                                gestorjugador.buscarJugadorPorNombre(jugadorClub);
+                            case 2: // Buscar jugador por equipo
+                                try {
+                                    System.out.println("Ingrese el nombre del club para buscar jugadores: ");
+                                    String jugadorClub = scanner.nextLine();
+                                    if (gestorequipo.existeEquipo(jugadorClub)) {
+                                        gestorequipo.mostrarEquipo(jugadorClub);
+                                    } else {
+                                        System.out.println("El club '" + jugadorClub + "' no se encuentra en el sistema.");
+                                    }
+                                } catch (NullPointerException e) {
+                                    System.out.println("Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
+                                    e.printStackTrace();
+                                } catch (IllegalFormatConversionException e) {
+                                    System.out.println("Error: Formato incorrecto en la salida de datos.");
+                                    e.printStackTrace();
+                                } catch (Exception e) {
+                                    System.out.println("Error inesperado: " + e.getMessage());
+                                    e.printStackTrace();
+                                }
                                 break;
                             case 3:
                                 break;

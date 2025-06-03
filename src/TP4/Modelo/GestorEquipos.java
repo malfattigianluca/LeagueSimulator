@@ -1,12 +1,11 @@
 package TP4.Modelo;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-
 import TP4.Excepciones.TorneoException;
-
 
 public class GestorEquipos {
     private Map<String, List<Equipo>> equiposPorLiga;
@@ -118,7 +117,6 @@ public class GestorEquipos {
         System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
     }
 
-
     public void mostrarEquipo(String nombreEquipo) {
         for (String liga : equiposPorLiga.keySet()) {
             for (Equipo equipo : equiposPorLiga.get(liga)) {
@@ -131,7 +129,15 @@ public class GestorEquipos {
         System.out.println("No se encontró el equipo: " + nombreEquipo);
     }
 
-    public Map<String, List<Equipo>> getEquiposPorLiga(){
+    public Map<String, List<Equipo>> getEquiposPorLiga() {
         return equiposPorLiga;
+    }
+
+    public List<Equipo> getEquipos() {
+        List<Equipo> todos = new ArrayList<>();
+        for (List<Equipo> lista : equiposPorLiga.values()) {
+            todos.addAll(lista);
+        }
+        return todos;
     }
 }

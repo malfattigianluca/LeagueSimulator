@@ -27,8 +27,10 @@ public class GestorJugadores {
     return instancia;
   }
 
-  public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad, int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
-    Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles, asistencias, amarillas, rojas);
+  public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
+      int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
+    Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
+        asistencias, amarillas, rojas);
     jugadores.insertar(nuevoJugador);
     return nuevoJugador;
   }
@@ -71,9 +73,10 @@ public class GestorJugadores {
             Jugador jugador;
             try {
               jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-                      goles, asistencias, amarillas, rojas);
+                  goles, asistencias, amarillas, rojas);
             } catch (TorneoException e) {
-              System.err.println("Error en la línea " + numeroLinea + ": " + e.getMessage() + " para el jugador " + nombreJugador);
+              System.err.println(
+                  "Error en la línea " + numeroLinea + ": " + e.getMessage() + " para el jugador " + nombreJugador);
               continue; // Omitir jugador con número de camiseta inválido
             }
             jugadores.insertar(jugador);
@@ -85,20 +88,22 @@ public class GestorJugadores {
                 if (equipo.getNombre().equalsIgnoreCase(nombreEquipo) && equipo.getLiga().equalsIgnoreCase(liga)) {
                   try {
                     int intentos = 0;
-                    boolean añadido = false;
-                    while (!añadido && intentos < 100) {
+                    boolean anadido = false;
+                    while (!anadido && intentos < 100) {
                       try {
                         equipo.agregarJugador(jugador);
-                        añadido = true;
+                        anadido = true;
                         equipoEncontrado = true;
                       } catch (TorneoException e) {
                         if (e.getMessage().contains("ya está en uso")) {
                           numeroCamiseta++;
                           try {
                             jugador.setNumeroCamiseta(numeroCamiseta);
-                            System.out.println("Asignando nuevo número de camiseta " + numeroCamiseta + " para " + nombreJugador);
+                            System.out.println(
+                                "Asignando nuevo número de camiseta " + numeroCamiseta + " para " + nombreJugador);
                           } catch (TorneoException ex) {
-                            System.err.println("Error al asignar camiseta para " + nombreJugador + ": " + ex.getMessage());
+                            System.err
+                                .println("Error al asignar camiseta para " + nombreJugador + ": " + ex.getMessage());
                             break;
                           }
                           intentos++;
@@ -107,8 +112,9 @@ public class GestorJugadores {
                         }
                       }
                     }
-                    if (!añadido) {
-                      System.err.println("No se pudo asignar un número de camiseta único para " + nombreJugador + " en la línea " + numeroLinea);
+                    if (!anadido) {
+                      System.err.println("No se pudo asignar un número de camiseta único para " + nombreJugador
+                          + " en la línea " + numeroLinea);
                       idJugador--;
                       jugadores.eliminar(jugador);
                     }
@@ -120,15 +126,18 @@ public class GestorJugadores {
                   break;
                 }
               }
-              if (equipoEncontrado) break;
+              if (equipoEncontrado)
+                break;
             }
             if (!equipoEncontrado) {
-              System.err.println("Equipo no encontrado para el jugador en la línea " + numeroLinea + ": " + nombreEquipo);
+              System.err
+                  .println("Equipo no encontrado para el jugador en la línea " + numeroLinea + ": " + nombreEquipo);
               idJugador--;
               jugadores.eliminar(jugador);
             }
           } catch (NumberFormatException e) {
-            System.err.println("Error en la línea " + numeroLinea + ": Formato inválido en los datos numéricos para " + linea);
+            System.err.println(
+                "Error en la línea " + numeroLinea + ": Formato inválido en los datos numéricos para " + linea);
             continue;
           }
         } else {
@@ -209,7 +218,7 @@ public class GestorJugadores {
     }
 
     Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-            goles, asistencias, amarillas, rojas);
+        goles, asistencias, amarillas, rojas);
     jugadores.insertar(jugador);
 
     boolean equipoEncontrado = false;
@@ -228,7 +237,8 @@ public class GestorJugadores {
           break;
         }
       }
-      if (equipoEncontrado) break;
+      if (equipoEncontrado)
+        break;
     }
     if (!equipoEncontrado) {
       idJugador--;
@@ -239,7 +249,6 @@ public class GestorJugadores {
     System.out.println("Jugador agregado exitosamente: " + jugador);
   }
 
-
   public void eliminarJugador(Jugador jugador) {
     if (jugador != null && jugador.getEquipo() == null) {
       jugadores.eliminar(jugador);
@@ -249,15 +258,29 @@ public class GestorJugadores {
   public void mostrarJugadores() {
     for (Jugador j : jugadores.getVertices()) {
       System.out.println("ID: " + j.getId() + " | Nombre: " + j.getNombre() +
-              " | Nº Camiseta: " + j.getNumeroCamiseta() +
-              " | Posición: " + j.getPosicion() +
-              (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
+          " | Nº Camiseta: " + j.getNumeroCamiseta() +
+          " | Posición: " + j.getPosicion() +
+          (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
     }
   }
 
   public Jugador buscarJugadorPorNombre(String nombre) {
     for (Jugador j : jugadores.getVertices()) {
       if (j.getNombre().contains(nombre)) {
+        System.out.println("\n=== Información del Jugador ===");
+        System.out.println("Nombre: " + j.getNombre());
+        System.out.println("Número: " + (j.getNumeroCamiseta() == -1 ? "Sin dorsal" : j.getNumeroCamiseta()));
+        System.out.println("Posición: " + j.getPosicion());
+        System.out.println("Edad: " + j.getEdad());
+        System.out.println("Altura: " + j.getAltura());
+        System.out.println("Equipo: " + (j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo"));
+        System.out.println("Liga: " + j.getLiga());
+        System.out.println("Estadísticas:");
+        System.out.println("  - Goles: " + j.getGoles());
+        System.out.println("  - Asistencias: " + j.getAsistencias());
+        System.out.println("  - Tarjetas amarillas: " + j.getAmarillas());
+        System.out.println("  - Tarjetas rojas: " + j.getRojas());
+        System.out.println("=============================");
         return j;
       }
     }
@@ -265,7 +288,7 @@ public class GestorJugadores {
   }
 
   public boolean existeJugador(String jugador) {
-    return buscarJugadorPorNombre(jugador)!=null;
+    return buscarJugadorPorNombre(jugador) != null;
   }
 
   public int cantidadJugadores() {

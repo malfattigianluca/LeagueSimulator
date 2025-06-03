@@ -3,9 +3,13 @@ package TP4;
 import TP4.Excepciones.TorneoException;
 import TP4.Modelo.GestorEquipos;
 import TP4.Modelo.GestorJugadores;
+import TP4.Modelo.SimuladorLiga;
+import TP4.Modelo.Equipo;
+import TP4.Modelo.Torneo;
 
 import java.util.IllegalFormatConversionException;
 import java.util.Scanner;
+import java.util.List;
 
 public class App {
     public static void main(String[] args) throws TorneoException {
@@ -40,53 +44,93 @@ public class App {
 
             switch (opcion) {
                 case 1:
-                    System.out.println("--- Simular liga ---");
-                    System.out.println("1. Premier League");
-                    System.out.println("2. LaLiga");
-                    System.out.println("3. Liga Argentina de Futbol");
-                    System.out.println("4. Serie A");
-                    System.out.println("5. Ligue 1");
-                    System.out.println("0. Volver");
-                    System.out.print("Seleccione una liga: ");
-                    try {
-                        int opcionSimular = scanner.nextInt();
-                        scanner.nextLine();
-                        switch (opcionSimular){
-                            case 1:
+                    System.out.println("\n=== Simular Liga ===");
+                    System.out.println("Ligas disponibles:");
+                    for (String liga : gestorequipo.getEquiposPorLiga().keySet()) {
+                        System.out.println("- " + liga);
+                    }
+                    System.out.print("\nIngrese el nombre de la liga a simular: ");
+                    String ligaSeleccionada = scanner.nextLine();
 
-                                break;
-                            case 2:
-                                break;
-                            case 3:
-                                break;
-                            case 4:
-                                break;
-                            case 5:
-                                break;
-                            case 0:
-                                System.out.println("Volviendo al menú principal...");
-                                break;
-                            default:
-                                System.out.println("Opción inválida. Intente nuevamente.");
+                    if (gestorequipo.getEquiposPorLiga().containsKey(ligaSeleccionada)) {
+                        SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada);
+                        List<Equipo> equiposLiga = gestorequipo.getEquiposPorLiga().get(ligaSeleccionada);
+
+                        // Agregar equipos al simulador
+                        for (Equipo equipo : equiposLiga) {
+                            simulador.agregarEquipo(equipo);
                         }
-                    } catch (Exception e) {
-                        System.out.println("Entrada inválida. Intente nuevamente.");
-                        scanner.nextLine();
+
+                        // Simular jornadas
+                        System.out.print("Ingrese el número de jornadas a simular: ");
+                        try {
+                            int numJornadas = Integer.parseInt(scanner.nextLine());
+                            for (int i = 0; i < numJornadas; i++) {
+                                System.out.println("\nSimulando jornada " + (i + 1));
+                                simulador.simularJornada();
+                                simulador.mostrarPartidos();
+                            }
+                            simulador.mostrarTabla();
+                        } catch (NumberFormatException e) {
+                            System.out.println("Número de jornadas inválido");
+                        } catch (TorneoException e) {
+                            System.out.println("Error al simular: " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("Liga no encontrada");
                     }
                     break;
                 case 2:
-                    System.out.println("--- Crear tu propio torneo ---");
-                    System.out.println("1. Eliminacion directa");
-                    System.out.println("2. Fase de grupos");
-                    System.out.println("3. Mixto");
-                    System.out.println("0. Volver");
-                    System.out.print("Seleccione una opción: ");
+                    System.out.println("\n=== Crear Torneo Personalizado ===");
+                    System.out.print("Ingrese el nombre del torneo: ");
+                    String nombreTorneo = scanner.nextLine();
+
+                    System.out.println("\nSeleccione el tipo de torneo:");
+                    System.out.println("1. Liga (todos contra todos)");
+                    System.out.println("2. Eliminación directa");
+                    System.out.print("Opción: ");
+
                     try {
-                        int opcionTorneo = scanner.nextInt();
-                        scanner.nextLine();
-                    } catch (Exception e) {
-                        System.out.println("Entrada inválida. Intente nuevamente.");
-                        scanner.nextLine();
+                        int tipoTorneo = Integer.parseInt(scanner.nextLine());
+                        boolean eliminacionDirecta = tipoTorneo == 2;
+
+                        Torneo torneo = new Torneo(nombreTorneo, eliminacionDirecta);
+
+                        // Mostrar equipos disponibles
+                        System.out.println("\nEquipos disponibles:");
+                        List<Equipo> todosEquipos = gestorequipo.getEquipos();
+                        for (int i = 0; i < todosEquipos.size(); i++) {
+                            System.out.println((i + 1) + ". " + todosEquipos.get(i).getNombre());
+                        }
+
+                        // Seleccionar equipos
+                        System.out.println(
+                                "\nSeleccione los equipos que participarán (ingrese los números separados por comas):");
+                        String seleccion = scanner.nextLine();
+                        String[] indices = seleccion.split(",");
+
+                        for (String indice : indices) {
+                            try {
+                                int idx = Integer.parseInt(indice.trim()) - 1;
+                                if (idx >= 0 && idx < todosEquipos.size()) {
+                                    torneo.agregarEquipo(todosEquipos.get(idx));
+                                }
+                            } catch (NumberFormatException e) {
+                                System.out.println("Número inválido: " + indice);
+                            }
+                        }
+
+                        // Simular torneo
+                        try {
+                            torneo.simularTorneo();
+                            torneo.mostrarPartidos();
+                            torneo.mostrarTabla();
+                        } catch (TorneoException e) {
+                            System.out.println("Error al simular torneo: " + e.getMessage());
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("Opción inválida");
                     }
                     break;
                 case 3:
@@ -144,8 +188,8 @@ public class App {
                     System.out.print("Seleccione una opción: ");
                     try {
                         int opcionBuscarEquipo = scanner.nextInt();
-                        scanner.nextLine();}
-                    catch (Exception e) {
+                        scanner.nextLine();
+                    } catch (Exception e) {
                         System.out.println("Entrada inválida. Intente nuevamente.");
                         scanner.nextLine();
                     }
@@ -159,18 +203,20 @@ public class App {
                     try {
                         int opcionBuscarJugador = scanner.nextInt();
                         scanner.nextLine();
-                        switch (opcionBuscarJugador){
-                            case 1: //Buscar jugador por nombre
+                        switch (opcionBuscarJugador) {
+                            case 1: // Buscar jugador por nombre
                                 try {
                                     System.out.println("Ingrese el nombre o apellido de un jugador: ");
                                     String jugadorNombre = scanner.nextLine();
-                                    if (gestorjugador.existeJugador(jugadorNombre)){
+                                    if (gestorjugador.existeJugador(jugadorNombre)) {
                                         gestorjugador.buscarJugadorPorNombre(jugadorNombre);
                                     } else {
-                                        System.out.println("El jugador '" + jugadorNombre + "' no se encuentra en el sistema.");
+                                        System.out.println(
+                                                "El jugador '" + jugadorNombre + "' no se encuentra en el sistema.");
                                     }
-                                }catch (NullPointerException e) {
-                                    System.out.println("Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
+                                } catch (NullPointerException e) {
+                                    System.out.println(
+                                            "Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
                                     e.printStackTrace();
                                 } catch (IllegalFormatConversionException e) {
                                     System.out.println("Error: Formato incorrecto en la salida de datos.");
@@ -187,10 +233,12 @@ public class App {
                                     if (gestorequipo.existeEquipo(jugadorClub)) {
                                         gestorequipo.mostrarEquipo(jugadorClub);
                                     } else {
-                                        System.out.println("El club '" + jugadorClub + "' no se encuentra en el sistema.");
+                                        System.out.println(
+                                                "El club '" + jugadorClub + "' no se encuentra en el sistema.");
                                     }
                                 } catch (NullPointerException e) {
-                                    System.out.println("Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
+                                    System.out.println(
+                                            "Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
                                     e.printStackTrace();
                                 } catch (IllegalFormatConversionException e) {
                                     System.out.println("Error: Formato incorrecto en la salida de datos.");

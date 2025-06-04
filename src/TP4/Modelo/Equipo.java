@@ -29,10 +29,10 @@ public class Equipo {
     this.id = id;
     this.nombre = nombreEquipo;
     Validador.validarLiga(liga);
-    this.elo=elo;
+    this.elo = elo;
     this.liga = liga;
-    this.escudo=escudo;
-    this.pais=pais;
+    this.escudo = escudo;
+    this.pais = pais;
     this.puntos = 0;
     this.golesAFavor = 0;
     this.golesEnContra = 0;
@@ -69,7 +69,7 @@ public class Equipo {
 
     // Imprimir cabecera
     System.out.printf("%-30s %-15s %-10s %-10s %-10s%n",
-            "Nombre", "Posición", "Camiseta", "Edad", "Altura");
+        "Nombre", "Posición", "Camiseta", "Edad", "Altura");
     System.out.println("------------------------------------------------------------------------------------");
 
     // Obtener la lista de jugadores
@@ -89,12 +89,15 @@ public class Equipo {
         int edadJugador = jugador.getEdad() != -1 ? jugador.getEdad() : 0;
         String alturaJugador = (jugador.getAltura() != null) ? jugador.getAltura() : "N/A";
 
-        System.out.printf("%-30s %-25s %-10d %-10d %-10s%n", nombreJugador, posicionJugador, camisetaJugador, edadJugador, alturaJugador);
+        System.out.printf("%-30s %-25s %-10d %-10d %-10s%n", nombreJugador, posicionJugador, camisetaJugador,
+            edadJugador, alturaJugador);
       } catch (NullPointerException e) {
-        System.out.println("Error al procesar jugador: " + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
+        System.out.println("Error al procesar jugador: "
+            + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
         e.printStackTrace();
       } catch (IllegalFormatConversionException e) {
-        System.out.println("Error de formato para jugador: " + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
+        System.out.println("Error de formato para jugador: "
+            + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
         e.printStackTrace();
       }
     }
@@ -154,25 +157,26 @@ public class Equipo {
   }
 
   public void setId(int id) {
-    this.id=id;
+    this.id = id;
   }
 
   public String getNombre() {
     return nombre;
   }
 
-  public String getEscudo(){
+  public String getEscudo() {
     return escudo;
   }
+
   public String getLiga() {
     return liga;
   }
 
-  public String getPais(){
+  public String getPais() {
     return pais;
   }
 
-  public int getElo(){
+  public int getElo() {
     return elo;
   }
 
@@ -208,13 +212,23 @@ public class Equipo {
     return golesAFavor - golesEnContra;
   }
 
-  public ConjuntoGenericoTDA<Jugador> getJugadores(){
+  public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
+  }
+
+  public void setElo(int nuevoElo) {
+    if (nuevoElo < 1000) {
+      this.elo = 1000;
+    } else if (nuevoElo > 3000) {
+      this.elo = 3000;
+    } else {
+      this.elo = nuevoElo;
+    }
   }
 
   @Override
   public String toString() {
     return String.format("Escudo: %s, Nombre: %s, Elo: %d, Liga: %s",
-            escudo, nombre, elo, liga);
+        escudo, nombre, elo, liga);
   }
 }

@@ -10,6 +10,7 @@ public class SimuladorLiga {
   private Map<Equipo, Integer> golesAFavor;
   private Map<Equipo, Integer> golesEnContra;
   private List<Partido> partidos;
+  private static final int K = 100; // Factor de impacto en el ELO
 
   public SimuladorLiga(String nombre) {
     this.nombre = nombre;
@@ -34,30 +35,31 @@ public class SimuladorLiga {
       throw new TorneoException("Se necesitan al menos 2 equipos para simular una jornada");
     }
 
-    // Crear una copia de la lista de equipos para no modificar la original
     List<Equipo> equiposDisponibles = new ArrayList<>(equipos);
     Collections.shuffle(equiposDisponibles);
 
-    // Simular partidos
     while (equiposDisponibles.size() >= 2) {
       Equipo local = equiposDisponibles.remove(0);
       Equipo visitante = equiposDisponibles.remove(0);
 
-      // Calcular probabilidades basadas en el ELO
-      double probLocal = (double) local.getElo() / (local.getElo() + visitante.getElo());
-      double probVisitante = 1 - probLocal;
+      // Calcular probabilidades ELO
+      double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
+      double pb = 1.0 - pa;
 
-      // Simular resultado
-      Random random = new Random();
-      int golesLocal = simularGoles(probLocal);
-      int golesVisitante = simularGoles(probVisitante);
+      int golesLocal = simularGoles(pa);
+      int golesVisitante = simularGoles(pb);
 
-      // Crear y registrar partido
       Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
       partidos.add(partido);
-
-      // Actualizar estadísticas
       actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
+
+      // Actualizar ELO
+      double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
+      double rb = golesVisitante > golesLocal ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
+      int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
+      int nuevoEloVisitante = (int) Math.round(visitante.getElo() + K * (rb - pb));
+      local.setElo(nuevoEloLocal);
+      visitante.setElo(nuevoEloVisitante);
     }
   }
 
@@ -90,11 +92,10 @@ public class SimuladorLiga {
 
   public void mostrarTabla() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
-    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s%n",
-        "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC");
-    System.out.println("------------------------------------------------------------");
+    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
+        "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "Pts", "ELO");
+    System.out.println("--------------------------------------------------------------------------");
 
-    // Crear lista de equipos ordenada por puntos
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
     equiposOrdenados.sort((e1, e2) -> {
       int puntos1 = puntos.get(e1);
@@ -117,15 +118,19 @@ public class SimuladorLiga {
       int partidosPerdidos = equipo.getPartidosPerdidos();
       int golesFavor = golesAFavor.get(equipo);
       int golesContra = golesEnContra.get(equipo);
+      int puntosEquipo = puntos.get(equipo);
+      int eloEquipo = equipo.getElo();
 
-      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d%n",
+      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
           equipo.getNombre(),
           partidosJugados,
           partidosGanados,
           partidosEmpatados,
           partidosPerdidos,
           golesFavor,
-          golesContra);
+          golesContra,
+          puntosEquipo,
+          eloEquipo);
     }
   }
 

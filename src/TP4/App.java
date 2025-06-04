@@ -15,8 +15,8 @@ public class App {
     public static void main(String[] args) throws TorneoException {
         GestorEquipos gestorequipo = new GestorEquipos();
         GestorJugadores gestorjugador = new GestorJugadores(gestorequipo);
-        gestorequipo.cargarEquiposPorLiga("files/teams.txt");
-        gestorjugador.cargarJugadores("files/players.txt");
+        gestorequipo.cargarEquiposPorLiga("./files/teams.txt");
+        gestorjugador.cargarJugadores("./files/players.txt");
         Scanner scanner = new Scanner(System.in);
         boolean salir = false;
 
@@ -124,7 +124,7 @@ public class App {
                         try {
                             torneo.simularTorneo();
                             torneo.mostrarPartidos();
-                            torneo.mostrarTabla();
+                            torneo.mostrarTablaPosiciones();
                         } catch (TorneoException e) {
                             System.out.println("Error al simular torneo: " + e.getMessage());
                         }

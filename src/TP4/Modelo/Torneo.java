@@ -11,6 +11,7 @@ public class Torneo {
   private Map<Equipo, Integer> golesAFavor;
   private Map<Equipo, Integer> golesEnContra;
   private boolean eliminacionDirecta;
+  private static final int K = 100; // Factor de impacto en el ELO
 
   public Torneo(String nombre, boolean eliminacionDirecta) {
     this.nombre = nombre;
@@ -36,21 +37,25 @@ public class Torneo {
       throw new TorneoException("Los equipos deben pertenecer al torneo");
     }
 
-    // Calcular probabilidades basadas en el ELO
-    double probLocal = (double) local.getElo() / (local.getElo() + visitante.getElo());
-    double probVisitante = 1 - probLocal;
+    // Calcular probabilidades ELO
+    double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
+    double pb = 1.0 - pa;
 
-    // Simular resultado
     Random random = new Random();
-    int golesLocal = simularGoles(probLocal);
-    int golesVisitante = simularGoles(probVisitante);
+    int golesLocal = simularGoles(pa);
+    int golesVisitante = simularGoles(pb);
 
-    // Crear y registrar partido
     Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
     partidos.add(partido);
-
-    // Actualizar estadísticas
     actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
+
+    // Actualizar ELO
+    double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
+    double rb = golesVisitante > golesLocal ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
+    int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
+    int nuevoEloVisitante = (int) Math.round(visitante.getElo() + K * (rb - pb));
+    local.setElo(nuevoEloLocal);
+    visitante.setElo(nuevoEloVisitante);
   }
 
   private int simularGoles(double probabilidad) {
@@ -133,44 +138,47 @@ public class Torneo {
     }
   }
 
-  public void mostrarTabla() {
+  public void mostrarTablaPosiciones() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
-    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s%n",
-        "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC");
-    System.out.println("------------------------------------------------------------");
-
-    // Crear lista de equipos ordenada por puntos
+    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n", "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC",
+        "Pts", "ELO");
+    System.out.println("--------------------------------------------------------------------------");
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
-    equiposOrdenados.sort((e1, e2) -> {
+    Collections.sort(equiposOrdenados, (e1, e2) -> {
       int puntos1 = puntos.get(e1);
       int puntos2 = puntos.get(e2);
       if (puntos1 != puntos2)
         return puntos2 - puntos1;
-
       int difGoles1 = golesAFavor.get(e1) - golesEnContra.get(e1);
       int difGoles2 = golesAFavor.get(e2) - golesEnContra.get(e2);
       if (difGoles1 != difGoles2)
         return difGoles2 - difGoles1;
-
       return golesAFavor.get(e2) - golesAFavor.get(e1);
     });
-
     for (Equipo equipo : equiposOrdenados) {
-      int partidosJugados = equipo.getPartidosJugados();
-      int partidosGanados = equipo.getPartidosGanados();
-      int partidosEmpatados = equipo.getPartidosEmpatados();
-      int partidosPerdidos = equipo.getPartidosPerdidos();
-      int golesFavor = golesAFavor.get(equipo);
-      int golesContra = golesEnContra.get(equipo);
-
-      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d%n",
-          equipo.getNombre(),
-          partidosJugados,
-          partidosGanados,
-          partidosEmpatados,
-          partidosPerdidos,
-          golesFavor,
-          golesContra);
+      int pg = 0, pe = 0, pp = 0;
+      for (Partido partido : partidos) {
+        if (partido.getLocal() == equipo) {
+          if (partido.getGolesLocal() > partido.getGolesVisitante())
+            pg++;
+          else if (partido.getGolesLocal() == partido.getGolesVisitante())
+            pe++;
+          else
+            pp++;
+        } else if (partido.getVisitante() == equipo) {
+          if (partido.getGolesVisitante() > partido.getGolesLocal())
+            pg++;
+          else if (partido.getGolesVisitante() == partido.getGolesLocal())
+            pe++;
+          else
+            pp++;
+        }
+      }
+      int puntosEquipo = puntos.get(equipo);
+      int eloEquipo = equipo.getElo();
+      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
+          equipo.getNombre(), pg + pe + pp, pg, pe, pp,
+          golesAFavor.get(equipo), golesEnContra.get(equipo), puntosEquipo, eloEquipo);
     }
   }
 

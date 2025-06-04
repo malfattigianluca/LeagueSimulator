@@ -1,11 +1,7 @@
 package TP4;
 
 import TP4.Excepciones.TorneoException;
-import TP4.Modelo.GestorEquipos;
-import TP4.Modelo.GestorJugadores;
-import TP4.Modelo.SimuladorLiga;
-import TP4.Modelo.Equipo;
-import TP4.Modelo.Torneo;
+import TP4.Modelo.*;
 
 import java.util.IllegalFormatConversionException;
 import java.util.Scanner;
@@ -67,9 +63,12 @@ public class App {
                             int numJornadas = Integer.parseInt(scanner.nextLine());
                             for (int i = 0; i < numJornadas; i++) {
                                 System.out.println("\nSimulando jornada " + (i + 1));
-                                simulador.simularJornada();
-                                simulador.mostrarPartidos();
+                                List<Partido> jornada = simulador.simularJornada(); // Simula una jornada
+                                simulador.agregarJornada(jornada);                    // La guarda en la lista de jornadas
                             }
+
+// Mostrar los resultados completos al final
+                            simulador.mostrarPartidos();
                             simulador.mostrarTabla();
                         } catch (NumberFormatException e) {
                             System.out.println("Número de jornadas inválido");

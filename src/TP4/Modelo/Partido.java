@@ -203,4 +203,10 @@ public class Partido {
     }
     return sb.toString();
   }
+
+  public void setGolesLocal(int golesLocal) {
+  }
+
+  public void setGolesVisitante(int golesVisitante) {
+  }
 }

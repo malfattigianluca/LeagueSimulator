@@ -11,9 +11,16 @@ public class SimuladorLiga {
   private Map<Equipo, Integer> golesEnContra;
   private List<Partido> partidos;
   private List<List<Partido>> jornadas;
+  private List<List<Partido>> calendario;
+  private int jornadaActual;
   private static final int K = 100; // Factor de impacto en el ELO
+  private boolean soloIda;
 
   public SimuladorLiga(String nombre) {
+    this(nombre, false); // Por defecto, simula ida y vuelta
+  }
+
+  public SimuladorLiga(String nombre, boolean soloIda) {
     this.nombre = nombre;
     this.equipos = new ArrayList<>();
     this.puntos = new HashMap<>();
@@ -21,6 +28,9 @@ public class SimuladorLiga {
     this.golesEnContra = new HashMap<>();
     this.partidos = new ArrayList<>();
     this.jornadas = new ArrayList<>();
+    this.calendario = new ArrayList<>();
+    this.jornadaActual = 0;
+    this.soloIda = soloIda;
   }
 
   public void agregarEquipo(Equipo equipo) {
@@ -32,19 +42,70 @@ public class SimuladorLiga {
     }
   }
 
+  public void generarCalendario() throws TorneoException {
+    if (equipos.size() < 2) {
+      throw new TorneoException("Se necesitan al menos 2 equipos para generar un calendario");
+    }
+    if (equipos.size() % 2 != 0) {
+      throw new TorneoException("El número de equipos debe ser par para generar un calendario");
+    }
+
+    calendario.clear(); // Limpiar calendario previo
+    int numEquipos = equipos.size();
+    int numJornadasIda = numEquipos - 1;
+    int totalJornadas = soloIda ? numJornadasIda : numJornadasIda * 2;
+    List<Equipo> equiposLista = new ArrayList<>(equipos);
+
+    // Generar partidos de ida
+    for (int jornada = 0; jornada < numJornadasIda; jornada++) {
+      List<Partido> partidosJornada = new ArrayList<>();
+      for (int i = 0; i < numEquipos / 2; i++) {
+        Equipo local = equiposLista.get(i);
+        Equipo visitante = equiposLista.get(numEquipos - 1 - i);
+        partidosJornada.add(new Partido(local, visitante, 0, 0));
+      }
+      calendario.add(partidosJornada);
+      // Rotar equipos (manteniendo el primero fijo)
+      Collections.rotate(equiposLista.subList(1, numEquipos), 1);
+    }
+
+    // Generar partidos de vuelta (si no es solo ida)
+    if (!soloIda) {
+      for (int jornada = 0; jornada < numJornadasIda; jornada++) {
+        List<Partido> partidosJornada = new ArrayList<>();
+        for (Partido partidoIda : calendario.get(jornada)) {
+          Equipo localIda = partidoIda.getLocal();
+          Equipo visitanteIda = partidoIda.getVisitante();
+          partidosJornada.add(new Partido(visitanteIda, localIda, 0, 0));
+        }
+        calendario.add(partidosJornada);
+      }
+    }
+
+    // Calcular partidos esperados
+    int partidosEsperados = soloIda ? (numEquipos * (numEquipos - 1)) / 2 : numEquipos * (numEquipos - 1);
+    int partidosGenerados = calendario.stream().mapToInt(List::size).sum();
+    if (partidosGenerados != partidosEsperados) {
+      throw new TorneoException("Error en la generación del calendario: número de partidos incorrecto (" + partidosGenerados + " generados, " + partidosEsperados + " esperados)");
+    }
+  }
+
   public List<Partido> simularJornada() throws TorneoException {
     if (equipos.size() < 2) {
       throw new TorneoException("Se necesitan al menos 2 equipos para simular una jornada");
     }
-
-    List<Equipo> equiposDisponibles = new ArrayList<>(equipos);
-    Collections.shuffle(equiposDisponibles);
+    if (jornadaActual >= calendario.size()) {
+      throw new TorneoException("No hay más jornadas para simular");
+    }
 
     List<Partido> partidosDeLaJornada = new ArrayList<>();
+    Random random = new Random();
 
-    while (equiposDisponibles.size() >= 2) {
-      Equipo local = equiposDisponibles.remove(0);
-      Equipo visitante = equiposDisponibles.remove(0);
+    // Obtener la jornada predefinida del calendario
+    List<Partido> jornadaPredefinida = calendario.get(jornadaActual);
+    for (Partido partidoPredefinido : jornadaPredefinida) {
+      Equipo local = partidoPredefinido.getLocal();
+      Equipo visitante = partidoPredefinido.getVisitante();
 
       // Calcular probabilidades ELO
       double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
@@ -58,15 +119,22 @@ public class SimuladorLiga {
       double lambdaLocal = pa * ventajaLocal * ajuste;
       double lambdaVisitante = pb * desventajaVisitante * ajuste;
 
-      lambdaLocal *= 0.9 + Math.random() * 0.2;
-      lambdaVisitante *= 0.9 + Math.random() * 0.2;
+      lambdaLocal *= 0.9 + random.nextDouble() * 0.2;
+      lambdaVisitante *= 0.9 + random.nextDouble() * 0.2;
 
       int golesLocal = simularGoles(lambdaLocal);
       int golesVisitante = simularGoles(lambdaVisitante);
 
-      Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
-      partidos.add(partido);
-      partidosDeLaJornada.add(partido);
+      // Actualizar el partido con los goles simulados
+      partidoPredefinido.setGolesLocal(golesLocal);
+      partidoPredefinido.setGolesVisitante(golesVisitante);
+
+      partidos.add(partidoPredefinido);
+      partidosDeLaJornada.add(partidoPredefinido);
+
+      // Registrar partido en los equipos
+      local.registrarPartido(golesLocal, golesVisitante);
+      visitante.registrarPartido(golesVisitante, golesLocal);
 
       actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
 
@@ -78,6 +146,7 @@ public class SimuladorLiga {
       visitante.setElo(nuevoEloVisitante);
     }
 
+    jornadaActual++;
     return partidosDeLaJornada;
   }
 
@@ -100,27 +169,16 @@ public class SimuladorLiga {
   }
 
   private void actualizarEstadisticas(Equipo local, Equipo visitante, int golesLocal, int golesVisitante) {
-    // Actualizar goles
     golesAFavor.put(local, golesAFavor.get(local) + golesLocal);
     golesEnContra.put(local, golesEnContra.get(local) + golesVisitante);
     golesAFavor.put(visitante, golesAFavor.get(visitante) + golesVisitante);
     golesEnContra.put(visitante, golesEnContra.get(visitante) + golesLocal);
-
-    // Actualizar puntos
-    if (golesLocal > golesVisitante) {
-      puntos.put(local, puntos.get(local) + 3);
-    } else if (golesLocal < golesVisitante) {
-      puntos.put(visitante, puntos.get(visitante) + 3);
-    } else {
-      puntos.put(local, puntos.get(local) + 1);
-      puntos.put(visitante, puntos.get(visitante) + 1);
-    }
   }
 
   public void mostrarTabla() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
     System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
-        "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC", "ELO");
+            "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC", "ELO");
     System.out.println("--------------------------------------------------------------------------");
 
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
@@ -149,15 +207,15 @@ public class SimuladorLiga {
       int eloEquipo = equipo.getElo();
 
       System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
-          equipo.getNombre(),
-          puntosEquipo,
-          partidosJugados,
-          partidosGanados,
-          partidosEmpatados,
-          partidosPerdidos,
-          golesFavor,
-          golesContra,
-          eloEquipo);
+              equipo.getNombre(),
+              puntosEquipo,
+              partidosJugados,
+              partidosGanados,
+              partidosEmpatados,
+              partidosPerdidos,
+              golesFavor,
+              golesContra,
+              eloEquipo);
     }
   }
 
@@ -172,5 +230,11 @@ public class SimuladorLiga {
     }
   }
 
+  public int getTotalJornadas() {
+    return calendario.size();
+  }
 
+  public void setSoloIda(boolean soloIda) {
+    this.soloIda = soloIda;
+  }
 }

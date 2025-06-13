@@ -2,267 +2,427 @@ package TP4;
 
 import TP4.Excepciones.TorneoException;
 import TP4.Modelo.*;
+import TP4.Util.Consola;
 
-import java.util.IllegalFormatConversionException;
-import java.util.Scanner;
-import java.util.List;
+import java.util.*;
 
 public class App {
+    private static boolean salir = false;
+
     public static void main(String[] args) throws TorneoException {
         GestorEquipos gestorequipo = new GestorEquipos();
         GestorJugadores gestorjugador = new GestorJugadores(gestorequipo);
         gestorequipo.cargarEquiposPorLiga("./files/teams.txt");
         gestorjugador.cargarJugadores("./files/players.txt");
-        Scanner scanner = new Scanner(System.in);
-        boolean salir = false;
 
+        try (Scanner scanner = new Scanner(System.in)) {
+            ejecutarMenu(scanner, gestorequipo, gestorjugador);
+        }
+    }
+
+    private static void ejecutarMenu(Scanner scanner, GestorEquipos gestorequipo, GestorJugadores gestorjugador) throws TorneoException {
         while (!salir) {
-            System.out.println("\n=== SISTEMA DE GESTION DE TORNEOS FUTBOLISTICOS ===");
-            System.out.println("1. Simular liga");
-            System.out.println("2. Crear tu propio torneo");
-            System.out.println("3. Ver ligas");
-            System.out.println("4. Ver equipos");
-            System.out.println("5. Ver jugadores");
-            System.out.println("6. Buscar equipos");
-            System.out.println("7. Buscar jugadores");
-            System.out.println("0. Salir");
-            System.out.print("Seleccione una opcion: ");
-
-            int opcion;
+            mostrarMenu();
             try {
-                opcion = scanner.nextInt();
-                scanner.nextLine();
+                MenuOpcion opcion = MenuOpcion.fromInt(leerEntero(scanner, "Seleccione una opción: "));
+                switch (opcion) {
+                    case SIMULAR_LIGA -> simularLiga(scanner, gestorequipo, gestorjugador);
+                    case CREAR_TORNEO -> crearTorneoPersonalizado(scanner, gestorequipo);
+                    case VER_LIGAS -> verLigas(scanner, gestorequipo);
+                    case VER_EQUIPOS -> verEquipos(gestorequipo);
+                    case VER_JUGADORES -> verJugadores(gestorjugador);
+                    case BUSCAR_EQUIPOS -> buscarEquipos(scanner, gestorequipo);
+                    case BUSCAR_JUGADORES -> buscarJugadores(scanner, gestorjugador, gestorequipo);
+                    case SALIR -> {
+                        salir = true;
+                        Consola.mostrarMensaje("Saliendo del sistema...");
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                Consola.mostrarError("Opción inválida. Intente nuevamente.");
             } catch (Exception e) {
-                System.out.println("Entrada inválida. Por favor, ingrese un número.");
-                scanner.nextLine();
-                continue;
-            }
-
-            switch (opcion) {
-                case 1:
-                    System.out.println("\n=== Simular Liga ===");
-                    System.out.println("Ligas disponibles:");
-                    for (String liga : gestorequipo.getEquiposPorLiga().keySet()) {
-                        System.out.println("- " + liga);
-                    }
-                    System.out.print("\nIngrese el nombre de la liga a simular: ");
-                    String ligaSeleccionada = scanner.nextLine();
-
-                    if (gestorequipo.getEquiposPorLiga().containsKey(ligaSeleccionada)) {
-                        SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada);
-                        List<Equipo> equiposLiga = gestorequipo.getEquiposPorLiga().get(ligaSeleccionada);
-
-                        // Agregar equipos al simulador
-                        for (Equipo equipo : equiposLiga) {
-                            simulador.agregarEquipo(equipo);
-                        }
-
-                        // Simular jornadas
-                        System.out.print("Ingrese el número de jornadas a simular: ");
-                        try {
-                            int numJornadas = Integer.parseInt(scanner.nextLine());
-                            for (int i = 0; i < numJornadas; i++) {
-                                System.out.println("\nSimulando jornada " + (i + 1));
-                                List<Partido> jornada = simulador.simularJornada(); // Simula una jornada
-                                simulador.agregarJornada(jornada);                    // La guarda en la lista de jornadas
-                            }
-
-// Mostrar los resultados completos al final
-                            simulador.mostrarPartidos();
-                            simulador.mostrarTabla();
-                        } catch (NumberFormatException e) {
-                            System.out.println("Número de jornadas inválido");
-                        } catch (TorneoException e) {
-                            System.out.println("Error al simular: " + e.getMessage());
-                        }
-                    } else {
-                        System.out.println("Liga no encontrada");
-                    }
-                    break;
-                case 2:
-                    System.out.println("\n=== Crear Torneo Personalizado ===");
-                    System.out.print("Ingrese el nombre del torneo: ");
-                    String nombreTorneo = scanner.nextLine();
-
-                    System.out.println("\nSeleccione el tipo de torneo:");
-                    System.out.println("1. Liga (todos contra todos)");
-                    System.out.println("2. Eliminación directa");
-                    System.out.print("Opción: ");
-
-                    try {
-                        int tipoTorneo = Integer.parseInt(scanner.nextLine());
-                        boolean eliminacionDirecta = tipoTorneo == 2;
-
-                        Torneo torneo = new Torneo(nombreTorneo, eliminacionDirecta);
-
-                        // Mostrar equipos disponibles
-                        System.out.println("\nEquipos disponibles:");
-                        List<Equipo> todosEquipos = gestorequipo.getEquipos();
-                        for (int i = 0; i < todosEquipos.size(); i++) {
-                            System.out.println((i + 1) + ". " + todosEquipos.get(i).getNombre());
-                        }
-
-                        // Seleccionar equipos
-                        System.out.println(
-                                "\nSeleccione los equipos que participarán (ingrese los números separados por comas):");
-                        String seleccion = scanner.nextLine();
-                        String[] indices = seleccion.split(",");
-
-                        for (String indice : indices) {
-                            try {
-                                int idx = Integer.parseInt(indice.trim()) - 1;
-                                if (idx >= 0 && idx < todosEquipos.size()) {
-                                    torneo.agregarEquipo(todosEquipos.get(idx));
-                                }
-                            } catch (NumberFormatException e) {
-                                System.out.println("Número inválido: " + indice);
-                            }
-                        }
-
-                        // Simular torneo
-                        try {
-                            torneo.simularTorneo();
-                            torneo.mostrarPartidos();
-                            torneo.mostrarTablaPosiciones();
-                        } catch (TorneoException e) {
-                            System.out.println("Error al simular torneo: " + e.getMessage());
-                        }
-
-                    } catch (NumberFormatException e) {
-                        System.out.println("Opción inválida");
-                    }
-                    break;
-                case 3:
-                    System.out.println("--- Ver ligas ---");
-                    System.out.println("1. Premier League");
-                    System.out.println("2. La Liga");
-                    System.out.println("3. Liga Argentina de Futbol");
-                    System.out.println("4. Serie A");
-                    System.out.println("5. Ligue 1 de Francia");
-                    System.out.println("0. Volver");
-                    System.out.print("Seleccione una liga: ");
-                    try {
-                        int opcionLiga = scanner.nextInt();
-                        scanner.nextLine();
-                        switch (opcionLiga) {
-                            case 1:
-                                gestorequipo.mostrarEquiposPorLiga("Premier League");
-                                break;
-                            case 2:
-                                gestorequipo.mostrarEquiposPorLiga("LaLiga");
-                                break;
-                            case 3:
-                                gestorequipo.mostrarEquiposPorLiga("Liga Argentina de Futbol");
-                                break;
-                            case 4:
-                                gestorequipo.mostrarEquiposPorLiga("Serie A");
-                                break;
-                            case 5:
-                                gestorequipo.mostrarEquiposPorLiga("Ligue 1");
-                                break;
-                            case 0:
-                                System.out.println("Volviendo al menú principal...");
-                                break;
-                            default:
-                                System.out.println("Opción inválida. Intente nuevamente.");
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Entrada inválida. Intente nuevamente.");
-                        scanner.nextLine();
-                    }
-                    break;
-                case 4:
-                    System.out.println("--- Ver equipos ---");
-                    gestorequipo.listarEquipos();
-                    break;
-                case 5:
-                    System.out.println("--- Ver jugadores ---");
-                    gestorjugador.mostrarJugadores();
-                    break;
-                case 6:
-                    System.out.println("--- Buscar equipos ---");
-                    System.out.println("1. Por nombre");
-                    System.out.println("2. Por liga");
-                    System.out.println("0. Volver");
-                    System.out.print("Seleccione una opción: ");
-                    try {
-                        int opcionBuscarEquipo = scanner.nextInt();
-                        scanner.nextLine();
-                    } catch (Exception e) {
-                        System.out.println("Entrada inválida. Intente nuevamente.");
-                        scanner.nextLine();
-                    }
-                    break;
-                case 7:
-                    System.out.println("--- Buscar jugadores ---");
-                    System.out.println("1. Por nombre");
-                    System.out.println("2. Por equipo");
-                    System.out.println("0. Volver");
-                    System.out.print("Seleccione una opción: ");
-                    try {
-                        int opcionBuscarJugador = scanner.nextInt();
-                        scanner.nextLine();
-                        switch (opcionBuscarJugador) {
-                            case 1: // Buscar jugador por nombre
-                                try {
-                                    System.out.println("Ingrese el nombre o apellido de un jugador: ");
-                                    String jugadorNombre = scanner.nextLine();
-                                    if (gestorjugador.existeJugador(jugadorNombre)) {
-                                        gestorjugador.buscarJugadorPorNombre(jugadorNombre);
-                                    } else {
-                                        System.out.println(
-                                                "El jugador '" + jugadorNombre + "' no se encuentra en el sistema.");
-                                    }
-                                } catch (NullPointerException e) {
-                                    System.out.println(
-                                            "Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
-                                    e.printStackTrace();
-                                } catch (IllegalFormatConversionException e) {
-                                    System.out.println("Error: Formato incorrecto en la salida de datos.");
-                                    e.printStackTrace();
-                                } catch (Exception e) {
-                                    System.out.println("Error inesperado: " + e.getMessage());
-                                    e.printStackTrace();
-                                }
-                                break;
-                            case 2: // Buscar jugador por equipo
-                                try {
-                                    System.out.println("Ingrese el nombre del club para buscar jugadores: ");
-                                    String jugadorClub = scanner.nextLine();
-                                    if (gestorequipo.existeEquipo(jugadorClub)) {
-                                        gestorequipo.mostrarEquipo(jugadorClub);
-                                    } else {
-                                        System.out.println(
-                                                "El club '" + jugadorClub + "' no se encuentra en el sistema.");
-                                    }
-                                } catch (NullPointerException e) {
-                                    System.out.println(
-                                            "Error: Un valor no está inicializado (posiblemente en los datos del equipo o jugadores).");
-                                    e.printStackTrace();
-                                } catch (IllegalFormatConversionException e) {
-                                    System.out.println("Error: Formato incorrecto en la salida de datos.");
-                                    e.printStackTrace();
-                                } catch (Exception e) {
-                                    System.out.println("Error inesperado: " + e.getMessage());
-                                    e.printStackTrace();
-                                }
-                                break;
-                            case 3:
-                                break;
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Entrada inválida. Intente nuevamente.");
-                        scanner.nextLine();
-                    }
-                    break;
-                case 0:
-                    salir = true;
-                    System.out.println("Saliendo del sistema...");
-                    break;
-                default:
-                    System.out.println("Opción inválida. Intente nuevamente.");
+                Consola.mostrarError("Error inesperado: " + e.getMessage());
             }
         }
-        scanner.close();
+    }
+
+    private static void mostrarMenu() {
+        Consola.mostrarMensaje("""
+            \n=== SISTEMA DE GESTION DE TORNEOS FUTBOLISTICOS ===
+            1. Simular liga
+            2. Crear tu propio torneo
+            3. Ver ligas
+            4. Ver equipos
+            5. Ver jugadores
+            6. Buscar equipos
+            7. Buscar jugadores
+            0. Salir""");
+    }
+
+    private static void simularLiga(Scanner scanner, GestorEquipos gestorequipo, GestorJugadores gestorjugador) {
+        Consola.mostrarMensaje("\n=== Simular Liga ===");
+        Consola.mostrarMensaje("Ligas disponibles:");
+        List<String> ligas = new ArrayList<>(gestorequipo.getEquiposPorLiga().keySet());
+        for (int i = 0; i < ligas.size(); i++) {
+            Consola.mostrarMensaje((i + 1) + "- " + ligas.get(i));
+        }
+
+        int opcionLiga = leerEntero(scanner, "\nIngrese el número de la liga a simular: ");
+        if (opcionLiga < 1 || opcionLiga > ligas.size()) {
+            Consola.mostrarError("Número de liga inválido");
+            return;
+        }
+        String ligaSeleccionada = ligas.get(opcionLiga - 1);
+
+        if (!gestorequipo.getEquiposPorLiga().containsKey(ligaSeleccionada)) {
+            Consola.mostrarError("Liga no encontrada");
+            return;
+        }
+
+        SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada);
+        List<Equipo> equiposLiga = gestorequipo.getEquiposPorLiga().get(ligaSeleccionada);
+        equiposLiga.forEach(simulador::agregarEquipo);
+
+        try {
+            int numJornadas = leerEntero(scanner, "Ingrese el número de jornadas a simular: ");
+            List<List<Partido>> jornadas = new ArrayList<>();
+            for (int i = 0; i < numJornadas; i++) {
+                Consola.mostrarMensaje("\nSimulando jornada " + (i + 1));
+                List<Partido> jornada = simulador.simularJornada();
+                simulador.agregarJornada(jornada);
+                jornadas.add(jornada);
+            }
+            simulador.mostrarTabla();
+
+            // Menú post-simulación
+            mostrarMenuPostSimulacion(scanner, simulador, jornadas, gestorjugador);
+        } catch (NumberFormatException e) {
+            Consola.mostrarError("Número de jornadas inválido");
+        } catch (TorneoException e) {
+            Consola.mostrarError("Error al simular: " + e.getMessage());
+        }
+    }
+
+    private static void mostrarMenuPostSimulacion(Scanner scanner, SimuladorLiga simulador, List<List<Partido>> jornadas, GestorJugadores gestorjugador) {
+        boolean volver = false;
+        while (!volver) {
+            Consola.mostrarMensaje("""
+                \n=== Resultados de la Liga ===
+                1. Ver partidos
+                2. Ver goleadores
+                3. Ver asistencias
+                4. Ver tarjetas amarillas y rojas
+                0. Volver al menú principal""");
+            int opcion = leerEntero(scanner, "Seleccione una opción: ");
+            switch (opcion) {
+                case 1 -> verPartidos(scanner, jornadas);
+                case 2 -> verGoleadores(gestorjugador);
+                case 3 -> verAsistencias(gestorjugador);
+                case 4 -> verTarjetas(gestorjugador);
+                case 0 -> volver = true;
+                default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");
+            }
+        }
+    }
+
+    private static void verPartidos(Scanner scanner, List<List<Partido>> jornadas) {
+        if (jornadas.isEmpty()) {
+            Consola.mostrarMensaje("No hay partidos para mostrar.");
+            return;
+        }
+
+        int fechaActual = 1;
+        boolean salir = false;
+        while (!salir) {
+            Consola.mostrarMensaje("\n--- Fecha " + fechaActual + " ---");
+            for (Partido partido : jornadas.get(fechaActual - 1)) {
+                Consola.mostrarMensaje(partido.toString());
+            }
+            Consola.mostrarMensaje("""
+                \nOpciones:
+                1. Fecha anterior
+                2. Fecha siguiente
+                0. Volver""");
+            int opcion = leerEntero(scanner, "Seleccione una opción: ");
+            switch (opcion) {
+                case 1 -> {
+                    if (fechaActual > 1) {
+                        fechaActual--;
+                    } else {
+                        Consola.mostrarMensaje("Ya está en la primera fecha.");
+                    }
+                }
+                case 2 -> {
+                    if (fechaActual < jornadas.size()) {
+                        fechaActual++;
+                    } else {
+                        Consola.mostrarMensaje("Ya está en la última fecha.");
+                    }
+                }
+                case 0 -> salir = true;
+                default -> Consola.mostrarError("Opción inválida.");
+            }
+        }
+    }
+
+    private static void verGoleadores(GestorJugadores gestorjugador) {
+        Consola.mostrarMensaje("\n=== Tabla de Goleadores (Top 10) ===");
+        List<Jugador> goleadores = gestorjugador.getJugadores().getVertices().stream()
+                .filter(j -> j.getGoles() >= 4)
+                .sorted((j1, j2) -> Integer.compare(j2.getGoles(), j1.getGoles()))
+                .limit(10)
+                .toList();
+        if (goleadores.isEmpty()) {
+            Consola.mostrarMensaje("No hay jugadores con 4 o más goles.");
+            return;
+        }
+        Consola.mostrarMensaje(String.format("%-30s %-20s %-10s", "Jugador", "Equipo", "Goles"));
+        Consola.mostrarMensaje("--------------------------------------------------");
+        for (Jugador jugador : goleadores) {
+            Consola.mostrarMensaje(String.format("%-30s %-20s %-10d",
+                    jugador.getNombre(),
+                    jugador.getEquipo() != null ? jugador.getEquipo().getNombre() : "Sin equipo",
+                    jugador.getGoles()));
+        }
+    }
+
+    private static void verAsistencias(GestorJugadores gestorjugador) {
+        Consola.mostrarMensaje("\n=== Tabla de Asistencias (Top 10) ===");
+        List<Jugador> asistentes = gestorjugador.getJugadores().getVertices().stream()
+                .filter(j -> j.getAsistencias() > 0)
+                .sorted((j1, j2) -> Integer.compare(j2.getAsistencias(), j1.getAsistencias()))
+                .limit(10)
+                .toList();
+        if (asistentes.isEmpty()) {
+            Consola.mostrarMensaje("No hay jugadores con asistencias registradas.");
+            return;
+        }
+        Consola.mostrarMensaje(String.format("%-30s %-20s %-10s", "Jugador", "Equipo", "Asistencias"));
+        Consola.mostrarMensaje("--------------------------------------------------");
+        for (Jugador jugador : asistentes) {
+            Consola.mostrarMensaje(String.format("%-30s %-20s %-10d",
+                    jugador.getNombre(),
+                    jugador.getEquipo() != null ? jugador.getEquipo().getNombre() : "Sin equipo",
+                    jugador.getAsistencias()));
+        }
+    }
+
+    private static void verTarjetas(GestorJugadores gestorjugador) {
+        Consola.mostrarMensaje("\n=== Tabla de Tarjetas (Top 10) ===");
+        List<Jugador> jugadoresConTarjetas = gestorjugador.getJugadores().getVertices().stream()
+                .filter(j -> j.getRojas() > 0 || j.getAmarillas() > 0)
+                .sorted((j1, j2) -> {
+                    int compareRojas = Integer.compare(j2.getRojas(), j1.getRojas());
+                    return compareRojas != 0 ? compareRojas : Integer.compare(j2.getAmarillas(), j1.getAmarillas());
+                })
+                .limit(10)
+                .toList();
+        if (jugadoresConTarjetas.isEmpty()) {
+            Consola.mostrarMensaje("No hay jugadores con tarjetas registradas.");
+            return;
+        }
+        Consola.mostrarMensaje(String.format("%-30s %-20s %-10s %-10s", "Jugador", "Equipo", "Rojas", "Amarillas"));
+        Consola.mostrarMensaje("------------------------------------------------------------");
+        for (Jugador jugador : jugadoresConTarjetas) {
+            Consola.mostrarMensaje(String.format("%-30s %-20s %-10d %-10d",
+                    jugador.getNombre(),
+                    jugador.getEquipo() != null ? jugador.getEquipo().getNombre() : "Sin equipo",
+                    jugador.getRojas(),
+                    jugador.getAmarillas()));
+        }
+    }
+
+    private static void crearTorneoPersonalizado(Scanner scanner, GestorEquipos gestorequipo) {
+        Consola.mostrarMensaje("\n=== Crear Torneo Personalizado ===");
+        String nombreTorneo = leerEntrada(scanner, "Ingrese el nombre del torneo: ");
+        Consola.mostrarMensaje("""
+            Seleccione el tipo de torneo:
+            1. Liga (todos contra todos)
+            2. Eliminación directa
+            Opción: """);
+
+        try {
+            int tipoTorneo = leerEntero(scanner, "");
+            boolean eliminacionDirecta = tipoTorneo == 2;
+            Torneo torneo = new Torneo(nombreTorneo, eliminacionDirecta);
+
+            Consola.mostrarMensaje("\nEquipos disponibles:");
+            List<Equipo> todosEquipos = gestorequipo.getEquipos();
+            for (int i = 0; i < todosEquipos.size(); i++) {
+                Consola.mostrarMensaje((i + 1) + ". " + todosEquipos.get(i).getNombre());
+            }
+
+            String seleccion = leerEntrada(scanner, "\nSeleccione los equipos que participarán (ingrese los números separados por comas):");
+            String[] indices = seleccion.split(",");
+
+            for (String indice : indices) {
+                try {
+                    int idx = Integer.parseInt(indice.trim()) - 1;
+                    if (idx >= 0 && idx < todosEquipos.size()) {
+                        torneo.agregarEquipo(todosEquipos.get(idx));
+                    } else {
+                        Consola.mostrarError("Índice inválido: " + indice);
+                    }
+                } catch (NumberFormatException e) {
+                    Consola.mostrarError("Número inválido: " + indice);
+                }
+            }
+
+            try {
+                torneo.simularTorneo();
+                torneo.mostrarPartidos();
+                torneo.mostrarTablaPosiciones();
+            } catch (TorneoException e) {
+                Consola.mostrarError("Error al simular torneo: " + e.getMessage());
+            }
+        } catch (NumberFormatException e) {
+            Consola.mostrarError("Opción inválida");
+        }
+    }
+
+    private static void verLigas(Scanner scanner, GestorEquipos gestorequipo) {
+        Consola.mostrarMensaje("""
+            --- Ver ligas ---
+            1. Premier League
+            2. La Liga
+            3. Liga Argentina de Futbol
+            4. Serie A
+            5. Ligue 1 de Francia
+            0. Volver""");
+        try {
+            int opcionLiga = leerEntero(scanner, "Seleccione una liga: ");
+            switch (opcionLiga) {
+                case 1 -> gestorequipo.mostrarEquiposPorLiga("Premier League");
+                case 2 -> gestorequipo.mostrarEquiposPorLiga("LaLiga");
+                case 3 -> gestorequipo.mostrarEquiposPorLiga("Liga Argentina de Futbol");
+                case 4 -> gestorequipo.mostrarEquiposPorLiga("Serie A");
+                case 5 -> gestorequipo.mostrarEquiposPorLiga("Ligue 1");
+                case 0 -> Consola.mostrarMensaje("Volviendo al menú principal...");
+                default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");
+            }
+        } catch (Exception e) {
+            Consola.mostrarError("Entrada inválida. Intente nuevamente.");
+        }
+    }
+
+    private static void verEquipos(GestorEquipos gestorequipo) {
+        Consola.mostrarMensaje("--- Ver equipos ---");
+        gestorequipo.listarEquipos();
+    }
+
+    private static void verJugadores(GestorJugadores gestorjugador) {
+        Consola.mostrarMensaje("--- Ver jugadores ---");
+        gestorjugador.mostrarJugadores();
+    }
+
+    private static void buscarEquipos(Scanner scanner, GestorEquipos gestorequipo) {
+        Consola.mostrarMensaje("""
+            --- Buscar equipos ---
+            1. Por nombre
+            2. Por liga
+            0. Volver""");
+        try {
+            int opcion = leerEntero(scanner, "Seleccione una opción: ");
+            switch (opcion) {
+                case 1 -> {
+                    String nombre = leerEntrada(scanner, "Ingrese el nombre del equipo: ");
+                    if (equipoExiste(gestorequipo, nombre)) {
+                        gestorequipo.mostrarEquipo(nombre);
+                    } else {
+                        Consola.mostrarError("El equipo '" + nombre + "' no se encuentra en el sistema.");
+                    }
+                }
+                case 2 -> {
+                    String liga = leerEntrada(scanner, "Ingrese el nombre de la liga: ");
+                    if (ligaExiste(gestorequipo, liga)) {
+                        gestorequipo.mostrarEquiposPorLiga(liga);
+                    } else {
+                        Consola.mostrarError("La liga '" + liga + "' no se encuentra en el sistema.");
+                    }
+                }
+                case 0 -> Consola.mostrarMensaje("Volviendo al menú principal...");
+                default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");
+            }
+        } catch (Exception e) {
+            Consola.mostrarError("Entrada inválida. Intente nuevamente.");
+        }
+    }
+
+    private static void buscarJugadores(Scanner scanner, GestorJugadores gestorjugador, GestorEquipos gestorequipo) {
+        Consola.mostrarMensaje("""
+            --- Buscar jugadores ---
+            1. Por nombre
+            2. Por equipo
+            0. Volver""");
+        try {
+            int opcion = leerEntero(scanner, "Seleccione una opción: ");
+            switch (opcion) {
+                case 1 -> {
+                    String nombre = leerEntrada(scanner, "Ingrese el nombre o apellido de un jugador: ");
+                    if (gestorjugador.existeJugador(nombre)) {
+                        gestorjugador.buscarJugadorPorNombre(nombre);
+                    } else {
+                        Consola.mostrarError("El jugador '" + nombre + "' no se encuentra en el sistema.");
+                    }
+                }
+                case 2 -> {
+                    String club = leerEntrada(scanner, "Ingrese el nombre del club para buscar jugadores: ");
+                    if (equipoExiste(gestorequipo, club)) {
+                        gestorequipo.mostrarEquipo(club);
+                    } else {
+                        Consola.mostrarError("El club '" + club + "' no se encuentra en el sistema.");
+                    }
+                }
+                case 0 -> Consola.mostrarMensaje("Volviendo al menú principal...");
+                default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");
+            }
+        } catch (Exception e) {
+            Consola.mostrarError("Entrada inválida. Intente nuevamente.");
+        }
+    }
+
+    // Métodos auxiliares
+    private static String leerEntrada(Scanner scanner, String mensaje) {
+        Consola.mostrarMensaje(mensaje);
+        return scanner.nextLine();
+    }
+
+    private static int leerEntero(Scanner scanner, String mensaje) {
+        while (true) {
+            try {
+                return Integer.parseInt(leerEntrada(scanner, mensaje));
+            } catch (NumberFormatException e) {
+                Consola.mostrarError("Por favor, ingrese un número válido.");
+            }
+        }
+    }
+
+    private static boolean ligaExiste(GestorEquipos gestorequipo, String liga) {
+        return gestorequipo.getEquiposPorLiga().containsKey(liga);
+    }
+
+    private static boolean equipoExiste(GestorEquipos gestorequipo, String equipo) {
+        return gestorequipo.existeEquipo(equipo);
+    }
+
+    // Enum para opciones del menú
+    enum MenuOpcion {
+        SIMULAR_LIGA(1), CREAR_TORNEO(2), VER_LIGAS(3), VER_EQUIPOS(4),
+        VER_JUGADORES(5), BUSCAR_EQUIPOS(6), BUSCAR_JUGADORES(7), SALIR(0);
+
+        private final int valor;
+
+        MenuOpcion(int valor) {
+            this.valor = valor;
+        }
+
+        public static MenuOpcion fromInt(int valor) {
+            for (MenuOpcion opcion : values()) {
+                if (opcion.valor == valor) {
+                    return opcion;
+                }
+            }
+            throw new IllegalArgumentException("Opción inválida: " + valor);
+        }
     }
 }

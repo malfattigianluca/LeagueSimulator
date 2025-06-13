@@ -99,8 +99,6 @@ public class GestorJugadores {
                           numeroCamiseta++;
                           try {
                             jugador.setNumeroCamiseta(numeroCamiseta);
-                            System.out.println(
-                                "Asignando nuevo número de camiseta " + numeroCamiseta + " para " + nombreJugador);
                           } catch (TorneoException ex) {
                             System.err
                                 .println("Error al asignar camiseta para " + nombreJugador + ": " + ex.getMessage());

@@ -79,15 +79,17 @@ public class App {
             return;
         }
 
-        SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada);
+        SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada, true); // Simulate only ida
         List<Equipo> equiposLiga = gestorequipo.getEquiposPorLiga().get(ligaSeleccionada);
         equiposLiga.forEach(simulador::agregarEquipo);
 
         try {
-            int numJornadas = leerEntero(scanner, "Ingrese el número de jornadas a simular: ");
+            // Generar calendario de ida
+            simulador.generarCalendario();
+            int numJornadas = simulador.getTotalJornadas();
+            Consola.mostrarMensaje("\nSimulando " + numJornadas + " jornadas (solo ida) para " + equiposLiga.size() + " equipos...");
             List<List<Partido>> jornadas = new ArrayList<>();
             for (int i = 0; i < numJornadas; i++) {
-                Consola.mostrarMensaje("\nSimulando jornada " + (i + 1));
                 List<Partido> jornada = simulador.simularJornada();
                 simulador.agregarJornada(jornada);
                 jornadas.add(jornada);
@@ -95,9 +97,16 @@ public class App {
             simulador.mostrarTabla();
 
             // Menú post-simulación
+            Consola.mostrarMensaje("\nSimulación completada con éxito.");
+            Consola.mostrarMensaje("Resultados de la liga:");
+            for (List<Partido> jornada : jornadas) {
+                for (Partido partido : jornada) {
+                    Consola.mostrarMensaje(partido.toString());
+                }
+            }
+
+            // Mostrar menú para ver resultados
             mostrarMenuPostSimulacion(scanner, simulador, jornadas, gestorjugador);
-        } catch (NumberFormatException e) {
-            Consola.mostrarError("Número de jornadas inválido");
         } catch (TorneoException e) {
             Consola.mostrarError("Error al simular: " + e.getMessage());
         }
@@ -381,7 +390,6 @@ public class App {
         }
     }
 
-    // Métodos auxiliares
     private static String leerEntrada(Scanner scanner, String mensaje) {
         Consola.mostrarMensaje(mensaje);
         return scanner.nextLine();
@@ -405,7 +413,6 @@ public class App {
         return gestorequipo.existeEquipo(equipo);
     }
 
-    // Enum para opciones del menú
     enum MenuOpcion {
         SIMULAR_LIGA(1), CREAR_TORNEO(2), VER_LIGAS(3), VER_EQUIPOS(4),
         VER_JUGADORES(5), BUSCAR_EQUIPOS(6), BUSCAR_JUGADORES(7), SALIR(0);

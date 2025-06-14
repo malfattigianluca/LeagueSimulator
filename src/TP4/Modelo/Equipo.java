@@ -15,7 +15,6 @@ public class Equipo {
   private String escudo;
   private String pais;
   private int elo;
-  private int puntos;
   private int golesAFavor;
   private int golesEnContra;
   private int partidosJugados;
@@ -33,7 +32,6 @@ public class Equipo {
     this.liga = liga;
     this.escudo = escudo;
     this.pais = pais;
-    this.puntos = 0;
     this.golesAFavor = 0;
     this.golesEnContra = 0;
     this.partidosJugados = 0;
@@ -143,14 +141,13 @@ public class Equipo {
 
     if (golesAFavor > golesEnContra) {
       this.partidosGanados++;
-      this.puntos += 3;
     } else if (golesAFavor == golesEnContra) {
       this.partidosEmpatados++;
-      this.puntos += 1;
     } else {
       this.partidosPerdidos++;
     }
   }
+
 
   public int getId() {
     return id;
@@ -181,7 +178,7 @@ public class Equipo {
   }
 
   public int getPuntos() {
-    return puntos;
+    return calcularPuntos();
   }
 
   public int getGolesAFavor() {
@@ -215,6 +212,11 @@ public class Equipo {
   public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
   }
+
+  public int calcularPuntos() {
+    return (this.partidosGanados * 3) + this.partidosEmpatados;
+  }
+
 
   public void setElo(int nuevoElo) {
     if (nuevoElo < 1000) {

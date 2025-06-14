@@ -129,6 +129,9 @@ public class SimuladorLiga {
       partidoPredefinido.setGolesLocal(golesLocal);
       partidoPredefinido.setGolesVisitante(golesVisitante);
 
+      // Simular estadísticas de jugadores (goles, asistencias, tarjetas)
+      partidoPredefinido.simularEstadisticasJugadores();
+
       partidos.add(partidoPredefinido);
       partidosDeLaJornada.add(partidoPredefinido);
 
@@ -138,6 +141,17 @@ public class SimuladorLiga {
 
       actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
 
+      // Actualizar puntos
+      if (golesLocal > golesVisitante) {
+        puntos.put(local, puntos.get(local) + 3);
+      } else if (golesLocal < golesVisitante) {
+        puntos.put(visitante, puntos.get(visitante) + 3);
+      } else {
+        puntos.put(local, puntos.get(local) + 1);
+        puntos.put(visitante, puntos.get(visitante) + 1);
+      }
+
+      // Actualizar ELO
       double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
       double rb = golesVisitante > golesLocal ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
       int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
@@ -177,9 +191,9 @@ public class SimuladorLiga {
 
   public void mostrarTabla() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
-    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
-            "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC", "ELO");
-    System.out.println("--------------------------------------------------------------------------");
+    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
+            "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC", "DG", "ELO");
+    System.out.println("----------------------------------------------------------------------------------");
 
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
     equiposOrdenados.sort((e1, e2) -> {
@@ -203,10 +217,11 @@ public class SimuladorLiga {
       int partidosPerdidos = equipo.getPartidosPerdidos();
       int golesFavor = golesAFavor.get(equipo);
       int golesContra = golesEnContra.get(equipo);
-      int puntosEquipo = puntos.get(equipo);
+      int diferenciaGoles = golesFavor - golesContra; // Nueva columna
+      int puntosEquipo = equipo.getPuntos();
       int eloEquipo = equipo.getElo();
 
-      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
+      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
               equipo.getNombre(),
               puntosEquipo,
               partidosJugados,
@@ -215,26 +230,12 @@ public class SimuladorLiga {
               partidosPerdidos,
               golesFavor,
               golesContra,
+              diferenciaGoles,
               eloEquipo);
-    }
-  }
-
-  public void mostrarPartidos() {
-    System.out.println("\n=== Partidos Jugados por Jornada ===");
-    for (int i = 0; i < jornadas.size(); i++) {
-      List<Partido> jornada = jornadas.get(i);
-      System.out.println("\n--- Fecha " + (i + 1) + " ---");
-      for (Partido partido : jornada) {
-        System.out.println(partido);
-      }
     }
   }
 
   public int getTotalJornadas() {
     return calendario.size();
-  }
-
-  public void setSoloIda(boolean soloIda) {
-    this.soloIda = soloIda;
   }
 }

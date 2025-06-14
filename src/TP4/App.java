@@ -87,24 +87,14 @@ public class App {
             // Generar calendario de ida
             simulador.generarCalendario();
             int numJornadas = simulador.getTotalJornadas();
-            Consola.mostrarMensaje("\nSimulando " + numJornadas + " jornadas (solo ida) para " + equiposLiga.size() + " equipos...");
             List<List<Partido>> jornadas = new ArrayList<>();
             for (int i = 0; i < numJornadas; i++) {
                 List<Partido> jornada = simulador.simularJornada();
                 simulador.agregarJornada(jornada);
                 jornadas.add(jornada);
             }
+            // Mostrar la tabla de posiciones automáticamente después de la simulación
             simulador.mostrarTabla();
-
-            // Menú post-simulación
-            Consola.mostrarMensaje("\nSimulación completada con éxito.");
-            Consola.mostrarMensaje("Resultados de la liga:");
-            for (List<Partido> jornada : jornadas) {
-                for (Partido partido : jornada) {
-                    Consola.mostrarMensaje(partido.toString());
-                }
-            }
-
             // Mostrar menú para ver resultados
             mostrarMenuPostSimulacion(scanner, simulador, jornadas, gestorjugador);
         } catch (TorneoException e) {
@@ -117,17 +107,19 @@ public class App {
         while (!volver) {
             Consola.mostrarMensaje("""
                 \n=== Resultados de la Liga ===
-                1. Ver partidos
-                2. Ver goleadores
-                3. Ver asistencias
-                4. Ver tarjetas amarillas y rojas
+                1. Ver tabla de posiciones
+                2. Ver partidos
+                3. Ver goleadores
+                4. Ver asistencias
+                5. Ver tarjetas amarillas y rojas
                 0. Volver al menú principal""");
             int opcion = leerEntero(scanner, "Seleccione una opción: ");
             switch (opcion) {
-                case 1 -> verPartidos(scanner, jornadas);
-                case 2 -> verGoleadores(gestorjugador);
-                case 3 -> verAsistencias(gestorjugador);
-                case 4 -> verTarjetas(gestorjugador);
+                case 1 -> simulador.mostrarTabla();
+                case 2 -> verPartidos(scanner, jornadas);
+                case 3 -> verGoleadores(gestorjugador);
+                case 4 -> verAsistencias(gestorjugador);
+                case 5 -> verTarjetas(gestorjugador);
                 case 0 -> volver = true;
                 default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");
             }
@@ -177,12 +169,11 @@ public class App {
     private static void verGoleadores(GestorJugadores gestorjugador) {
         Consola.mostrarMensaje("\n=== Tabla de Goleadores (Top 10) ===");
         List<Jugador> goleadores = gestorjugador.getJugadores().getVertices().stream()
-                .filter(j -> j.getGoles() >= 4)
                 .sorted((j1, j2) -> Integer.compare(j2.getGoles(), j1.getGoles()))
                 .limit(10)
                 .toList();
         if (goleadores.isEmpty()) {
-            Consola.mostrarMensaje("No hay jugadores con 4 o más goles.");
+            Consola.mostrarMensaje("No hay jugadores con goles registrados.");
             return;
         }
         Consola.mostrarMensaje(String.format("%-30s %-20s %-10s", "Jugador", "Equipo", "Goles"));

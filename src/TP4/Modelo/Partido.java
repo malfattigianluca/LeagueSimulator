@@ -43,7 +43,7 @@ public class Partido {
     simularEstadisticasJugadores();
   }
 
-  private void simularEstadisticasJugadores() throws TorneoException {
+  void simularEstadisticasJugadores() throws TorneoException {
     Random random = new Random();
     List<Jugador> jugadoresLocal = local.getJugadores().getVertices();
     List<Jugador> jugadoresVisitante = visitante.getJugadores().getVertices();

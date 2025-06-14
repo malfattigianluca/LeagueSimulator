@@ -46,16 +46,41 @@ public class GestorEquipos {
         equiposPorLiga.computeIfAbsent(liga, k -> new ArrayList<>()).add(equipo);
     }
 
-    public Equipo buscarEquipoPorNombre(String nombre) {
+    public List<Equipo> buscarEquipoPorNombre(String fragmento) {
+        List<Equipo> resultados = new ArrayList<>();
+        String fragmentoLower = fragmento.toLowerCase();
+
         for (List<Equipo> lista : equiposPorLiga.values()) {
-            for (Equipo e : lista) {
-                if (e.getNombre().contains(nombre)) {
-                    return e;
+            for (Equipo equipo : lista) {
+                if (equipo.getNombre().toLowerCase().contains(fragmentoLower)) {
+                    resultados.add(equipo);
                 }
             }
         }
-        return null;
+
+        return resultados;
     }
+
+    public void mostrarEquiposPorNombreParcial(String fragmento) {
+        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
+
+        if (resultados.isEmpty()) {
+            System.out.println("No se encontraron equipos que coincidan con: " + fragmento);
+            return;
+        }
+
+        for (Equipo equipo : resultados) {
+            System.out.println("\n=== Información del Equipo ===");
+            System.out.println("Nombre: " + equipo.getNombre());
+            System.out.println("Liga: " + equipo.getLiga());
+            System.out.println("ELO: " + equipo.getElo());
+            System.out.println("Puntos: " + equipo.getPuntos());
+            System.out.println("Jugadores:");
+            equipo.mostrarJugadores();
+            System.out.println("==============================");
+        }
+    }
+
 
     public boolean eliminarEquipo(String nombre) {
         for (String liga : equiposPorLiga.keySet()) {
@@ -87,7 +112,7 @@ public class GestorEquipos {
     public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
         Equipo equipoJugador = jugador.getEquipo();
         if (equipoJugador != null) {
-            Equipo equipoRegistrado = buscarEquipoPorNombre(equipoJugador.getNombre());
+            Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
             if (equipoRegistrado != null) {
                 equipoRegistrado.agregarJugador(jugador);
             } else {

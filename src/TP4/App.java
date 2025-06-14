@@ -326,11 +326,7 @@ public class App {
             switch (opcion) {
                 case 1 -> {
                     String nombre = leerEntrada(scanner, "Ingrese el nombre del equipo: ");
-                    if (equipoExiste(gestorequipo, nombre)) {
-                        gestorequipo.mostrarEquipo(nombre);
-                    } else {
-                        Consola.mostrarError("El equipo '" + nombre + "' no se encuentra en el sistema.");
-                    }
+                    gestorequipo.mostrarEquiposPorNombreParcial(nombre);
                 }
                 case 2 -> {
                     String liga = leerEntrada(scanner, "Ingrese el nombre de la liga: ");
@@ -358,20 +354,12 @@ public class App {
             int opcion = leerEntero(scanner, "Seleccione una opción: ");
             switch (opcion) {
                 case 1 -> {
-                    String nombre = leerEntrada(scanner, "Ingrese el nombre o apellido de un jugador: ");
-                    if (gestorjugador.existeJugador(nombre)) {
-                        gestorjugador.buscarJugadorPorNombre(nombre);
-                    } else {
-                        Consola.mostrarError("El jugador '" + nombre + "' no se encuentra en el sistema.");
-                    }
+                    String nombre = leerEntrada(scanner, "Ingrese parte del nombre o apellido del jugador: ");
+                    gestorjugador.buscarYMostrarJugadoresPorNombreParcial(nombre);
                 }
                 case 2 -> {
                     String club = leerEntrada(scanner, "Ingrese el nombre del club para buscar jugadores: ");
-                    if (equipoExiste(gestorequipo, club)) {
-                        gestorequipo.mostrarEquipo(club);
-                    } else {
-                        Consola.mostrarError("El club '" + club + "' no se encuentra en el sistema.");
-                    }
+                    gestorequipo.mostrarEquiposPorNombreParcial(club);
                 }
                 case 0 -> Consola.mostrarMensaje("Volviendo al menú principal...");
                 default -> Consola.mostrarError("Opción inválida. Intente nuevamente.");

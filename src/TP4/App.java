@@ -28,6 +28,8 @@ public class App {
                 switch (opcion) {
                     case SIMULAR_LIGA -> gestorequipo.simularLiga(scanner, gestorjugador);
                     case CREAR_TORNEO -> gestorequipo.crearTorneoPersonalizado(scanner);
+                    case BUSCAR_EQUIPOS -> gestorequipo.buscarEquipos(scanner);
+                    case BUSCAR_JUGADORES -> gestorjugador.buscarJugadores(scanner);
                     case VER_LIGAS -> gestorequipo.verLigas(scanner);
                     case VER_EQUIPOS -> {
                         System.out.print("Ingrese el nombre de la liga: ");
@@ -35,8 +37,6 @@ public class App {
                         gestorequipo.mostrarTodosLosEquipos(liga);
                     }
                     case VER_JUGADORES -> gestorjugador.mostrarJugadores();
-                    case BUSCAR_EQUIPOS -> gestorequipo.buscarEquipos(scanner);
-                    case BUSCAR_JUGADORES -> gestorjugador.buscarJugadores(scanner);
                     case SALIR -> {
                         salir = true;
                         Consola.mostrarMensaje("Saliendo del sistema...");
@@ -57,11 +57,11 @@ public class App {
             \n=== SISTEMA DE GESTION DE TORNEOS FUTBOLISTICOS ===
             1. Simular liga
             2. Crear tu propio torneo
-            3. Ver ligas
-            4. Ver equipos
-            5. Ver jugadores
-            6. Buscar equipos
-            7. Buscar jugadores
+            3. Buscar equipos
+            4. Buscar jugadores
+            5. Ver ligas
+            6. Ver equipos
+            7. Ver jugadores
             0. Salir""");
     }
 
@@ -81,8 +81,8 @@ public class App {
     }
 
     enum MenuOpcion {
-        SIMULAR_LIGA(1), CREAR_TORNEO(2), VER_LIGAS(3), VER_EQUIPOS(4),
-        VER_JUGADORES(5), BUSCAR_EQUIPOS(6), BUSCAR_JUGADORES(7), SALIR(0);
+        SIMULAR_LIGA(1), CREAR_TORNEO(2), BUSCAR_EQUIPOS(3), BUSCAR_JUGADORES(4),VER_LIGAS(5), VER_EQUIPOS(6),
+        VER_JUGADORES(7), SALIR(0);
 
         private final int valor;
 

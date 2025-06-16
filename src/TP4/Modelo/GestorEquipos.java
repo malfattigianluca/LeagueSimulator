@@ -76,8 +76,15 @@ public class GestorEquipos {
         if (resultados.isEmpty()) {
             System.out.println("No se encontraron equipos que coincidan.");
         } else {
+            System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Escudo", "Equipo", "País", "ELO");
+            System.out.println("---------------------------------------------------------------------------------------");
             for (Equipo e : resultados) {
-                System.out.printf("%s - %s (%s) | ELO: %d\n", e.getLiga(), e.getNombre(), e.getPais(), e.getElo());
+                System.out.printf("%-35s %-8s %-25s %-15s %-10d%n",
+                        e.getLiga(),
+                        e.getEscudo(),
+                        e.getNombre(),
+                        e.getPais(),
+                        e.getElo());
             }
         }
     }
@@ -86,10 +93,24 @@ public class GestorEquipos {
         System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Cod", "Equipo", "País", "ELO");
         System.out.println("---------------------------------------------------------------------------------------");
 
-        for (Map.Entry<String, List<Equipo>> entry : equiposPorLiga.entrySet()) {
-            for (Equipo equipo : entry.getValue()) {
+        // Si se especifica una liga, mostrar solo sus equipos; si no, mostrar todos
+        if (liga != null && !liga.trim().isEmpty()) {
+            List<Equipo> equipos = equiposPorLiga.getOrDefault(liga, new ArrayList<>());
+            if (equipos.isEmpty()) {
+                System.out.println("No se encontraron equipos para la liga: " + liga);
+                return;
+            }
+            for (Equipo equipo : equipos) {
                 System.out.printf("%-35s %-8s %-25s %-15s %-10d%n",
                         equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getPais(), equipo.getElo());
+            }
+        } else {
+            // Mostrar todos los equipos de todas las ligas
+            for (Map.Entry<String, List<Equipo>> entry : equiposPorLiga.entrySet()) {
+                for (Equipo equipo : entry.getValue()) {
+                    System.out.printf("%-35s %-8s %-25s %-15s %-10d%n",
+                            equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getPais(), equipo.getElo());
+                }
             }
         }
     }
@@ -100,12 +121,28 @@ public class GestorEquipos {
             return;
         }
 
+        // Mostrar ligas disponibles
         System.out.println("Ligas disponibles:");
-        int i = 1;
         List<String> ligas = new ArrayList<>(equiposPorLiga.keySet());
-        for (String liga : ligas) {
-            System.out.println(i + ". " + liga);
-            i++;
+
+        for (int i = 0; i < ligas.size(); i++) {
+            System.out.println((i + 1) + ". " + ligas.get(i));
+        }
+
+        // Solicitar selección de liga
+        System.out.print("Seleccione una liga (ingrese el número, 0 para mostrar todas): ");
+        try {
+            int opcion = Integer.parseInt(scanner.nextLine());
+            if (opcion == 0) {
+                mostrarTodosLosEquipos(null); // Mostrar todas las ligas
+            } else if (opcion < 1 || opcion > ligas.size()) {
+                System.out.println("Opción inválida. Por favor, seleccione un número entre 0 y " + ligas.size() + ".");
+            } else {
+                String ligaSeleccionada = ligas.get(opcion - 1);
+                mostrarTodosLosEquipos(ligaSeleccionada); // Mostrar equipos de la liga seleccionada
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida. Por favor, ingrese un número.");
         }
     }
 

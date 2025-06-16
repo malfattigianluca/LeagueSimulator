@@ -258,6 +258,15 @@ public class GestorJugadores {
     return jugadores;
   }
 
+
+  /**
+   *   Los siguientes metodos permiten crear y eliminar jugadores, pero no estan invocados en el main. Se dejan para
+   *    futuras versiones o pruebas unitarias.
+   *
+   *
+   * /
+
+
   /**
    * Crea un nuevo jugador y lo inserta en el conjunto.
    *

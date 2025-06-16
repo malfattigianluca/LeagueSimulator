@@ -307,7 +307,7 @@ public class App {
 
     private static void verEquipos(GestorEquipos gestorequipo) {
         Consola.mostrarMensaje("--- Ver equipos ---");
-        gestorequipo.listarEquipos();
+        gestorequipo.mostrarTodosLosEquipos();
     }
 
     private static void verJugadores(GestorJugadores gestorjugador) {
@@ -355,7 +355,8 @@ public class App {
             switch (opcion) {
                 case 1 -> {
                     String nombre = leerEntrada(scanner, "Ingrese parte del nombre o apellido del jugador: ");
-                    gestorjugador.buscarYMostrarJugadoresPorNombreParcial(nombre);
+                    List<Jugador> encontrados = gestorjugador.buscarJugadoresPorNombreParcial(nombre);
+                    gestorjugador.mostrarListaDeJugadores(encontrados);
                 }
                 case 2 -> {
                     String club = leerEntrada(scanner, "Ingrese el nombre del club para buscar jugadores: ");

@@ -32,9 +32,12 @@ public class App {
                     case BUSCAR_JUGADORES -> gestorjugador.buscarJugadores(scanner);
                     case VER_LIGAS -> gestorequipo.verLigas(scanner);
                     case VER_EQUIPOS -> {
-                        System.out.print("Ingrese el nombre de la liga: ");
-                        String liga = scanner.nextLine();
-                        gestorequipo.mostrarTodosLosEquipos(liga);
+                        String ligaSeleccionada = gestorequipo.seleccionarLigaConMenu(scanner);
+                        if (ligaSeleccionada != null) {
+                            gestorequipo.mostrarTodosLosEquipos(
+                                    ligaSeleccionada.equals("TODAS") ? "" : ligaSeleccionada
+                            );
+                        }
                     }
                     case VER_JUGADORES -> gestorjugador.mostrarJugadores();
                     case SALIR -> {

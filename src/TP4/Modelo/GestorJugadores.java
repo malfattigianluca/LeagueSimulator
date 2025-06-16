@@ -132,13 +132,21 @@ public class GestorJugadores {
    * Muestra en consola información básica de todos los jugadores.
    */
   public void mostrarJugadores() {
-    for (Jugador j : jugadores.getVertices()) {
-      System.out.println("ID: " + j.getId() + " | Nombre: " + j.getNombre() +
-              " | Nº Camiseta: " + j.getNumeroCamiseta() +
-              " | Posición: " + j.getPosicion() +
-              (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
+    System.out.printf("%-5s %-25s %-15s %-25s %-25s%n", "ID", "Nombre", "Nº Camiseta", "Posición", "Equipo");
+    System.out.println("-----------------------------------------------------------------------------------------------");
+
+    for (Jugador j : jugadores.getVertices().reversed()) {
+      String numeroCamiseta = j.getNumeroCamiseta() == -1 ? "N/A" : String.valueOf(j.getNumeroCamiseta());
+      System.out.printf("%-5d %-25s %-15s %-25s %-25s%n",
+              j.getId(),
+              j.getNombre(),
+              numeroCamiseta,
+              j.getPosicion(),
+              j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo");
     }
   }
+
+
 
   /**
    * Solicita al usuario un fragmento del nombre y muestra los jugadores que lo contienen.

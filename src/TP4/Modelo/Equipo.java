@@ -21,6 +21,7 @@ public class Equipo {
   private int partidosGanados;
   private int partidosEmpatados;
   private int partidosPerdidos;
+  private int puntos = 0; // Inicializado a 0, se calculará en base a partidos ganados y empatados
   private ConjuntoGenericoTDA<Jugador> jugadores;
   private static final int MAX_JUGADORES = 40;
 
@@ -115,6 +116,16 @@ public class Equipo {
     return jugadores.pertenece(jugador);
   }
 
+  public void reiniciarEstadisticas() {
+    this.puntos = 0;
+    this.partidosJugados = 0;
+    this.partidosGanados = 0;
+    this.partidosEmpatados = 0;
+    this.partidosPerdidos = 0;
+    this.golesAFavor = 0;
+    this.golesEnContra = 0;
+  }
+
   public boolean tieneNumeroCamiseta(int numeroCamiseta) {
     if (numeroCamiseta == -1) {
       return false;
@@ -141,12 +152,15 @@ public class Equipo {
 
     if (golesAFavor > golesEnContra) {
       this.partidosGanados++;
+      this.puntos += 3;
     } else if (golesAFavor == golesEnContra) {
       this.partidosEmpatados++;
+      this.puntos += 1;
     } else {
       this.partidosPerdidos++;
     }
   }
+
 
 
   public int getId() {

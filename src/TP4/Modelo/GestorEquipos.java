@@ -110,6 +110,7 @@ public class GestorEquipos {
     }
 
     public void simularLiga(Scanner scanner, GestorJugadores gestorJugadores) {
+
         if (equiposPorLiga.isEmpty()) {
             System.out.println("No hay ligas disponibles para simular.");
             return;
@@ -131,7 +132,9 @@ public class GestorEquipos {
         List<Equipo> equipos = equiposPorLiga.get(ligaSeleccionada);
 
         SimuladorLiga simulador = new SimuladorLiga(ligaSeleccionada);
+
         for (Equipo equipo : equipos) {
+            equipo.reiniciarEstadisticas();
             simulador.agregarEquipo(equipo);
         }
 
@@ -146,16 +149,20 @@ public class GestorEquipos {
         System.out.println("\nComenzando simulación de la liga " + ligaSeleccionada + " (" + totalJornadas + " jornadas)");
 
         for (int jornada = 1; jornada <= totalJornadas; jornada++) {
-            System.out.println("\n--- Jornada " + jornada + " ---");
             try {
-                simulador.simularJornada();
+                List<Partido> jornadas = simulador.simularJornada();
+                simulador.agregarJornada(jornadas);
             } catch (TorneoException e) {
                 System.err.println("Error en la jornada: " + e.getMessage());
             }
         }
 
         simulador.mostrarTabla();
+        mostrarMenuPostSimulacion(scanner, simulador);
     }
+
+
+
 
     public void crearTorneoPersonalizado(Scanner scanner) {
         System.out.print("Ingrese el nombre del torneo personalizado: ");
@@ -224,6 +231,153 @@ public class GestorEquipos {
         System.out.println("Torneo personalizado '" + nombre + "' creado con éxito.");
     }
 
+    private void mostrarMenuPostSimulacion(Scanner scanner, SimuladorLiga simulador) {
+        while (true) {
+            System.out.println("\n=== Estadísticas de la Liga " + simulador.getNombre() + " ===");
+            System.out.println("1. Ver fechas jugadas");
+            System.out.println("2. Ver top 10 goleadores");
+            System.out.println("3. Ver top 10 asistentes");
+            System.out.println("4. Ver jugadores con tarjetas");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("Seleccione una opción: ");
+
+            String opcion = scanner.nextLine();
+
+            switch (opcion) {
+                case "1" -> simulador.mostrarPartidosJugados(scanner);
+                case "2" -> mostrarTopGoleadores(simulador.getPartidos());
+                case "3" -> mostrarTopAsistencias(simulador.getPartidos());
+                case "4" -> mostrarJugadoresConTarjetas(simulador.getPartidos());
+                case "0" -> {
+                    return;
+                }
+                default -> System.out.println("Opción inválida. Intente de nuevo.");
+            }
+        }
+    }
+
+//    private void mostrarTopJugadores(List<Partido> partidos, Comparator<Jugador> comparator, String criterio) {
+//        Map<Jugador, Integer> mapa = new HashMap<>();
+//
+//        for (Partido p : partidos) {
+//            List<Jugador> lista = switch (criterio) {
+//                case "Goles" -> {
+//                    List<Jugador> todos = new ArrayList<>(p.getGoleadoresLocal());
+//                    todos.addAll(p.getGoleadoresVisitante());
+//                    yield todos;
+//                }
+//                case "Asistencias" -> {
+//                    List<Jugador> todos = new ArrayList<>(p.getAsistentesLocal());
+//                    todos.addAll(p.getAsistentesVisitante());
+//                    yield todos;
+//                }
+//                default -> Collections.emptyList();
+//            };
+//            for (Jugador j : lista) {
+//                mapa.put(j, mapa.getOrDefault(j, 0) + 1);
+//            }
+//        }
+//
+//        List<Map.Entry<Jugador, Integer>> top = mapa.entrySet().stream()
+//                .sorted(Map.Entry.<Jugador, Integer>comparingByValue().reversed())
+//                .limit(10)
+//                .toList();
+//
+//        System.out.println("\nTop 10 jugadores por " + criterio + ":");
+//        for (Map.Entry<Jugador, Integer> entry : top) {
+//            System.out.printf("%s - %d %s\n", entry.getKey().getNombre(), entry.getValue(), criterio.toLowerCase());
+//        }
+//    }
+
+
+    public void mostrarTopGoleadores(List<Partido> partidos) {
+        Map<Jugador, Integer> goles = new HashMap<>();
+
+        for (Partido partido : partidos) {
+            for (Jugador j : partido.getGoleadoresLocal()) {
+                goles.put(j, goles.getOrDefault(j, 0) + 1);
+            }
+            for (Jugador j : partido.getGoleadoresVisitante()) {
+                goles.put(j, goles.getOrDefault(j, 0) + 1);
+            }
+        }
+
+        List<Map.Entry<Jugador, Integer>> top = goles.entrySet().stream()
+                .sorted(Map.Entry.<Jugador, Integer>comparingByValue().reversed())
+                .limit(10)
+                .toList();
+
+        System.out.println("\n=== Top 10 Goleadores ===");
+        System.out.printf("%-4s %-25s %-10s%n", "N°", "Jugador", "Goles");
+
+        int pos = 1;
+        for (Map.Entry<Jugador, Integer> entry : top) {
+            System.out.printf("%-4d %-25s %-10d%n", pos++, entry.getKey().getNombre(), entry.getValue());
+        }
+    }
+
+    public void mostrarTopAsistencias(List<Partido> partidos) {
+        Map<Jugador, Integer> asistencias = new HashMap<>();
+
+        for (Partido partido : partidos) {
+            for (Jugador j : partido.getAsistentesLocal()) {
+                asistencias.put(j, asistencias.getOrDefault(j, 0) + 1);
+            }
+            for (Jugador j : partido.getAsistentesVisitante()) {
+                asistencias.put(j, asistencias.getOrDefault(j, 0) + 1);
+            }
+        }
+
+        List<Map.Entry<Jugador, Integer>> top = asistencias.entrySet().stream()
+                .sorted(Map.Entry.<Jugador, Integer>comparingByValue().reversed())
+                .limit(10)
+                .toList();
+
+        System.out.println("\n=== Top 10 Asistentes ===");
+        System.out.printf("%-4s %-25s %-12s%n", "N°", "Jugador", "Asistencias");
+
+        int pos = 1;
+        for (Map.Entry<Jugador, Integer> entry : top) {
+            System.out.printf("%-4d %-25s %-12d%n", pos++, entry.getKey().getNombre(), entry.getValue());
+        }
+    }
+
+
+    public void mostrarJugadoresConTarjetas(List<Partido> partidos) {
+        Map<Jugador, int[]> tarjetas = new HashMap<>(); // [0] = rojas, [1] = amarillas
+
+        for (Partido partido : partidos) {
+            for (Jugador j : partido.getJugadoresRojas()) {
+                tarjetas.putIfAbsent(j, new int[2]);
+                tarjetas.get(j)[0]++;
+            }
+            for (Jugador j : partido.getJugadoresAmarillas()) {
+                tarjetas.putIfAbsent(j, new int[2]);
+                tarjetas.get(j)[1]++;
+            }
+        }
+
+        List<Map.Entry<Jugador, int[]>> top = tarjetas.entrySet().stream()
+                .sorted((a, b) -> {
+                    int cmp = Integer.compare(b.getValue()[0], a.getValue()[0]); // rojas desc
+                    return (cmp != 0) ? cmp : Integer.compare(b.getValue()[1], a.getValue()[1]); // luego amarillas desc
+                })
+                .limit(10)
+                .toList();
+
+        System.out.println("\n=== Jugadores con Tarjetas ===");
+        System.out.printf("%-4s %-25s %-8s %-10s%n", "N°", "Jugador", "Rojas", "Amarillas");
+
+        int pos = 1;
+        for (Map.Entry<Jugador, int[]> entry : top) {
+            int rojas = entry.getValue()[0];
+            int amarillas = entry.getValue()[1];
+            System.out.printf("%-4d %-25s %-8d %-10d%n", pos++, entry.getKey().getNombre(), rojas, amarillas);
+        }
+    }
+
+
+// Debes llamar a mostrarMenuPostSimulacion(scanner, simulador); justo después de mostrarTabla()
 
 
     public void mostrarEquiposPorNombreParcial(String fragmento) {

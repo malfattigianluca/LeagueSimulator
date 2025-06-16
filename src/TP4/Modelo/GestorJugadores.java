@@ -13,16 +13,9 @@ import java.util.*;
  * Se encarga de gestionar la carga, creación, asociación y búsqueda de jugadores.
  */
 public class GestorJugadores {
-  // Instancia singleton de GestorJugadores para asegurar una única instancia.
   private static GestorJugadores instancia;
-
-  // Conjunto genérico que almacena los jugadores registrados.
   private ConjuntoGenericoTDA<Jugador> jugadores;
-
-  // Identificador único para cada jugador.
   public int idJugador;
-
-  // Referencia al gestor de equipos para la asociación de jugadores a equipos.
   private GestorEquipos gestorEquipos;
 
   /**
@@ -61,124 +54,77 @@ public class GestorJugadores {
     try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
       String linea;
       int numeroLinea = 0;
-      // Se lee el archivo línea por línea.
       while ((linea = reader.readLine()) != null) {
         numeroLinea++;
-        // Se omiten las líneas vacías.
-        if (linea.trim().isEmpty()) {
-          continue;
-        }
-        // Se separa la línea en datos usando ";" como separador.
+        if (linea.trim().isEmpty()) continue;
         String[] datos = linea.split(";");
-        // Se valida que la línea contenga exactamente 11 datos.
         if (datos.length == 11) {
           try {
-            // Se extraen y limpian los datos.
             String liga = datos[0].trim();
             String nombreEquipo = datos[1].trim();
             String nombreJugador = datos[2].trim();
             String posicion = datos[3].trim();
-            int numeroCamiseta;
-            // Se asigna -1 cuando no hay dorsal asignado.
-            if (datos[4].equals("-")) {
-              numeroCamiseta = -1;
-            } else {
-              numeroCamiseta = Integer.parseInt(datos[4].trim());
-            }
+            int numeroCamiseta = datos[4].equals("-") ? -1 : Integer.parseInt(datos[4].trim());
             int edad = Integer.parseInt(datos[5].trim());
             String altura = datos[6].trim();
-            // Si la altura es "Desconocido", se establece como "N/A".
-            if (altura.equalsIgnoreCase("Desconocido")) {
-              altura = "N/A";
-            } else {
-              // Se normaliza el valor de la altura.
-              altura = altura.replace(",", ".").replace("m", "");
-            }
+            if (altura.equalsIgnoreCase("Desconocido")) altura = "N/A";
+            else altura = altura.replace(",", ".").replace("m", "");
             int goles = Integer.parseInt(datos[7].trim());
             int asistencias = Integer.parseInt(datos[8].trim());
             int rojas = Integer.parseInt(datos[9].trim());
             int amarillas = Integer.parseInt(datos[10].trim());
 
-            // Creación del jugador.
-            Jugador jugador;
-            try {
-              jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-                      goles, asistencias, amarillas, rojas);
-            } catch (TorneoException e) {
-              System.err.println(
-                      "Error en la línea " + numeroLinea + ": " + e.getMessage() + " para el jugador " + nombreJugador);
-              continue; // Se omite el jugador si ocurre un error (por ejemplo, número de camiseta inválido).
-            }
-            // Se inserta el jugador en el conjunto.
+            Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad, goles, asistencias, amarillas, rojas);
             jugadores.insertar(jugador);
 
-            // Asociación del jugador con su equipo.
             boolean equipoEncontrado = false;
             for (List<Equipo> equipos : gestorEquipos.getEquiposPorLiga().values()) {
               for (Equipo equipo : equipos) {
-                // Se verifica que el equipo coincida por nombre y liga.
                 if (equipo.getNombre().equalsIgnoreCase(nombreEquipo) && equipo.getLiga().equalsIgnoreCase(liga)) {
-                  try {
-                    int intentos = 0;
-                    boolean anadido = false;
-                    // Se intenta asignar un número de camiseta único.
-                    while (!anadido && intentos < 100) {
-                      try {
-                        equipo.agregarJugador(jugador);
-                        anadido = true;
-                        equipoEncontrado = true;
-                      } catch (TorneoException e) {
-                        // Si el número de camiseta ya está en uso, se incrementa y se intenta de nuevo.
-                        if (e.getMessage().contains("ya está en uso")) {
-                          numeroCamiseta++;
-                          try {
-                            jugador.setNumeroCamiseta(numeroCamiseta);
-                          } catch (TorneoException ex) {
-                            System.err.println("Error al asignar camiseta para " + nombreJugador + ": " + ex.getMessage());
-                            break;
-                          }
-                          intentos++;
-                        } else {
-                          throw e;
-                        }
+                  int intentos = 0;
+                  boolean anadido = false;
+                  while (!anadido && intentos < 100) {
+                    try {
+                      equipo.agregarJugador(jugador);
+                      anadido = true;
+                      equipoEncontrado = true;
+                    } catch (TorneoException e) {
+                      if (e.getMessage().contains("ya está en uso")) {
+                        numeroCamiseta++;
+                        jugador.setNumeroCamiseta(numeroCamiseta);
+                        intentos++;
+                      } else {
+                        throw e;
                       }
                     }
-                    // Si tras varios intentos no se pudo asignar, se elimina el jugador.
-                    if (!anadido) {
-                      System.err.println("No se pudo asignar un número de camiseta único para " + nombreJugador
-                              + " en la línea " + numeroLinea);
-                      idJugador--;
-                      jugadores.eliminar(jugador);
-                    }
-                  } catch (TorneoException e) {
-                    System.err.println("Error en la línea " + numeroLinea + ": " + e.getMessage());
+                  }
+                  if (!anadido) {
+                    System.err.println("No se pudo asignar número único a: " + nombreJugador);
                     idJugador--;
                     jugadores.eliminar(jugador);
                   }
                   break;
                 }
               }
-              if (equipoEncontrado)
-                break;
+              if (equipoEncontrado) break;
             }
-            // Si no se encontró el equipo, se elimina el jugador y se informa el error.
             if (!equipoEncontrado) {
-              System.err.println("Equipo no encontrado para el jugador en la línea " + numeroLinea + ": " + nombreEquipo);
+              System.err.println("Equipo no encontrado para el jugador en línea " + numeroLinea);
               idJugador--;
               jugadores.eliminar(jugador);
             }
           } catch (NumberFormatException e) {
-            System.err.println(
-                    "Error en la línea " + numeroLinea + ": Formato inválido en los datos numéricos para " + linea);
-            continue;
+            System.err.println("Error en la línea " + numeroLinea + ": Formato inválido.");
+          } catch (TorneoException e) {
+            System.err.println("Error en la línea " + numeroLinea + ": " + e.getMessage());
           }
         } else {
-          System.err.println("Formato inválido en la línea " + numeroLinea + ": " + linea);
+          System.err.println("Formato inválido en la línea " + numeroLinea);
           throw new TorneoException("Formato inválido en la línea " + numeroLinea);
         }
       }
     } catch (IOException e) {
-      throw new TorneoException("Error al leer el archivo de jugadores: " + e.getMessage());
+      throw new TorneoException("Error al leer archivo de jugadores: " + e.getMessage());
     }
   }
 
@@ -244,8 +190,8 @@ public class GestorJugadores {
     System.out.println("Estadísticas:");
     System.out.println("  - Goles: " + j.getGoles());
     System.out.println("  - Asistencias: " + j.getAsistencias());
-    System.out.println("  - Tarjetas amarillas: " + j.getAmarillas());
-    System.out.println("  - Tarjetas rojas: " + j.getRojas());
+    System.out.println("  - Amarillas: " + j.getAmarillas());
+    System.out.println("  - Rojas: " + j.getRojas());
     System.out.println("=============================");
   }
 
@@ -257,15 +203,6 @@ public class GestorJugadores {
   public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
   }
-
-
-  /**
-   *   Los siguientes metodos permiten crear y eliminar jugadores, pero no estan invocados en el main. Se dejan para
-   *    futuras versiones o pruebas unitarias.
-   *
-   *
-   * /
-
 
   /**
    * Crea un nuevo jugador y lo inserta en el conjunto.
@@ -300,108 +237,6 @@ public class GestorJugadores {
     if (jugador != null && jugador.getEquipo() == null) {
       jugadores.eliminar(jugador);
     }
-  }
-
-  /**
-   * Metodo para agregar un jugador manualmente mediante entrada por consola.
-   * Se solicitan, validan y procesan los datos del jugador.
-   * Además, se asocia el jugador al equipo correspondiente según la liga y el nombre del equipo.
-   *
-   * @param scanner Scanner para leer la entrada por consola.
-   * @throws TorneoException Si ocurre algún error en la validación o al asociar el jugador al equipo.
-   */
-  public void agregarJugadorManualmente(Scanner scanner) throws TorneoException {
-    int goles = 0, asistencias = 0, amarillas = 0, rojas = 0;
-    String altura;
-
-    System.out.println("\n--- Agregar Jugador Manualmente ---");
-
-    // Se solicita el nombre del jugador.
-    System.out.print("Ingrese el nombre del jugador: ");
-    String nombreJugador = scanner.nextLine().trim();
-
-    // Se solicita y valida el número de camiseta.
-    System.out.print("Ingrese el número de camiseta (1-99): ");
-    int numeroCamiseta;
-    String camisetaInput = scanner.nextLine().trim();
-    if (camisetaInput.equals("-")) {
-      throw new TorneoException("El número de camiseta no puede ser '-'." );
-    }
-    try {
-      numeroCamiseta = Integer.parseInt(camisetaInput);
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Número de camiseta inválido.");
-    }
-
-    // Se solicita la posición del jugador.
-    System.out.print("Ingrese la posición: ");
-    String posicion = scanner.nextLine().trim();
-
-    // Se solicita la liga.
-    System.out.print("Ingrese la liga: ");
-    String liga = scanner.nextLine().trim();
-
-    // Se solicita el nombre del equipo.
-    System.out.print("Ingrese el nombre del equipo: ");
-    String equipoNombre = scanner.nextLine().trim();
-
-    // Se solicita y valida la edad.
-    System.out.print("Ingrese la edad: ");
-    int edad;
-    String edadInput = scanner.nextLine().trim();
-    try {
-      edad = Integer.parseInt(edadInput);
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Edad inválida.");
-    }
-
-    // Se solicita y valida la altura.
-    System.out.print("Ingrese la altura (en metros, ej. 1.85, o 'N/A'): ");
-    altura = scanner.nextLine().trim();
-    if (altura.equalsIgnoreCase("Desconocido")) {
-      altura = "N/A";
-    } else if (!altura.equalsIgnoreCase("N/A")) {
-      altura = altura.replace(",", ".").replace("m", "");
-      if (!altura.matches("\\d+\\.\\d{2}")) {
-        throw new TorneoException("La altura debe ser 'N/A' o un valor numérico (ej. 1.85)");
-      }
-    }
-
-    // Creación del jugador con los datos ingresados.
-    Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-            goles, asistencias, amarillas, rojas);
-
-    // Se inserta el jugador en el conjunto de jugadores.
-    jugadores.insertar(jugador);
-
-    // Se busca y asocia el jugador con el equipo correspondiente.
-    boolean equipoEncontrado = false;
-    for (List<Equipo> equipos : gestorEquipos.getEquiposPorLiga().values()) {
-      for (Equipo equipo : equipos) {
-        if (equipo.getNombre().equalsIgnoreCase(equipoNombre) && equipo.getLiga().equalsIgnoreCase(liga)) {
-          try {
-            equipo.agregarJugador(jugador);
-            equipoEncontrado = true;
-          } catch (TorneoException e) {
-            System.err.println("Error al agregar jugador: " + e.getMessage());
-            idJugador--;
-            jugadores.eliminar(jugador);
-            throw e;
-          }
-          break;
-        }
-      }
-      if (equipoEncontrado)
-        break;
-    }
-    // Si no se encontró el equipo, se revierte la inserción del jugador.
-    if (!equipoEncontrado) {
-      idJugador--;
-      jugadores.eliminar(jugador);
-      throw new TorneoException("Equipo no encontrado: " + equipoNombre + " en la liga " + liga);
-    }
-
-    System.out.println("Jugador agregado exitosamente: " + jugador);
   }
 
   /**

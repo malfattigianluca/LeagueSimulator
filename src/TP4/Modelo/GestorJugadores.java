@@ -214,36 +214,50 @@ public class GestorJugadores {
     }
   }
 
+  // Metodo para agregar un jugador manualmente
   public void agregarJugadorManualmente(Scanner scanner) throws TorneoException {
+    int goles = 0, asistencias = 0, amarillas = 0, rojas = 0;
+    String altura;
+
     System.out.println("\n--- Agregar Jugador Manualmente ---");
+
     System.out.print("Ingrese el nombre del jugador: ");
     String nombreJugador = scanner.nextLine().trim();
+
     System.out.print("Ingrese el número de camiseta (1-99): ");
     int numeroCamiseta;
+    String camisetaInput = scanner.nextLine().trim();
+    if (camisetaInput.equals("-")) {
+      throw new TorneoException("El número de camiseta no puede ser '-'.");
+    }
     try {
-      String camisetaInput = scanner.nextLine().trim();
-      if (camisetaInput.equals("-")) {
-        throw new TorneoException("El número de camiseta no puede ser '-'.");
-      }
       numeroCamiseta = Integer.parseInt(camisetaInput);
     } catch (NumberFormatException e) {
       throw new TorneoException("Número de camiseta inválido.");
     }
+
     System.out.print("Ingrese la posición: ");
     String posicion = scanner.nextLine().trim();
+
     System.out.print("Ingrese la liga: ");
     String liga = scanner.nextLine().trim();
+
     System.out.print("Ingrese el nombre del equipo: ");
     String equipoNombre = scanner.nextLine().trim();
+
     System.out.print("Ingrese la edad: ");
     int edad;
+    String edadInput = scanner.nextLine().trim();
     try {
-      edad = Integer.parseInt(scanner.nextLine().trim());
+      edad = Integer.parseInt(edadInput);
     } catch (NumberFormatException e) {
       throw new TorneoException("Edad inválida.");
     }
+
     System.out.print("Ingrese la altura (en metros, ej. 1.85, o 'N/A'): ");
-    String altura = scanner.nextLine().trim();
+    altura = scanner.nextLine().trim();
+
+    // Validación de la altura
     if (altura.equalsIgnoreCase("Desconocido")) {
       altura = "N/A";
     } else if (!altura.equalsIgnoreCase("N/A")) {
@@ -252,40 +266,15 @@ public class GestorJugadores {
         throw new TorneoException("La altura debe ser 'N/A' o un valor numérico (ej. 1.85)");
       }
     }
-    System.out.print("Ingrese los goles: ");
-    int goles;
-    try {
-      goles = Integer.parseInt(scanner.nextLine().trim());
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Goles inválidos.");
-    }
-    System.out.print("Ingrese las asistencias: ");
-    int asistencias;
-    try {
-      asistencias = Integer.parseInt(scanner.nextLine().trim());
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Asistencias inválidas.");
-    }
-    System.out.print("Ingrese las tarjetas rojas: ");
-    int rojas;
-    try {
-      rojas = Integer.parseInt(scanner.nextLine().trim());
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Tarjetas rojas inválidas.");
-    }
-    System.out.print("Ingrese las tarjetas amarillas: ");
-    int amarillas;
-    try {
-      amarillas = Integer.parseInt(scanner.nextLine().trim());
-    } catch (NumberFormatException e) {
-      throw new TorneoException("Tarjetas amarillas inválidas.");
-    }
 
+    // Creación del jugador
     Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
             goles, asistencias, amarillas, rojas);
+
     jugadores.insertar(jugador);
 
     boolean equipoEncontrado = false;
+
     for (List<Equipo> equipos : gestorEquipos.getEquiposPorLiga().values()) {
       for (Equipo equipo : equipos) {
         if (equipo.getNombre().equalsIgnoreCase(equipoNombre) && equipo.getLiga().equalsIgnoreCase(liga)) {
@@ -304,6 +293,7 @@ public class GestorJugadores {
       if (equipoEncontrado)
         break;
     }
+
     if (!equipoEncontrado) {
       idJugador--;
       jugadores.eliminar(jugador);
@@ -313,6 +303,9 @@ public class GestorJugadores {
     System.out.println("Jugador agregado exitosamente: " + jugador);
   }
 
+
+
+  // Metodo para obtener la cantidad de jugadores
   public int cantidadJugadores() {
     return jugadores.tamanio();
   }

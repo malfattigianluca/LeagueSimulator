@@ -13,11 +13,11 @@ public class SimuladorLiga {
   private List<List<Partido>> jornadas;
   private List<List<Enfrentamiento>> calendario;
   private int jornadaActual;
-  private static final int K = 100; // Factor de impacto en el ELO
+  private static final int K = 100;
   private boolean soloIda;
 
   public SimuladorLiga(String nombre) {
-    this(nombre, false); // Por defecto, simula ida y vuelta
+    this(nombre, false);
   }
 
   public SimuladorLiga(String nombre, boolean soloIda) {
@@ -100,7 +100,7 @@ public class SimuladorLiga {
       int golesLocal = simularGoles(lambdaLocal);
       int golesVisitante = simularGoles(lambdaVisitante);
 
-      Partido partido = new Partido(local, visitante, golesLocal, golesVisitante); // ahora se registran bien
+      Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
       partidos.add(partido);
       partidosDeLaJornada.add(partido);
 
@@ -145,11 +145,17 @@ public class SimuladorLiga {
     return k - 1;
   }
 
-  private void actualizarEstadisticas(Equipo local, Equipo visitante, int golesLocal, int golesVisitante) {
+  private void actualizarEstadisticas(Equipo local, Equipo visitante, int golesLocal, int golesVisitante) throws TorneoException {
     golesAFavor.put(local, golesAFavor.get(local) + golesLocal);
     golesEnContra.put(local, golesEnContra.get(local) + golesVisitante);
     golesAFavor.put(visitante, golesAFavor.get(visitante) + golesVisitante);
     golesEnContra.put(visitante, golesEnContra.get(visitante) + golesLocal);
+
+    local.registrarPartido(golesLocal, golesVisitante);
+    visitante.registrarPartido(golesVisitante, golesLocal);
+
+    local.setPuntos(puntos.get(local));
+    visitante.setPuntos(puntos.get(visitante));
   }
 
   public void mostrarTabla() {
@@ -180,8 +186,8 @@ public class SimuladorLiga {
       int partidosPerdidos = equipo.getPartidosPerdidos();
       int golesFavor = golesAFavor.get(equipo);
       int golesContra = golesEnContra.get(equipo);
-      int diferenciaGoles = golesFavor - golesContra; // Nueva columna
-      int puntosEquipo = equipo.getPuntos();
+      int diferenciaGoles = golesFavor - golesContra;
+      int puntosEquipo = puntos.get(equipo);
       int eloEquipo = equipo.getElo();
 
       System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
@@ -200,5 +206,15 @@ public class SimuladorLiga {
 
   public int getTotalJornadas() {
     return calendario.size();
+  }
+
+  private static class Enfrentamiento {
+    Equipo local;
+    Equipo visitante;
+
+    public Enfrentamiento(Equipo local, Equipo visitante) {
+      this.local = local;
+      this.visitante = visitante;
+    }
   }
 }

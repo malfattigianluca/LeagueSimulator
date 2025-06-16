@@ -29,7 +29,11 @@ public class App {
                     case SIMULAR_LIGA -> gestorequipo.simularLiga(scanner, gestorjugador);
                     case CREAR_TORNEO -> gestorequipo.crearTorneoPersonalizado(scanner);
                     case VER_LIGAS -> gestorequipo.verLigas(scanner);
-                    case VER_EQUIPOS -> gestorequipo.mostrarTodosLosEquipos();
+                    case VER_EQUIPOS -> {
+                        System.out.print("Ingrese el nombre de la liga: ");
+                        String liga = scanner.nextLine();
+                        gestorequipo.mostrarTodosLosEquipos(liga);
+                    }
                     case VER_JUGADORES -> gestorjugador.mostrarJugadores();
                     case BUSCAR_EQUIPOS -> gestorequipo.buscarEquipos(scanner);
                     case BUSCAR_JUGADORES -> gestorjugador.buscarJugadores(scanner);
@@ -45,6 +49,8 @@ public class App {
             }
         }
     }
+
+
 
     private static void mostrarMenu() {
         Consola.mostrarMensaje("""

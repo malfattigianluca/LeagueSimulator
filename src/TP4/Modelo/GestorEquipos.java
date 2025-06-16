@@ -105,6 +105,25 @@ public class GestorEquipos {
         return todos;
     }
 
+    public void mostrarTodosLosEquipos() {
+        List<Equipo> equipos = listarEquipos();
+        if (equipos.isEmpty()) {
+            System.out.println("No hay equipos cargados.");
+            return;
+        }
+        System.out.println("\n=== Listado de Equipos ===");
+        System.out.println("\nLiga                         |   Escudo   | Equipo                  | ELO");
+        System.out.println("----------------------------------------------------------------------------");
+
+        for (Equipo equipo : equipos) {
+            System.out.printf("%-28s | %-10s | %-20s | %4d%n",
+                    equipo.getLiga(),
+                    equipo.getEscudo(),
+                    equipo.getNombre(),
+                    equipo.getElo());
+        }
+    }
+
     public List<Equipo> filtrarPorLiga(String liga) {
         return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
     }

@@ -6,37 +6,29 @@ import java.util.*;
 public class SimuladorLiga {
   private String nombre;
   private List<Equipo> equipos;
-  private Map<Equipo, Integer> puntos;
   private Map<Equipo, Integer> golesAFavor;
   private Map<Equipo, Integer> golesEnContra;
   private List<Partido> partidos;
   private List<List<Partido>> jornadas;
   private List<List<Enfrentamiento>> calendario;
   private int jornadaActual;
-  private static final int K = 100;
   private boolean soloIda;
+  private static final int K = 100;
 
   public SimuladorLiga(String nombre) {
-    this(nombre, false);
-  }
-
-  public SimuladorLiga(String nombre, boolean soloIda) {
     this.nombre = nombre;
     this.equipos = new ArrayList<>();
-    this.puntos = new HashMap<>();
     this.golesAFavor = new HashMap<>();
     this.golesEnContra = new HashMap<>();
     this.partidos = new ArrayList<>();
     this.jornadas = new ArrayList<>();
     this.calendario = new ArrayList<>();
     this.jornadaActual = 0;
-    this.soloIda = soloIda;
   }
 
   public void agregarEquipo(Equipo equipo) {
     if (!equipos.contains(equipo)) {
       equipos.add(equipo);
-      puntos.put(equipo, 0);
       golesAFavor.put(equipo, 0);
       golesEnContra.put(equipo, 0);
     }
@@ -55,6 +47,8 @@ public class SimuladorLiga {
     int numJornadasIda = numEquipos - 1;
     List<Equipo> equiposLista = new ArrayList<>(equipos);
 
+    // Calendario de ida
+    List<List<Enfrentamiento>> ida = new ArrayList<>();
     for (int jornada = 0; jornada < numJornadasIda; jornada++) {
       List<Enfrentamiento> enfrentamientosJornada = new ArrayList<>();
       for (int i = 0; i < numEquipos / 2; i++) {
@@ -62,10 +56,24 @@ public class SimuladorLiga {
         Equipo visitante = equiposLista.get(numEquipos - 1 - i);
         enfrentamientosJornada.add(new Enfrentamiento(local, visitante));
       }
-      calendario.add(enfrentamientosJornada);
+      ida.add(enfrentamientosJornada);
       Collections.rotate(equiposLista.subList(1, numEquipos), 1);
     }
+
+    // Calendario de vuelta (invirtiendo local/visitante)
+    List<List<Enfrentamiento>> vuelta = new ArrayList<>();
+    for (List<Enfrentamiento> jornada : ida) {
+      List<Enfrentamiento> enfrentamientosVuelta = new ArrayList<>();
+      for (Enfrentamiento enf : jornada) {
+        enfrentamientosVuelta.add(new Enfrentamiento(enf.visitante, enf.local));
+      }
+      vuelta.add(enfrentamientosVuelta);
+    }
+
+    calendario.addAll(ida);
+    calendario.addAll(vuelta); // total 38 jornadas
   }
+
 
   public List<Partido> simularJornada() throws TorneoException {
     if (equipos.size() < 2) {
@@ -106,15 +114,6 @@ public class SimuladorLiga {
 
       actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
 
-      if (golesLocal > golesVisitante) {
-        puntos.put(local, puntos.get(local) + 3);
-      } else if (golesLocal < golesVisitante) {
-        puntos.put(visitante, puntos.get(visitante) + 3);
-      } else {
-        puntos.put(local, puntos.get(local) + 1);
-        puntos.put(visitante, puntos.get(visitante) + 1);
-      }
-
       double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
       double rb = golesVisitante > golesLocal ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
       int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
@@ -129,6 +128,13 @@ public class SimuladorLiga {
 
   public void agregarJornada(List<Partido> jornada) {
     jornadas.add(jornada);
+  }
+
+
+  public void reiniciar() {
+    for (Equipo equipo : equipos) {
+      equipo.reiniciarEstadisticas();
+    }
   }
 
   private int simularGoles(double lambda) {
@@ -150,12 +156,6 @@ public class SimuladorLiga {
     golesEnContra.put(local, golesEnContra.get(local) + golesVisitante);
     golesAFavor.put(visitante, golesAFavor.get(visitante) + golesVisitante);
     golesEnContra.put(visitante, golesEnContra.get(visitante) + golesLocal);
-
-    local.registrarPartido(golesLocal, golesVisitante);
-    visitante.registrarPartido(golesVisitante, golesLocal);
-
-    local.setPuntos(puntos.get(local));
-    visitante.setPuntos(puntos.get(visitante));
   }
 
   public void mostrarTabla() {
@@ -166,28 +166,28 @@ public class SimuladorLiga {
 
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
     equiposOrdenados.sort((e1, e2) -> {
-      int puntos1 = puntos.get(e1);
-      int puntos2 = puntos.get(e2);
+      int puntos1 = e1.getPuntos();  // o puntos.get(e1) si no usás atributo en Equipo
+      int puntos2 = e2.getPuntos();
       if (puntos1 != puntos2)
         return puntos2 - puntos1;
 
-      int difGoles1 = golesAFavor.get(e1) - golesEnContra.get(e1);
-      int difGoles2 = golesAFavor.get(e2) - golesEnContra.get(e2);
+      int difGoles1 = e1.getGolesAFavor() - e1.getGolesEnContra();
+      int difGoles2 = e2.getGolesAFavor() - e2.getGolesEnContra();
       if (difGoles1 != difGoles2)
         return difGoles2 - difGoles1;
 
-      return golesAFavor.get(e2) - golesAFavor.get(e1);
+      return e2.getGolesAFavor() - e1.getGolesAFavor();
     });
 
     for (Equipo equipo : equiposOrdenados) {
+      int puntosEquipo = equipo.getPuntos();
       int partidosJugados = equipo.getPartidosJugados();
       int partidosGanados = equipo.getPartidosGanados();
       int partidosEmpatados = equipo.getPartidosEmpatados();
       int partidosPerdidos = equipo.getPartidosPerdidos();
-      int golesFavor = golesAFavor.get(equipo);
-      int golesContra = golesEnContra.get(equipo);
+      int golesFavor = equipo.getGolesAFavor();
+      int golesContra = equipo.getGolesEnContra();
       int diferenciaGoles = golesFavor - golesContra;
-      int puntosEquipo = puntos.get(equipo);
       int eloEquipo = equipo.getElo();
 
       System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
@@ -208,6 +208,78 @@ public class SimuladorLiga {
     return calendario.size();
   }
 
+  public void mostrarPartidosJugados(Scanner scanner) {
+    if (jornadas.isEmpty()) {
+      System.out.println("No se han simulado jornadas aún.");
+      return;
+    }
+
+    ListIterator<List<Partido>> iterador = jornadas.listIterator();
+    int jornadaActual = 0;
+
+    // Muestra la primera jornada por defecto
+    if (iterador.hasNext()) {
+      List<Partido> primera = iterador.next();
+      jornadaActual++;
+      mostrarJornada(primera, jornadaActual);
+    }
+
+    while (true) {
+      System.out.println("\nIngrese N para siguiente, P para anterior, 0 para salir:");
+      String entrada = scanner.nextLine().trim().toUpperCase();
+
+      switch (entrada) {
+        case "N" -> {
+          if (iterador.hasNext()) {
+            List<Partido> siguiente = iterador.next();
+            jornadaActual++;
+            mostrarJornada(siguiente, jornadaActual);
+          } else {
+            System.out.println("No hay más jornadas siguientes.");
+          }
+        }
+        case "P" -> {
+          if (iterador.hasPrevious()) {
+            // Necesitamos retroceder dos veces para compensar la última llamada a next()
+            if (iterador.hasPrevious()) {
+              iterador.previous(); // retroceder al actual
+              if (iterador.hasPrevious()) {
+                List<Partido> anterior = iterador.previous();
+                jornadaActual--;
+                mostrarJornada(anterior, jornadaActual);
+                iterador.next(); // reposicionarse
+              } else {
+                System.out.println("Ya estás en la primera jornada.");
+              }
+            }
+          } else {
+            System.out.println("Ya estás en la primera jornada.");
+          }
+        }
+        case "0" -> {
+          System.out.println("Saliendo del visor de jornadas.");
+          return;
+        }
+        default -> System.out.println("Opción inválida.");
+      }
+    }
+  }
+
+  private void mostrarJornada(List<Partido> jornada, int numero) {
+    System.out.printf("\n=== Jornada %d ===\n", numero);
+    System.out.printf("%-28s %3s - %-3s %-28s%n", "Equipo Local", "G", "G", "Equipo Visitante");
+    System.out.println("---------------------------------------------------------------");
+    for (Partido partido : jornada) {
+      String local = partido.getLocal().getNombre();
+      String visitante = partido.getVisitante().getNombre();
+      int golesLocal = partido.getGolesLocal();
+      int golesVisitante = partido.getGolesVisitante();
+
+      System.out.printf("%-28s %3d - %-3d %-28s%n", local, golesLocal, golesVisitante, visitante);
+    }
+  }
+
+
   private static class Enfrentamiento {
     Equipo local;
     Equipo visitante;
@@ -216,5 +288,13 @@ public class SimuladorLiga {
       this.local = local;
       this.visitante = visitante;
     }
+  }
+
+  public String getNombre() {
+    return nombre;
+  }
+
+  public List<Partido> getPartidos() {
+    return new ArrayList<>(partidos);
   }
 }

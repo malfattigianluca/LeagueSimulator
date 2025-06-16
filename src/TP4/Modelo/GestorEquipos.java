@@ -82,21 +82,6 @@ public class GestorEquipos {
     }
 
 
-    public boolean eliminarEquipo(String nombre) {
-        for (String liga : equiposPorLiga.keySet()) {
-            List<Equipo> lista = equiposPorLiga.get(liga);
-            Iterator<Equipo> it = lista.iterator();
-            while (it.hasNext()) {
-                Equipo e = it.next();
-                if (e.getNombre().equalsIgnoreCase(nombre)) {
-                    it.remove();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public List<Equipo> listarEquipos() {
         List<Equipo> todos = new ArrayList<>();
         for (List<Equipo> lista : equiposPorLiga.values()) {
@@ -124,23 +109,6 @@ public class GestorEquipos {
         }
     }
 
-    public List<Equipo> filtrarPorLiga(String liga) {
-        return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
-    }
-
-    public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
-        Equipo equipoJugador = jugador.getEquipo();
-        if (equipoJugador != null) {
-            Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
-            if (equipoRegistrado != null) {
-                equipoRegistrado.agregarJugador(jugador);
-            } else {
-                agregarEquipo(equipoJugador);
-                equipoJugador.agregarJugador(jugador);
-            }
-        }
-    }
-
     public boolean existeEquipo(String nombre) {
         return buscarEquipoPorNombre(nombre) != null;
     }
@@ -161,6 +129,18 @@ public class GestorEquipos {
         System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
     }
 
+    public Map<String, List<Equipo>> getEquiposPorLiga() {
+        return equiposPorLiga;
+    }
+
+    public List<Equipo> getEquipos() {
+        List<Equipo> todos = new ArrayList<>();
+        for (List<Equipo> lista : equiposPorLiga.values()) {
+            todos.addAll(lista);
+        }
+        return todos;
+    }
+
     public void mostrarEquipo(String nombreEquipo) {
         for (String liga : equiposPorLiga.keySet()) {
             for (Equipo equipo : equiposPorLiga.get(liga)) {
@@ -173,15 +153,35 @@ public class GestorEquipos {
         System.out.println("No se encontró el equipo: " + nombreEquipo);
     }
 
-    public Map<String, List<Equipo>> getEquiposPorLiga() {
-        return equiposPorLiga;
+    public List<Equipo> filtrarPorLiga(String liga) {
+        return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
     }
 
-    public List<Equipo> getEquipos() {
-        List<Equipo> todos = new ArrayList<>();
-        for (List<Equipo> lista : equiposPorLiga.values()) {
-            todos.addAll(lista);
+    public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
+        Equipo equipoJugador = jugador.getEquipo();
+        if (equipoJugador != null) {
+            Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
+            if (equipoRegistrado != null) {
+                equipoRegistrado.agregarJugador(jugador);
+            } else {
+                agregarEquipo(equipoJugador);
+                equipoJugador.agregarJugador(jugador);
+            }
         }
-        return todos;
+    }
+
+    public boolean eliminarEquipo(String nombre) {
+        for (String liga : equiposPorLiga.keySet()) {
+            List<Equipo> lista = equiposPorLiga.get(liga);
+            Iterator<Equipo> it = lista.iterator();
+            while (it.hasNext()) {
+                Equipo e = it.next();
+                if (e.getNombre().equalsIgnoreCase(nombre)) {
+                    it.remove();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

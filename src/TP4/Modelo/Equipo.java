@@ -157,6 +157,14 @@ public class Equipo {
     this.id = id;
   }
 
+  public void setPuntos(int puntos) {
+    if (puntos < 0) {
+      throw new IllegalArgumentException("Los puntos no pueden ser negativos");
+    }
+    this.partidosGanados = puntos / 3;
+    this.partidosEmpatados = puntos % 3;
+  }
+
   public String getNombre() {
     return nombre;
   }

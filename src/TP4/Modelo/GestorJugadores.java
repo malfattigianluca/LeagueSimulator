@@ -141,6 +141,18 @@ public class GestorJugadores {
   }
 
   /**
+   * Solicita al usuario un fragmento del nombre y muestra los jugadores que lo contienen.
+   *
+   * @param scanner Scanner para leer la entrada del usuario.
+   */
+  public void buscarJugadores(Scanner scanner) {
+    System.out.print("Ingrese parte del nombre del jugador a buscar: ");
+    String fragmento = scanner.nextLine().trim();
+    List<Jugador> resultados = buscarJugadoresPorNombreParcial(fragmento);
+    mostrarListaDeJugadores(resultados);
+  }
+
+  /**
    * Busca jugadores cuyo nombre contenga el fragmento especificado (búsqueda parcial).
    *
    * @param fragmento Fragmento del nombre a buscar.

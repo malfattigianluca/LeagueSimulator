@@ -69,18 +69,13 @@ public class GestorEquipos {
             return;
         }
 
+        System.out.printf("%-28s | %-10s | %-20s | %4s\n", "Liga", "Escudo", "Equipo", "ELO");
+        System.out.println("----------------------------------------------------------------------------");
         for (Equipo equipo : resultados) {
-            System.out.println("\n=== Información del Equipo ===");
-            System.out.println("Nombre: " + equipo.getNombre());
-            System.out.println("Liga: " + equipo.getLiga());
-            System.out.println("ELO: " + equipo.getElo());
-            System.out.println("Puntos: " + equipo.getPuntos());
-            System.out.println("Jugadores:");
-            equipo.mostrarJugadores();
-            System.out.println("==============================");
+            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
+                    equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getElo());
         }
     }
-
 
     public List<Equipo> listarEquipos() {
         List<Equipo> todos = new ArrayList<>();
@@ -101,7 +96,7 @@ public class GestorEquipos {
         System.out.println("----------------------------------------------------------------------------");
 
         for (Equipo equipo : equipos) {
-            System.out.printf("%-28s | %-10s | %-20s | %4d%n",
+            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
                     equipo.getLiga(),
                     equipo.getEscudo(),
                     equipo.getNombre(),
@@ -117,10 +112,10 @@ public class GestorEquipos {
         for (String liga : equiposPorLiga.keySet()) {
             if (liga.equalsIgnoreCase(nombreLiga)) {
                 System.out.println("\nLiga: " + liga);
-                System.out.printf("%-5s %-20s %-30s %-10s%n", "ID", "Escudo", "Nombre", "Elo");
+                System.out.printf("%-5s %-20s %-30s %-10s\n", "ID", "Escudo", "Nombre", "Elo");
                 System.out.println("---------------------------------------------------------------");
                 for (Equipo e : equiposPorLiga.get(liga)) {
-                    System.out.printf("%-5d %-20s %-30s %-10d%n",
+                    System.out.printf("%-5d %-20s %-30s %-10d\n",
                             e.getId(), e.getEscudo(), e.getNombre(), e.getElo());
                 }
                 return;

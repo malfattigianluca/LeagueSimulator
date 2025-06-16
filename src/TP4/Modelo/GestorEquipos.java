@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import TP4.Excepciones.TorneoException;
 
@@ -199,6 +198,50 @@ public class GestorEquipos {
             }
         }
     }
+
+    /**
+     * Muestra un menú con todas las ligas disponibles y permite al usuario seleccionar una opción.
+     * Incluye una opción adicional para mostrar todos los equipos sin filtrar por liga.
+     *
+     * @param scanner Scanner utilizado para leer la entrada del usuario desde consola.
+     * @return El nombre de la liga seleccionada, o "TODAS" si el usuario elige ver todas las ligas.
+     *         Devuelve null si no hay ligas disponibles.
+     */
+    public String seleccionarLigaConMenu(Scanner scanner) {
+        // Obtener la lista de ligas disponibles a partir de las claves del mapa
+        List<String> ligas = new ArrayList<>(equiposPorLiga.keySet());
+
+        if (ligas.isEmpty()) {
+            System.out.println("No hay ligas disponibles.");
+            return null; // No se puede seleccionar nada si no hay ligas
+        }
+
+        // Mostrar menú de selección
+        System.out.println("Seleccione una liga:");
+        for (int i = 0; i < ligas.size(); i++) {
+            System.out.println((i + 1) + ". " + ligas.get(i)); // Opciones numeradas desde 1
+        }
+        System.out.println("0. Todas las ligas"); // Opción extra para ver todos los equipos
+
+        int opcion;
+        while (true) {
+            System.out.print("Ingrese el número de la liga: ");
+            try {
+                opcion = Integer.parseInt(scanner.nextLine());
+                // Validar que la opción esté dentro del rango permitido
+                if (opcion >= 0 && opcion <= ligas.size()) break;
+                else System.out.println("Número fuera de rango.");
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada no válida. Ingrese un número.");
+            }
+        }
+
+        // Si elige 0, se interpretará como solicitud de mostrar todas las ligas
+        if (opcion == 0) return "TODAS";
+        // Si elige una liga específica, devolver su nombre
+        return ligas.get(opcion - 1);
+    }
+
 
     /**
      * Muestra al usuario las ligas disponibles y permite seleccionar una para ver sus equipos.

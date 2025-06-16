@@ -27,14 +27,6 @@ public class GestorJugadores {
     return instancia;
   }
 
-  public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
-      int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
-    Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
-        asistencias, amarillas, rojas);
-    jugadores.insertar(nuevoJugador);
-    return nuevoJugador;
-  }
-
   public void cargarJugadores(String rutaArchivo) throws TorneoException {
     try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
       String linea;
@@ -80,6 +72,7 @@ public class GestorJugadores {
               continue; // Omitir jugador con número de camiseta inválido
             }
             jugadores.insertar(jugador);
+
 
             // Asociar al equipo
             boolean equipoEncontrado = false;
@@ -145,6 +138,79 @@ public class GestorJugadores {
       }
     } catch (IOException e) {
       throw new TorneoException("Error al leer el archivo de jugadores: " + e.getMessage());
+    }
+  }
+
+  public void mostrarJugadores() {
+    for (Jugador j : jugadores.getVertices()) {
+      System.out.println("ID: " + j.getId() + " | Nombre: " + j.getNombre() +
+          " | Nº Camiseta: " + j.getNumeroCamiseta() +
+          " | Posición: " + j.getPosicion() +
+          (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
+    }
+  }
+
+  // Búsqueda parcial
+  public List<Jugador> buscarJugadoresPorNombreParcial(String fragmento) {
+    List<Jugador> resultados = new ArrayList<>();
+    String fragmentoLower = fragmento.toLowerCase();
+    for (Jugador jugador : jugadores.getVertices()) {
+      String nombre = jugador.getNombre();
+      if (nombre != null && nombre.toLowerCase().contains(fragmentoLower)) {
+        resultados.add(jugador);
+      }
+    }
+    return resultados;
+  }
+
+  public void mostrarListaDeJugadores(List<Jugador> jugadores) {
+    if (jugadores.isEmpty()) {
+      System.out.println("No se encontraron jugadores.");
+      return;
+    }
+
+    for (Jugador j : jugadores) {
+      mostrarInformacionJugador(j); // ya lo tenés implementado
+    }
+  }
+
+  // Imprimir un solo jugador
+  private void mostrarInformacionJugador(Jugador j) {
+    System.out.println("\n=== Información del Jugador ===");
+    System.out.println("Nombre: " + j.getNombre());
+    System.out.println("Número: " + (j.getNumeroCamiseta() == -1 ? "Sin dorsal" : j.getNumeroCamiseta()));
+    System.out.println("Posición: " + j.getPosicion());
+    System.out.println("Edad: " + j.getEdad());
+    System.out.println("Altura: " + j.getAltura());
+    System.out.println("Equipo: " + (j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo"));
+    System.out.println("Liga: " + j.getLiga());
+    System.out.println("Estadísticas:");
+    System.out.println("  - Goles: " + j.getGoles());
+    System.out.println("  - Asistencias: " + j.getAsistencias());
+    System.out.println("  - Tarjetas amarillas: " + j.getAmarillas());
+    System.out.println("  - Tarjetas rojas: " + j.getRojas());
+    System.out.println("=============================");
+  }
+
+  public ConjuntoGenericoTDA<Jugador> getJugadores() {
+    return jugadores;
+  }
+
+
+
+  // Los siguientes metodos permiten crear y eliminar jugadores, pero no estan invocados en el main. Se dejan para
+  // futuras versiones o pruebas unitarias.
+  public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
+                              int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
+    Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
+            asistencias, amarillas, rojas);
+    jugadores.insertar(nuevoJugador);
+    return nuevoJugador;
+  }
+
+  public void eliminarJugador(Jugador jugador) {
+    if (jugador != null && jugador.getEquipo() == null) {
+      jugadores.eliminar(jugador);
     }
   }
 
@@ -216,7 +282,7 @@ public class GestorJugadores {
     }
 
     Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-        goles, asistencias, amarillas, rojas);
+            goles, asistencias, amarillas, rojas);
     jugadores.insertar(jugador);
 
     boolean equipoEncontrado = false;
@@ -247,70 +313,8 @@ public class GestorJugadores {
     System.out.println("Jugador agregado exitosamente: " + jugador);
   }
 
-  public void eliminarJugador(Jugador jugador) {
-    if (jugador != null && jugador.getEquipo() == null) {
-      jugadores.eliminar(jugador);
-    }
-  }
-
-  public void mostrarJugadores() {
-    for (Jugador j : jugadores.getVertices()) {
-      System.out.println("ID: " + j.getId() + " | Nombre: " + j.getNombre() +
-          " | Nº Camiseta: " + j.getNumeroCamiseta() +
-          " | Posición: " + j.getPosicion() +
-          (j.getEquipo() != null ? " | Equipo: " + j.getEquipo().getNombre() : ""));
-    }
-  }
-
-  // 1. Búsqueda parcial por fragmento
-  public List<Jugador> buscarJugadoresPorNombreParcial(String fragmento) {
-    List<Jugador> resultados = new ArrayList<>();
-    String fragmentoLower = fragmento.toLowerCase();
-    for (Jugador jugador : jugadores.getVertices()) {
-      String nombre = jugador.getNombre();
-      if (nombre != null && nombre.toLowerCase().contains(fragmentoLower)) {
-        resultados.add(jugador);
-      }
-    }
-    return resultados;
-  }
-
-  // 2. Mostrar todos los resultados encontrados
-  public void buscarYMostrarJugadoresPorNombreParcial(String fragmento) {
-    List<Jugador> resultados = buscarJugadoresPorNombreParcial(fragmento);
-    if (resultados.isEmpty()) {
-      System.out.println("No se encontraron jugadores que coincidan con: " + fragmento);
-      return;
-    }
-    for (Jugador j : resultados) {
-      mostrarInformacionJugador(j);
-    }
-  }
-
-  // 3. Imprimir un solo jugador (lo podés usar en otros lados también)
-  private void mostrarInformacionJugador(Jugador j) {
-    System.out.println("\n=== Información del Jugador ===");
-    System.out.println("Nombre: " + j.getNombre());
-    System.out.println("Número: " + (j.getNumeroCamiseta() == -1 ? "Sin dorsal" : j.getNumeroCamiseta()));
-    System.out.println("Posición: " + j.getPosicion());
-    System.out.println("Edad: " + j.getEdad());
-    System.out.println("Altura: " + j.getAltura());
-    System.out.println("Equipo: " + (j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo"));
-    System.out.println("Liga: " + j.getLiga());
-    System.out.println("Estadísticas:");
-    System.out.println("  - Goles: " + j.getGoles());
-    System.out.println("  - Asistencias: " + j.getAsistencias());
-    System.out.println("  - Tarjetas amarillas: " + j.getAmarillas());
-    System.out.println("  - Tarjetas rojas: " + j.getRojas());
-    System.out.println("=============================");
-  }
-
-
   public int cantidadJugadores() {
     return jugadores.tamanio();
   }
 
-  public ConjuntoGenericoTDA<Jugador> getJugadores() {
-    return jugadores;
-  }
 }

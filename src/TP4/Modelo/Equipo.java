@@ -66,7 +66,7 @@ public class Equipo {
     }
 
     // Imprimir cabecera
-    System.out.printf("%-30s %-15s %-10s %-10s %-10s%n",
+    System.out.printf("%-30s %-25s %-10s %-10s %-10s%n",
         "Nombre", "Posición", "Camiseta", "Edad", "Altura");
     System.out.println("------------------------------------------------------------------------------------");
 

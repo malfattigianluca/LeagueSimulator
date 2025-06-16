@@ -19,6 +19,4 @@ public class Constantes {
   public static final String TORNEO_ELIMINACION = "ELIMINACION";
   public static final String TORNEO_MIXTO = "MIXTO";
 
-  private Constantes() {
-  }
 }

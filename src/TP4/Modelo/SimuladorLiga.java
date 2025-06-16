@@ -3,18 +3,59 @@ package TP4.Modelo;
 import TP4.Excepciones.TorneoException;
 import java.util.*;
 
+/**
+ * Simula una liga de fútbol estructurada por jornadas, con posibilidad de jugar en modalidad de ida o ida y vuelta.
+ *
+ * La clase administra:
+ * - Lista de equipos participantes.
+ * - Estadísticas acumuladas por equipo (goles a favor y en contra).
+ * - Lista de partidos jugados.
+ * - Jornadas (fechas) compuestas por varios partidos.
+ * - Un calendario estructurado con enfrentamientos predefinidos.
+ *
+ * También permite avanzar jornada por jornada, reiniciar la simulación, y aplicar el sistema ELO
+ * para ajustar la fuerza de los equipos después de cada partido.
+ *
+ * @author
+ */
 public class SimuladorLiga {
+  // Nombre de la liga (ej. "LaLiga", "Serie A")
   private String nombre;
+
+  // Lista de equipos participantes
   private List<Equipo> equipos;
+
+  // Goles a favor por equipo acumulados durante la simulación
   private Map<Equipo, Integer> golesAFavor;
+
+  // Goles en contra por equipo acumulados durante la simulación
   private Map<Equipo, Integer> golesEnContra;
+
+  // Todos los partidos simulados (en orden cronológico)
   private List<Partido> partidos;
+
+  // Lista de jornadas (fechas), cada una con su lista de partidos jugados
   private List<List<Partido>> jornadas;
+
+  // Calendario teórico con todos los enfrentamientos programados
   private List<List<Enfrentamiento>> calendario;
+
+  // Índice de la jornada actual (comienza en 0)
   private int jornadaActual;
+
+  // Bandera para indicar si se juega solo ida (true) o ida y vuelta (false)
   private boolean soloIda;
+
+  // Constante del sistema ELO: factor de impacto en la actualización del rating
   private static final int K = 100;
 
+
+  /**
+   * Crea una nueva simulación de liga con el nombre especificado.
+   * Inicializa las estructuras necesarias para gestionar equipos, jornadas y calendario.
+   *
+   * @param nombre Nombre de la liga a simular.
+   */
   public SimuladorLiga(String nombre) {
     this.nombre = nombre;
     this.equipos = new ArrayList<>();
@@ -26,6 +67,14 @@ public class SimuladorLiga {
     this.jornadaActual = 0;
   }
 
+
+  /**
+   * Agrega un equipo a la liga, si aún no fue incorporado.
+   * <p>
+   * También inicializa su registro de goles a favor y en contra.
+   *
+   * @param equipo Equipo a agregar a la liga.
+   */
   public void agregarEquipo(Equipo equipo) {
     if (!equipos.contains(equipo)) {
       equipos.add(equipo);
@@ -34,6 +83,24 @@ public class SimuladorLiga {
     }
   }
 
+
+
+  /**
+   * Genera el calendario completo de la liga en formato ida y vuelta.
+   *
+   * - El calendario se organiza en jornadas (fechas).
+   * - En cada jornada se generan enfrentamientos sin repetición.
+   * - Se usa un algoritmo de rotación para garantizar que todos los equipos se enfrenten entre sí una vez por fase.
+   *
+   * Restricciones:
+   * - Debe haber al menos 2 equipos.
+   * - El número de equipos debe ser par para formar emparejamientos completos.
+   *
+   * El calendario generado se almacena en la estructura {@code calendario},
+   * que contiene dos fases: ida (local vs visitante) y vuelta (visitante vs local).
+   *
+   * @throws TorneoException Si no hay suficientes equipos o el número no es par.
+   */
   public void generarCalendario() throws TorneoException {
     if (equipos.size() < 2) {
       throw new TorneoException("Se necesitan al menos 2 equipos para generar un calendario");
@@ -43,11 +110,12 @@ public class SimuladorLiga {
     }
 
     calendario.clear();
+
     int numEquipos = equipos.size();
     int numJornadasIda = numEquipos - 1;
     List<Equipo> equiposLista = new ArrayList<>(equipos);
 
-    // Calendario de ida
+    // 🔁 Generar calendario de ida
     List<List<Enfrentamiento>> ida = new ArrayList<>();
     for (int jornada = 0; jornada < numJornadasIda; jornada++) {
       List<Enfrentamiento> enfrentamientosJornada = new ArrayList<>();
@@ -57,10 +125,11 @@ public class SimuladorLiga {
         enfrentamientosJornada.add(new Enfrentamiento(local, visitante));
       }
       ida.add(enfrentamientosJornada);
+      // Rotación de los equipos (excepto el primero)
       Collections.rotate(equiposLista.subList(1, numEquipos), 1);
     }
 
-    // Calendario de vuelta (invirtiendo local/visitante)
+    // 🔁 Generar calendario de vuelta (invirtiendo local y visitante)
     List<List<Enfrentamiento>> vuelta = new ArrayList<>();
     for (List<Enfrentamiento> jornada : ida) {
       List<Enfrentamiento> enfrentamientosVuelta = new ArrayList<>();
@@ -70,11 +139,25 @@ public class SimuladorLiga {
       vuelta.add(enfrentamientosVuelta);
     }
 
+    // Agregar ambas fases al calendario
     calendario.addAll(ida);
-    calendario.addAll(vuelta); // total 38 jornadas
+    calendario.addAll(vuelta); // Total de 2*(n−1) jornadas
   }
 
 
+  /**
+   * Simula la jornada actual según el calendario de enfrentamientos.
+   *
+   * Para cada partido:
+   * - Calcula probabilidades ELO para ambos equipos.
+   * - Ajusta parámetros para modelar ventaja local y desventaja visitante.
+   * - Usa una distribución Poisson para simular goles.
+   * - Crea un objeto {@link Partido} con estadísticas simuladas.
+   * - Actualiza estadísticas del torneo y el ELO de los equipos.
+   *
+   * @return Lista de partidos jugados en la jornada simulada.
+   * @throws TorneoException Si hay menos de 2 equipos o no quedan jornadas por simular.
+   */
   public List<Partido> simularJornada() throws TorneoException {
     if (equipos.size() < 2) {
       throw new TorneoException("Se necesitan al menos 2 equipos para simular una jornada");
@@ -91,9 +174,11 @@ public class SimuladorLiga {
       Equipo local = enfrentamiento.local;
       Equipo visitante = enfrentamiento.visitante;
 
+      // Calcular probabilidades ELO
       double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
       double pb = 1.0 - pa;
 
+      // Ajuste para modelar ventaja local
       double lambdaTotal = 2.0;
       double ventajaLocal = 1.1;
       double desventajaVisitante = 0.9;
@@ -102,20 +187,24 @@ public class SimuladorLiga {
       double lambdaLocal = pa * ventajaLocal * ajuste;
       double lambdaVisitante = pb * desventajaVisitante * ajuste;
 
+      // Introducir variación aleatoria
       lambdaLocal *= 0.9 + random.nextDouble() * 0.2;
       lambdaVisitante *= 0.9 + random.nextDouble() * 0.2;
 
+      // Simular goles
       int golesLocal = simularGoles(lambdaLocal);
       int golesVisitante = simularGoles(lambdaVisitante);
 
+      // Crear y registrar el partido
       Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
       partidos.add(partido);
       partidosDeLaJornada.add(partido);
 
       actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
 
+      // Actualizar ELO
       double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
-      double rb = golesVisitante > golesLocal ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
+      double rb = 1 - ra;
       int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
       int nuevoEloVisitante = (int) Math.round(visitante.getElo() + K * (rb - pb));
       local.setElo(nuevoEloLocal);
@@ -126,17 +215,36 @@ public class SimuladorLiga {
     return partidosDeLaJornada;
   }
 
+
+  /**
+   * Agrega una jornada ya simulada (o manualmente definida) al registro histórico.
+   *
+   * @param jornada Lista de partidos que componen la jornada.
+   */
   public void agregarJornada(List<Partido> jornada) {
     jornadas.add(jornada);
   }
 
 
+  /**
+   * Reinicia todas las estadísticas de los equipos en la liga.
+   * No borra los partidos ni el calendario, solo restablece el estado de los equipos.
+   */
   public void reiniciar() {
     for (Equipo equipo : equipos) {
       equipo.reiniciarEstadisticas();
     }
   }
 
+  /**
+   * Simula la cantidad de goles que anota un equipo utilizando una distribución de Poisson.
+   *
+   * El parámetro {@code lambda} representa la tasa promedio de goles esperados para el equipo.
+   * Se utiliza el algoritmo clásico de Knuth para generar un número aleatorio con dicha distribución.
+   *
+   * @param lambda Valor medio de la distribución Poisson (esperanza de goles).
+   * @return Número entero de goles simulados (≥ 0).
+   */
   private int simularGoles(double lambda) {
     Random random = new Random();
     double L = Math.exp(-lambda);
@@ -151,6 +259,20 @@ public class SimuladorLiga {
     return k - 1;
   }
 
+
+
+  /**
+   * Actualiza las estadísticas acumuladas de goles a favor y en contra para ambos equipos.
+   *
+   * Este metodo debe ser llamado después de cada partido simulado o cargado,
+   * y se limita a actualizar los contadores de goles (no puntos ni clasificación).
+   *
+   * @param local          Equipo local.
+   * @param visitante      Equipo visitante.
+   * @param golesLocal     Goles anotados por el local.
+   * @param golesVisitante Goles anotados por el visitante.
+   * @throws TorneoException Si ocurre algún error en la actualización (no implementado pero declarado).
+   */
   private void actualizarEstadisticas(Equipo local, Equipo visitante, int golesLocal, int golesVisitante) throws TorneoException {
     golesAFavor.put(local, golesAFavor.get(local) + golesLocal);
     golesEnContra.put(local, golesEnContra.get(local) + golesVisitante);
@@ -158,6 +280,23 @@ public class SimuladorLiga {
     golesEnContra.put(visitante, golesEnContra.get(visitante) + golesLocal);
   }
 
+
+  /**
+   * Muestra por consola la tabla de posiciones actual de la liga simulada.
+   *
+   * Ordena los equipos según los siguientes criterios, en orden de prioridad:
+   * 1. Puntos totales (descendente).
+   * 2. Diferencia de goles (descendente).
+   * 3. Goles a favor (descendente).
+   *
+   * Para cada equipo, se imprime:
+   * - Nombre del equipo
+   * - Puntos
+   * - Partidos jugados, ganados, empatados, perdidos
+   * - Goles a favor (GF) y en contra (GC)
+   * - Diferencia de goles (DG)
+   * - Puntuación ELO actual
+   */
   public void mostrarTabla() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
     System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
@@ -204,10 +343,30 @@ public class SimuladorLiga {
     }
   }
 
+  /**
+   * Devuelve la cantidad total de jornadas que se han generado en el calendario del torneo.
+   *
+   * Esto incluye tanto las jornadas de ida como de vuelta (si aplica).
+   *
+   * @return Número total de jornadas en el calendario.
+   */
   public int getTotalJornadas() {
     return calendario.size();
   }
 
+
+  /**
+   * Muestra por consola los partidos jugados jornada por jornada.
+   *
+   * Permite al usuario navegar interactivamente entre las distintas jornadas
+   * usando las siguientes opciones:
+   *
+   * - "N": pasar a la jornada siguiente
+   * - "P": volver a la jornada anterior
+   * - "0": salir del menú de jornadas
+   *
+   * @param scanner el objeto Scanner utilizado para leer la entrada del usuario
+   */
   public void mostrarPartidosJugados(Scanner scanner) {
     if (jornadas.isEmpty()) {
       System.out.println("No se han simulado jornadas aún.");
@@ -265,6 +424,12 @@ public class SimuladorLiga {
     }
   }
 
+  /**
+   * Imprime por consola los resultados de los partidos de una jornada específica.
+   *
+   * @param jornada lista de partidos jugados en esa jornada
+   * @param numero número de jornada (por ejemplo: 1, 2, 3, etc.)
+   */
   private void mostrarJornada(List<Partido> jornada, int numero) {
     System.out.printf("\n=== Jornada %d ===\n", numero);
     System.out.printf("%-28s %3s - %-3s %-28s%n", "Equipo Local", "G", "G", "Equipo Visitante");
@@ -280,20 +445,42 @@ public class SimuladorLiga {
   }
 
 
+  /**
+   * Representa un enfrentamiento entre dos equipos, usado en la generación del calendario.
+   */
   private static class Enfrentamiento {
     Equipo local;
     Equipo visitante;
 
+    /**
+     * Constructor del enfrentamiento entre dos equipos.
+     *
+     * @param local el equipo que juega como local
+     * @param visitante el equipo que juega como visitante
+     */
     public Enfrentamiento(Equipo local, Equipo visitante) {
       this.local = local;
       this.visitante = visitante;
     }
   }
 
+  /**
+   * Devuelve el nombre de la liga simulada.
+   *
+   * @return el nombre de la liga
+   */
   public String getNombre() {
     return nombre;
   }
 
+  /**
+   * Devuelve una lista con todos los partidos jugados hasta el momento en la liga.
+   *
+   * Se retorna una nueva lista para preservar la encapsulación y evitar
+   * modificaciones externas sobre la lista interna de partidos.
+   *
+   * @return una nueva lista con los partidos jugados
+   */
   public List<Partido> getPartidos() {
     return new ArrayList<>(partidos);
   }

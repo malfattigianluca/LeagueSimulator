@@ -4,7 +4,8 @@ import TP4.Excepciones.TorneoException;
 import java.util.*;
 
 /**
- * Representa un torneo de fútbol, que puede jugarse en modalidad de liga o eliminación directa.
+ * Representa un torneo de fútbol, que puede jugarse en modalidad de liga o
+ * eliminación directa.
  *
  * El torneo mantiene un registro de:
  * - Equipos participantes.
@@ -12,9 +13,11 @@ import java.util.*;
  * - Estadísticas por equipo (puntos, goles a favor/en contra).
  * - Cálculo de ranking ELO con un factor de impacto fijo.
  *
- * Se pueden simular diferentes tipos de torneos controlando la bandera {@code eliminacionDirecta}.
+ * Se pueden simular diferentes tipos de torneos controlando la bandera
+ * {@code eliminacionDirecta}.
  *
- * Esta clase permite agregar partidos, registrar resultados, y realizar un seguimiento de la clasificación.
+ * Esta clase permite agregar partidos, registrar resultados, y realizar un
+ * seguimiento de la clasificación.
  *
  * @author
  */
@@ -37,18 +40,19 @@ public class Torneo {
   // Registro de goles en contra por equipo
   private Map<Equipo, Integer> golesEnContra;
 
-  // Bandera que indica si el torneo es de eliminación directa (true) o tipo liga (false)
+  // Bandera que indica si el torneo es de eliminación directa (true) o tipo liga
+  // (false)
   private boolean eliminacionDirecta;
 
   // Constante que define el factor de impacto para actualización del ranking ELO
   private static final int K = 100;
 
-
   /**
    * Crea un nuevo torneo con el nombre y modalidad especificados.
    *
    * @param nombre             Nombre del torneo.
-   * @param eliminacionDirecta true si el torneo es de eliminación directa, false si es tipo liga.
+   * @param eliminacionDirecta true si el torneo es de eliminación directa, false
+   *                           si es tipo liga.
    */
   public Torneo(String nombre, boolean eliminacionDirecta) {
     this.nombre = nombre;
@@ -75,9 +79,9 @@ public class Torneo {
     }
   }
 
-
   /**
-   * Simula un partido entre dos equipos utilizando el sistema ELO para determinar las probabilidades.
+   * Simula un partido entre dos equipos utilizando el sistema ELO para determinar
+   * las probabilidades.
    * <p>
    * El metodo realiza:
    * - Cálculo de probabilidades de victoria basado en ELO.
@@ -120,10 +124,9 @@ public class Torneo {
     visitante.setElo(nuevoEloVisitante);
   }
 
-
-
   /**
-   * Simula la cantidad de goles anotados por un equipo en función de una probabilidad dada.
+   * Simula la cantidad de goles anotados por un equipo en función de una
+   * probabilidad dada.
    * Usa una probabilidad acumulativa con un máximo de 5 goles por equipo.
    *
    * @param probabilidad Probabilidad base de anotar (derivada del ELO).
@@ -138,9 +141,9 @@ public class Torneo {
     return goles;
   }
 
-
   /**
-   * Actualiza las estadísticas acumuladas del torneo para ambos equipos luego de un partido.
+   * Actualiza las estadísticas acumuladas del torneo para ambos equipos luego de
+   * un partido.
    *
    * - Suma los goles a favor y en contra.
    * - Asigna puntos según el resultado (3 por victoria, 1 por empate).
@@ -168,14 +171,13 @@ public class Torneo {
     }
   }
 
-
   /**
    * Inicia la simulación completa del torneo.
    *
    * - Verifica que haya al menos 2 equipos.
    * - Simula todos los partidos según el tipo de torneo:
-   *   - Eliminación directa: mediante eliminación por rondas.
-   *   - Liga: todos contra todos.
+   * - Eliminación directa: mediante eliminación por rondas.
+   * - Liga: todos contra todos.
    *
    * @throws TorneoException Si hay menos de 2 equipos.
    */
@@ -191,12 +193,13 @@ public class Torneo {
     }
   }
 
-
   /**
-   * Simula un torneo en formato de liga donde cada equipo juega contra todos los demás una vez.
+   * Simula un torneo en formato de liga donde cada equipo juega contra todos los
+   * demás una vez.
    * Los partidos se generan por combinaciones únicas (no se repiten encuentros).
    *
-   * @throws TorneoException Si ocurre un error durante la simulación de un partido.
+   * @throws TorneoException Si ocurre un error durante la simulación de un
+   *                         partido.
    */
   private void simularLiga() throws TorneoException {
     for (int i = 0; i < equipos.size(); i++) {
@@ -205,7 +208,6 @@ public class Torneo {
       }
     }
   }
-
 
   /**
    * Simula un torneo por eliminación directa.
@@ -257,7 +259,6 @@ public class Torneo {
     }
   }
 
-
   /**
    * Muestra en consola la tabla de posiciones del torneo.
    *
@@ -276,12 +277,13 @@ public class Torneo {
    * - Puntos (Pts)
    * - ELO
    *
-   * Esta tabla resume el rendimiento de cada equipo durante la simulación del torneo.
+   * Esta tabla resume el rendimiento de cada equipo durante la simulación del
+   * torneo.
    */
   public void mostrarTablaPosiciones() {
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
     System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
-            "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "Pts", "ELO");
+        "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "Pts", "ELO");
     System.out.println("--------------------------------------------------------------------------");
 
     // Crear lista ordenada de equipos
@@ -290,11 +292,13 @@ public class Torneo {
       int puntos1 = puntos.get(e1);
       int puntos2 = puntos.get(e2);
 
-      if (puntos1 != puntos2) return puntos2 - puntos1;
+      if (puntos1 != puntos2)
+        return puntos2 - puntos1;
 
       int difGoles1 = golesAFavor.get(e1) - golesEnContra.get(e1);
       int difGoles2 = golesAFavor.get(e2) - golesEnContra.get(e2);
-      if (difGoles1 != difGoles2) return difGoles2 - difGoles1;
+      if (difGoles1 != difGoles2)
+        return difGoles2 - difGoles1;
 
       return golesAFavor.get(e2) - golesAFavor.get(e1); // Tercer criterio: GF
     });
@@ -306,13 +310,19 @@ public class Torneo {
       // Calcular partidos ganados, empatados y perdidos
       for (Partido partido : partidos) {
         if (partido.getLocal() == equipo) {
-          if (partido.getGolesLocal() > partido.getGolesVisitante()) pg++;
-          else if (partido.getGolesLocal() == partido.getGolesVisitante()) pe++;
-          else pp++;
+          if (partido.getGolesLocal() > partido.getGolesVisitante())
+            pg++;
+          else if (partido.getGolesLocal() == partido.getGolesVisitante())
+            pe++;
+          else
+            pp++;
         } else if (partido.getVisitante() == equipo) {
-          if (partido.getGolesVisitante() > partido.getGolesLocal()) pg++;
-          else if (partido.getGolesVisitante() == partido.getGolesLocal()) pe++;
-          else pp++;
+          if (partido.getGolesVisitante() > partido.getGolesLocal())
+            pg++;
+          else if (partido.getGolesVisitante() == partido.getGolesLocal())
+            pe++;
+          else
+            pp++;
         }
       }
 
@@ -321,11 +331,10 @@ public class Torneo {
       int eloEquipo = equipo.getElo();
 
       System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
-              equipo.getNombre(), pj, pg, pe, pp,
-              golesAFavor.get(equipo), golesEnContra.get(equipo), puntosEquipo, eloEquipo);
+          equipo.getNombre(), pj, pg, pe, pp,
+          golesAFavor.get(equipo), golesEnContra.get(equipo), puntosEquipo, eloEquipo);
     }
   }
-
 
   /**
    * Muestra por consola todos los partidos jugados en el torneo.
@@ -355,9 +364,19 @@ public class Torneo {
   }
 
   /**
-   * @return true si el torneo se juega en formato de eliminación directa; false si es tipo liga.
+   * @return true si el torneo se juega en formato de eliminación directa; false
+   *         si es tipo liga.
    */
   public boolean isEliminacionDirecta() {
     return eliminacionDirecta;
+  }
+
+  /**
+   * Devuelve la lista de partidos jugados en el torneo.
+   *
+   * @return Lista de partidos.
+   */
+  public List<Partido> getPartidos() {
+    return partidos;
   }
 }

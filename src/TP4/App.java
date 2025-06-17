@@ -3,6 +3,7 @@ package TP4;
 import TP4.Excepciones.TorneoException;
 import TP4.Modelo.*;
 import TP4.Util.Consola;
+import TP4.Modelo.GestorJugadores;
 
 import java.util.*;
 
@@ -20,7 +21,8 @@ public class App {
         }
     }
 
-    private static void ejecutarMenu(Scanner scanner, GestorEquipos gestorequipo, GestorJugadores gestorjugador) throws TorneoException {
+    private static void ejecutarMenu(Scanner scanner, GestorEquipos gestorequipo, GestorJugadores gestorjugador)
+            throws TorneoException {
         while (!salir) {
             mostrarMenu();
             try {
@@ -35,8 +37,7 @@ public class App {
                         String ligaSeleccionada = gestorequipo.seleccionarLigaConMenu(scanner);
                         if (ligaSeleccionada != null) {
                             gestorequipo.mostrarTodosLosEquipos(
-                                    ligaSeleccionada.equals("TODAS") ? "" : ligaSeleccionada
-                            );
+                                    ligaSeleccionada.equals("TODAS") ? "" : ligaSeleccionada);
                         }
                     }
                     case VER_JUGADORES -> gestorjugador.mostrarJugadores();
@@ -53,19 +54,17 @@ public class App {
         }
     }
 
-
-
     private static void mostrarMenu() {
         Consola.mostrarMensaje("""
-            \n=== SISTEMA DE GESTION DE TORNEOS FUTBOLISTICOS ===
-            1. Simular liga
-            2. Crear tu propio torneo
-            3. Buscar equipos
-            4. Buscar jugadores
-            5. Ver ligas
-            6. Ver equipos
-            7. Ver jugadores
-            0. Salir""");
+                \n=== SISTEMA DE GESTION DE TORNEOS FUTBOLISTICOS ===
+                1. Simular liga
+                2. Crear tu propio torneo
+                3. Buscar equipos
+                4. Buscar jugadores
+                5. Ver ligas
+                6. Ver equipos
+                7. Ver jugadores
+                0. Salir""");
     }
 
     private static String leerEntrada(Scanner scanner, String mensaje) {
@@ -84,7 +83,7 @@ public class App {
     }
 
     enum MenuOpcion {
-        SIMULAR_LIGA(1), CREAR_TORNEO(2), BUSCAR_EQUIPOS(3), BUSCAR_JUGADORES(4),VER_LIGAS(5), VER_EQUIPOS(6),
+        SIMULAR_LIGA(1), CREAR_TORNEO(2), BUSCAR_EQUIPOS(3), BUSCAR_JUGADORES(4), VER_LIGAS(5), VER_EQUIPOS(6),
         VER_JUGADORES(7), SALIR(0);
 
         private final int valor;

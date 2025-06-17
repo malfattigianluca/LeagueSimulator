@@ -10,7 +10,8 @@ import java.util.*;
 
 /**
  * Clase GestorJugadores.
- * Se encarga de gestionar la carga, creación, asociación y búsqueda de jugadores.
+ * Se encarga de gestionar la carga, creación, asociación y búsqueda de
+ * jugadores.
  */
 public class GestorJugadores {
   private static GestorJugadores instancia;
@@ -20,7 +21,8 @@ public class GestorJugadores {
 
   /**
    * Constructor de la clase GestorJugadores.
-   * Inicializa el conjunto de jugadores, el identificador y establece el gestor de equipos.
+   * Inicializa el conjunto de jugadores, el identificador y establece el gestor
+   * de equipos.
    *
    * @param gestorEquipos Instancia del gestor de equipos para asociar jugadores.
    */
@@ -56,7 +58,8 @@ public class GestorJugadores {
       int numeroLinea = 0;
       while ((linea = reader.readLine()) != null) {
         numeroLinea++;
-        if (linea.trim().isEmpty()) continue;
+        if (linea.trim().isEmpty())
+          continue;
         String[] datos = linea.split(";");
         if (datos.length == 11) {
           try {
@@ -67,14 +70,17 @@ public class GestorJugadores {
             int numeroCamiseta = datos[4].equals("-") ? -1 : Integer.parseInt(datos[4].trim());
             int edad = Integer.parseInt(datos[5].trim());
             String altura = datos[6].trim();
-            if (altura.equalsIgnoreCase("Desconocido")) altura = "N/A";
-            else altura = altura.replace(",", ".").replace("m", "");
+            if (altura.equalsIgnoreCase("Desconocido"))
+              altura = "N/A";
+            else
+              altura = altura.replace(",", ".").replace("m", "");
             int goles = Integer.parseInt(datos[7].trim());
             int asistencias = Integer.parseInt(datos[8].trim());
             int rojas = Integer.parseInt(datos[9].trim());
             int amarillas = Integer.parseInt(datos[10].trim());
 
-            Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad, goles, asistencias, amarillas, rojas);
+            Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
+                goles, asistencias, amarillas, rojas);
             jugadores.insertar(jugador);
 
             boolean equipoEncontrado = false;
@@ -106,7 +112,8 @@ public class GestorJugadores {
                   break;
                 }
               }
-              if (equipoEncontrado) break;
+              if (equipoEncontrado)
+                break;
             }
             if (!equipoEncontrado) {
               System.err.println("Equipo no encontrado para el jugador en línea " + numeroLinea);
@@ -133,23 +140,25 @@ public class GestorJugadores {
    */
   public void mostrarJugadores() {
     System.out.printf("%-5s %-25s %-15s %-25s %-25s%n", "ID", "Nombre", "Nº Camiseta", "Posición", "Equipo");
-    System.out.println("-----------------------------------------------------------------------------------------------");
+    System.out
+        .println("-----------------------------------------------------------------------------------------------");
 
-    for (Jugador j : jugadores.getVertices().reversed()) {
+    List<Jugador> listaJugadores = new ArrayList<>(jugadores.getVertices());
+    Collections.reverse(listaJugadores);
+    for (Jugador j : listaJugadores) {
       String numeroCamiseta = j.getNumeroCamiseta() == -1 ? "N/A" : String.valueOf(j.getNumeroCamiseta());
       System.out.printf("%-5d %-25s %-15s %-25s %-25s%n",
-              j.getId(),
-              j.getNombre(),
-              numeroCamiseta,
-              j.getPosicion(),
-              j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo");
+          j.getId(),
+          j.getNombre(),
+          numeroCamiseta,
+          j.getPosicion(),
+          j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo");
     }
   }
 
-
-
   /**
-   * Solicita al usuario un fragmento del nombre y muestra los jugadores que lo contienen.
+   * Solicita al usuario un fragmento del nombre y muestra los jugadores que lo
+   * contienen.
    *
    * @param scanner Scanner para leer la entrada del usuario.
    */
@@ -161,7 +170,8 @@ public class GestorJugadores {
   }
 
   /**
-   * Busca jugadores cuyo nombre contenga el fragmento especificado (búsqueda parcial).
+   * Busca jugadores cuyo nombre contenga el fragmento especificado (búsqueda
+   * parcial).
    *
    * @param fragmento Fragmento del nombre a buscar.
    * @return Lista de jugadores que coinciden con el fragmento.
@@ -179,7 +189,8 @@ public class GestorJugadores {
   }
 
   /**
-   * Muestra en consola una lista de jugadores, utilizando la función que imprime la información detallada.
+   * Muestra en consola una lista de jugadores, utilizando la función que imprime
+   * la información detallada.
    *
    * @param jugadores Lista de jugadores a mostrar.
    */
@@ -227,29 +238,30 @@ public class GestorJugadores {
   /**
    * Crea un nuevo jugador y lo inserta en el conjunto.
    *
-   * @param nombre          Nombre del jugador.
-   * @param numeroCamiseta  Número de camiseta del jugador.
-   * @param posicion        Posición en el campo.
-   * @param liga            Liga a la que pertenece.
-   * @param altura          Altura del jugador.
-   * @param edad            Edad del jugador.
-   * @param goles           Número de goles.
-   * @param asistencias     Número de asistencias.
-   * @param amarillas       Tarjetas amarillas.
-   * @param rojas           Tarjetas rojas.
+   * @param nombre         Nombre del jugador.
+   * @param numeroCamiseta Número de camiseta del jugador.
+   * @param posicion       Posición en el campo.
+   * @param liga           Liga a la que pertenece.
+   * @param altura         Altura del jugador.
+   * @param edad           Edad del jugador.
+   * @param goles          Número de goles.
+   * @param asistencias    Número de asistencias.
+   * @param amarillas      Tarjetas amarillas.
+   * @param rojas          Tarjetas rojas.
    * @return El jugador creado.
    * @throws TorneoException Si ocurre algún error durante la creación.
    */
   public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
-                              int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
+      int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
     Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
-            asistencias, amarillas, rojas);
+        asistencias, amarillas, rojas);
     jugadores.insertar(nuevoJugador);
     return nuevoJugador;
   }
 
   /**
-   * Elimina un jugador del conjunto, siempre y cuando no esté asociado a ningún equipo.
+   * Elimina un jugador del conjunto, siempre y cuando no esté asociado a ningún
+   * equipo.
    *
    * @param jugador Jugador a eliminar.
    */
@@ -266,5 +278,41 @@ public class GestorJugadores {
    */
   public int cantidadJugadores() {
     return jugadores.tamanio();
+  }
+
+  /**
+   * Muestra las estadísticas de los jugadores de un equipo específico.
+   *
+   * @param nombreEquipo Nombre del equipo.
+   */
+  public void mostrarEstadisticasJugadores(String nombreEquipo) {
+    System.out.println("\n=== Estadísticas de Jugadores - " + nombreEquipo + " ===");
+    System.out.printf("%-20s %-10s %-10s %-10s %-10s%n",
+        "Jugador", "Goles", "Asistencias", "Amarillas", "Rojas");
+    System.out.println("------------------------------------------------------------");
+
+    List<Jugador> jugadoresEquipo = new ArrayList<>();
+    for (Jugador jugador : jugadores.getVertices()) {
+      if (jugador.getEquipo() != null && jugador.getEquipo().getNombre().equalsIgnoreCase(nombreEquipo)) {
+        jugadoresEquipo.add(jugador);
+      }
+    }
+
+    if (jugadoresEquipo.isEmpty()) {
+      System.out.println("No hay jugadores registrados para este equipo.");
+      return;
+    }
+
+    // Ordenar por goles
+    jugadoresEquipo.sort((j1, j2) -> Integer.compare(j2.getGoles(), j1.getGoles()));
+
+    for (Jugador jugador : jugadoresEquipo) {
+      System.out.printf("%-20s %-10d %-10d %-10d %-10d%n",
+          jugador.getNombre(),
+          jugador.getGoles(),
+          jugador.getAsistencias(),
+          jugador.getAmarillas(),
+          jugador.getRojas());
+    }
   }
 }

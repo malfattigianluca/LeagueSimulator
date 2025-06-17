@@ -70,6 +70,7 @@ public class App {
     private static String leerEntrada(Scanner scanner, String mensaje) {
         Consola.mostrarMensaje(mensaje);
         return scanner.nextLine();
+        //TODO
     }
 
     private static int leerEntero(Scanner scanner, String mensaje) {

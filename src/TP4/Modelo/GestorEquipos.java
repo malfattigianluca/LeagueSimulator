@@ -313,50 +313,22 @@ public class GestorEquipos {
     public void simularLiga(Scanner scanner, GestorJugadores gestorJugadores) {
         System.out.println("\n=== SIMULACIÓN DE LIGA ===");
 
-        // Obtener equipos disponibles
-        List<Equipo> disponibles = getEquipos();
-        if (disponibles.isEmpty()) {
-            System.out.println("No hay equipos disponibles para simular una liga.");
+        // Obtener la liga seleccionada
+        String ligaSeleccionada = seleccionarLigaConMenu(scanner);
+        if (ligaSeleccionada == null) {
             return;
         }
 
-        // Mostrar equipos disponibles
-        System.out.println("\nEquipos disponibles:");
-        for (int i = 0; i < disponibles.size(); i++) {
-            System.out.printf("%d. %s (%s) - ELO: %d%n",
-                    i + 1,
-                    disponibles.get(i).getNombre(),
-                    disponibles.get(i).getLiga(),
-                    disponibles.get(i).getElo());
-        }
-
-        // Seleccionar equipos
-        System.out.print("\nIngrese los números de los equipos separados por comas (ej: 1,3,5): ");
-        String[] indices = scanner.nextLine().split(",");
-        List<Equipo> equiposSeleccionados = new ArrayList<>();
-
-        for (String idxStr : indices) {
-            try {
-                int idx = Integer.parseInt(idxStr.trim()) - 1;
-                if (idx < 0 || idx >= disponibles.size()) {
-                    System.out.println("Índice inválido: " + (idx + 1));
-                    return;
-                }
-                equiposSeleccionados.add(disponibles.get(idx));
-            } catch (NumberFormatException e) {
-                System.out.println("Valor inválido: " + idxStr);
-                return;
-            }
-        }
-
-        if (equiposSeleccionados.size() < 2) {
-            System.out.println("Se necesitan al menos 2 equipos para simular una liga.");
+        // Obtener equipos de la liga seleccionada
+        List<Equipo> equiposLiga = equiposPorLiga.get(ligaSeleccionada);
+        if (equiposLiga == null || equiposLiga.isEmpty()) {
+            System.out.println("No hay equipos disponibles en la liga seleccionada.");
             return;
         }
 
         // Crear y simular la liga
-        Torneo liga = new Torneo("Liga Simulada", false);
-        for (Equipo equipo : equiposSeleccionados) {
+        Torneo liga = new Torneo(ligaSeleccionada, false);
+        for (Equipo equipo : equiposLiga) {
             liga.agregarEquipo(equipo);
         }
 
@@ -375,7 +347,7 @@ public class GestorEquipos {
             // Mostrar estadísticas de jugadores
             if (gestorJugadores != null) {
                 System.out.println("\n=== Estadísticas de Jugadores ===");
-                for (Equipo equipo : equiposSeleccionados) {
+                for (Equipo equipo : equiposLiga) {
                     gestorJugadores.mostrarEstadisticasJugadores(equipo.getNombre());
                 }
             }

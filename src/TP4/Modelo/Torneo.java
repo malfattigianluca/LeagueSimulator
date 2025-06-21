@@ -48,7 +48,7 @@ public class Torneo {
   // Constante que define el factor de impacto para actualización del ranking ELO
   private static final int K = 100;
 
-  private NodoPartido raizEliminacion;
+  public NodoPartido raizEliminacion;
 
   /**
    * Crea un nuevo torneo con el nombre y modalidad especificados.
@@ -158,6 +158,8 @@ public class Torneo {
     return goles;
   }
 
+
+
   /**
    * Actualiza las estadísticas acumuladas del torneo para ambos equipos luego de
    * un partido.
@@ -201,7 +203,7 @@ public class Torneo {
 
 
   private String abreviar(String nombre) {
-    return nombre.length() <= 6 ? nombre : nombre.substring(0, 6);
+    return nombre.length() > 20 ? nombre.substring(0, 18) + "…" : nombre;
   }
 
   private String nombreFase(int ronda, int totalRondas) {
@@ -276,10 +278,17 @@ public class Torneo {
     List<Equipo> equiposDisponibles = new ArrayList<>(equipos);
     Collections.shuffle(equiposDisponibles);
 
-    // Simular y construir el árbol binario
-    this.raizEliminacion = construirArbolEliminacion(equiposDisponibles);
+    // Simula el torneo completo y devuelve la raíz del árbol con todos los partidos jugados
+    this.raizEliminacion = simularRonda(equiposDisponibles);
+
+    // Mostrar el cuadro del torneo (ya simulado)
     imprimirBracket();
+    if (raizEliminacion != null && raizEliminacion.getGanador() != null) {
+      System.out.println("\n🏆 Campeón: " + raizEliminacion.getGanador().getNombre());
+    }
   }
+
+
 
   public void imprimirBracket() {
     if (raizEliminacion == null) {
@@ -289,31 +298,40 @@ public class Torneo {
 
     System.out.println("\n=== Cuadro del Torneo (Formato Bracket) ===\n");
     imprimirBracketRecursivo(raizEliminacion, 0, true);
-    System.out.println("\n🏆 Campeón: " + raizEliminacion.getPartido().getGanador().getNombre());
+
+    Equipo campeon = raizEliminacion.getGanador();
+    if (campeon != null) {
+      System.out.println("\n🏆 Campeón: " + campeon.getNombre());
+    } else {
+      System.out.println("\n🏆 Campeón: Desconocido");
+    }
   }
 
+
   private void imprimirBracketRecursivo(NodoPartido nodo, int nivel, boolean izquierdo) {
-    if (nodo == null || nodo.getPartido() == null) return;
+    if (nodo == null) return;
 
     Partido p = nodo.getPartido();
     String indent = "    ".repeat(nivel);
     String flecha = izquierdo ? "└── " : "┌── ";
 
+    // Primero imprime el subárbol derecho (para que visualmente quede arriba)
     imprimirBracketRecursivo(nodo.getDerecho(), nivel + 1, false);
 
-    String local = p.getLocal() != null ? p.getLocal().getNombre() : "BYE";
-    String visitante = p.getVisitante() != null ? p.getVisitante().getNombre() : "BYE";
-    String ganador = p.getGanador() != null ? " 🏅" + p.getGanador().getNombre() : "";
+    String local = (p != null && p.getLocal() != null) ? abreviar(p.getLocal().getNombre()) : "BYE";
+    String visitante = (p != null && p.getVisitante() != null) ? abreviar(p.getVisitante().getNombre()) : "BYE";
+    String ganador = (p != null && p.getGanador() != null) ? " → 🏅" + abreviar(p.getGanador().getNombre()) : "";
 
     System.out.println(indent + flecha + local + " vs " + visitante + ganador);
 
+    // Luego imprime el subárbol izquierdo (queda abajo)
     imprimirBracketRecursivo(nodo.getIzquierdo(), nivel + 1, true);
   }
 
 
+
   private NodoPartido construirArbolEliminacion(List<Equipo> equipos) throws TorneoException {
     if (equipos.size() == 1) {
-      // Nodo hoja con el único equipo restante
       NodoPartido nodo = new NodoPartido(null);
       nodo.setGanador(equipos.get(0));
       return nodo;
@@ -326,51 +344,77 @@ public class Torneo {
       Equipo e2 = (i + 1 < equipos.size()) ? equipos.get(i + 1) : null;
 
       NodoPartido nodo;
-
-      if (e2 == null || e1.getNombre().equals("BYE")) {
+      if (e2 == null || e1.getNombre().equals("BYE") || e2.getNombre().equals("BYE")) {
         nodo = new NodoPartido(null);
         nodo.setGanador(e2);
-      } else if (e2.getNombre().equals("BYE")) {
-        nodo = new NodoPartido(null);
-        nodo.setGanador(e1);
       } else {
         Partido partido = new Partido(e1, e2);
         nodo = new NodoPartido(partido);
-        nodo.setGanador(partido.getGanadorConDesempate());
       }
 
       nodosRonda.add(nodo);
     }
 
-    // Obtener ganadores para la siguiente ronda
-    List<Equipo> ganadores = new ArrayList<>();
-    for (NodoPartido nodo : nodosRonda) {
-      if (nodo.getGanador() != null) {
-        ganadores.add(nodo.getGanador());
-      } else {
-        throw new TorneoException("Error: nodo sin ganador válido.");
-      }
-    }
-
-    // Construir recursivamente el siguiente nivel
-    NodoPartido siguienteNivel = construirArbolEliminacion(ganadores);
-
-    // Si hay exactamente un nodo, es la raíz del árbol
     if (nodosRonda.size() == 1) return nodosRonda.get(0);
 
-    // Combinar nodos de esta ronda como hijos del nodo raíz final
+    List<NodoPartido> siguienteNivel = new ArrayList<>();
     for (int i = 0; i < nodosRonda.size(); i += 2) {
       NodoPartido padre = new NodoPartido(null);
       padre.setIzquierdo(nodosRonda.get(i));
       if (i + 1 < nodosRonda.size()) {
         padre.setDerecho(nodosRonda.get(i + 1));
       }
-      padre.setGanador(siguienteNivel.getGanador()); // marcador simbólico
-      siguienteNivel = padre;
+      siguienteNivel.add(padre);
     }
 
-    return siguienteNivel;
+    return construirArbolEliminacionDesdeNodos(siguienteNivel);
   }
+
+  private NodoPartido construirArbolEliminacionDesdeNodos(List<NodoPartido> nodos) {
+    if (nodos.size() == 1) return nodos.get(0);
+
+    List<NodoPartido> siguienteNivel = new ArrayList<>();
+    for (int i = 0; i < nodos.size(); i += 2) {
+      NodoPartido padre = new NodoPartido(null);
+      padre.setIzquierdo(nodos.get(i));
+      if (i + 1 < nodos.size()) {
+        padre.setDerecho(nodos.get(i + 1));
+      }
+      siguienteNivel.add(padre);
+    }
+
+    return construirArbolEliminacionDesdeNodos(siguienteNivel);
+  }
+
+  public void simularPartidos(NodoPartido nodo) throws TorneoException {
+    if (nodo == null) return;
+
+    if (nodo.getPartido() != null) {
+      nodo.getPartido().simular();
+      nodo.setGanador(nodo.getPartido().getGanador());
+      partidos.add(nodo.getPartido()); // 👈 Agregá esto
+    } else {
+      simularPartidos(nodo.getIzquierdo());
+      simularPartidos(nodo.getDerecho());
+
+      Equipo e1 = nodo.getIzquierdo() != null ? nodo.getIzquierdo().getGanador() : null;
+      Equipo e2 = nodo.getDerecho() != null ? nodo.getDerecho().getGanador() : null;
+
+      if (e1 != null && e2 != null) {
+        Partido partido = new Partido(e1, e2);
+        partido.simular();
+        nodo.setPartido(partido);
+        nodo.setGanador(partido.getGanador());
+        partidos.add(partido); // 👈 También acá
+      } else if (e1 != null) {
+        nodo.setGanador(e1);
+      } else if (e2 != null) {
+        nodo.setGanador(e2);
+      }
+    }
+  }
+
+
 
 
   /**
@@ -523,7 +567,15 @@ public class Torneo {
       }
     }
 
-    return nuevaRonda.size() == 1 ? nuevaRonda.get(0) : simularRonda(ganadores);
+    if (nuevaRonda.size() == 1) {
+      NodoPartido raiz = nuevaRonda.get(0);
+      if (raiz.getPartido() != null) {
+        raiz.setGanador(raiz.getPartido().getGanador());
+      }
+      return raiz;
+    } else {
+      return simularRonda(ganadores);
+    }
   }
 
   /**

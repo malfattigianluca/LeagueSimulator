@@ -107,6 +107,32 @@ public class Partido {
     this(local, visitante, 0, 0); // Crea un partido inicializado en 0 a 0
   }
 
+  private int generarPoisson(int elo) {
+    double lambda = Math.max(1.0, elo / 800.0); // Ajustá esto según tu sistema
+    double L = Math.exp(-lambda);
+    int k = 0;
+    double p = 1.0;
+    do {
+      k++;
+      p *= Math.random();
+    } while (p > L);
+    return k - 1;
+  }
+
+  public void simular() {
+    // Simular el partido usando tu lógica avanzada si está accesible desde acá
+    // Como no podés acceder directamente a `Torneo.simularPartido(...)`, simulá acá con lo mínimo:
+    this.golesLocal = generarPoisson(local.getElo());
+    this.golesVisitante = generarPoisson(visitante.getElo());
+
+    if (golesLocal > golesVisitante) {
+      this.ganador = local;
+    } else if (golesVisitante > golesLocal) {
+      this.ganador = visitante;
+    } else {
+      this.ganador = getGanadorConDesempate();
+    }
+  }
 
   /**
    * Simula estadísticas de jugadores para el partido actual.

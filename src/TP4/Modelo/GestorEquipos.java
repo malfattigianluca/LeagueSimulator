@@ -4,11 +4,16 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
 import TP4.Excepciones.TorneoException;
 
+/**
+ * Clase GestorEquipos
+ *
+ * Esta clase se encarga de gestionar los equipos de fútbol agrupados por liga,
+ * así como de asociar simuladores de ligas correspondientes a cada liga cargada.
+ * También maneja la asignación de IDs únicos para nuevos equipos que se registren.
+ */
 public class GestorEquipos {
-
     // Mapa que asocia el nombre de una liga con una lista de sus equipos
     private Map<String, List<Equipo>> equiposPorLiga;
 
@@ -17,8 +22,6 @@ public class GestorEquipos {
 
     // Contador autoincremental para asignar ID únicos a los equipos
     private int idEquipo;
-
-
 
     /**
      * Constructor de la clase GestorEquipos.
@@ -30,8 +33,6 @@ public class GestorEquipos {
         this.simuladoresPorLiga = new HashMap<>();
 
     }
-
-
 
     /**
      * Carga los equipos desde un archivo de texto plano y los organiza por liga.
@@ -95,8 +96,6 @@ public class GestorEquipos {
         equiposPorLiga.computeIfAbsent(liga, k -> new ArrayList<>()).add(equipo);
     }
 
-
-
     /**
      * Busca equipos cuyo nombre contenga un fragmento de texto (insensible a mayúsculas).
      *
@@ -119,8 +118,6 @@ public class GestorEquipos {
 
         return resultados;
     }
-
-
 
     /**
      * Interactúa con el usuario para buscar equipos por nombre y mostrar los resultados formateados.
@@ -242,7 +239,6 @@ public class GestorEquipos {
         return ligas.get(opcion - 1);
     }
 
-
     /**
      * Muestra al usuario las ligas disponibles y permite seleccionar una para ver sus equipos.
      * Si el usuario ingresa 0, se mostrarán los equipos de todas las ligas.
@@ -357,10 +353,27 @@ public class GestorEquipos {
         mostrarMenuPostSimulacion(scanner, simulador);
     }
 
-
-
-
-
+    /**
+     * Permite al usuario crear un torneo personalizado eligiendo una de tres modalidades:
+     *   1. Fase de grupos (tipo liga, todos contra todos, ida y vuelta)
+     *   2. Eliminación directa (formato bracket con árbol binario)
+     *   3. Mixto (fase de grupos + eliminación directa)
+     *
+     * El metodo guía al usuario para:
+     * - Ingresar un nombre para el torneo.
+     * - Seleccionar la modalidad de competencia.
+     * - Elegir los equipos participantes desde una lista de disponibles.
+     * - Simular automáticamente el torneo (según la modalidad).
+     * - Mostrar tablas, fechas o estadísticas según corresponda.
+     *
+     * Dependiendo del tipo de torneo, se utilizan instancias de:
+     *   - SimuladorLiga: para torneos de liga (fase de grupos).
+     *   - Torneo: para torneos de eliminación directa.
+     *   - TorneoMixto: para torneos que combinan ambas modalidades.
+     *
+     * @param scanner objeto Scanner para leer la entrada del usuario.
+     * @throws TorneoException si ocurre un error durante la simulación.
+     */
     public void crearTorneoPersonalizado(Scanner scanner) throws TorneoException {
         GestorJugadores gestorJugadores = new GestorJugadores(this);
         System.out.print("Ingrese el nombre del torneo personalizado: ");
@@ -389,11 +402,11 @@ public class GestorEquipos {
             return;
         }
 
-        // 👇 Se reemplaza la lógica de selección por una sola línea
         List<Equipo> seleccionados = seleccionarEquipos(scanner, modalidad, disponibles);
 
         switch (modalidad) {
-            case 1 -> { // Fase de grupos estilo liga
+            // Fase de grupos (todos contra todos - ida y vuelta)
+            case 1 -> {
                 SimuladorLiga simulador = new SimuladorLiga(nombre);
 
                 for (Equipo equipo : seleccionados) {
@@ -416,7 +429,7 @@ public class GestorEquipos {
 
                     simulador.mostrarTabla();
 
-                    // Menú post simulación (ver fechas, goleadores, asistencias, etc.)
+                    // Menú post simulación para ver fechas, goleadores, asistencias, etc.)
                     mostrarMenuPostSimulacion(scanner, simulador);
 
                 } catch (TorneoException e) {
@@ -425,7 +438,7 @@ public class GestorEquipos {
             }
 
 
-            case 2 -> { // Eliminación directa con árbol binario
+            case 2 -> { // Eliminación directa
 
                 List<Equipo> equiposdisponibles = getEquipos().stream()
                         .filter(e -> !seleccionados.contains(e))
@@ -436,7 +449,7 @@ public class GestorEquipos {
                 }
 
                 while (!esPotenciaDeDos(seleccionados.size())) {
-                    System.out.println("\n⚠ Necesitás ingresar una cantidad de equipos que sea potencia de 2 (2, 4, 8, 16, ...).");
+                    System.out.println("\n❌ Necesitás ingresar una cantidad de equipos que sea potencia de 2 (2, 4, 8, 16, ...).");
                     System.out.println("Actualmente hay " + seleccionados.size() + " equipo(s) seleccionados.");
                     System.out.println("Ingrese el número del equipo a agregar (0 para cancelar):");
 
@@ -524,7 +537,22 @@ public class GestorEquipos {
         }
     }
 
-
+    /**
+     * Permite al usuario seleccionar equipos desde una lista de disponibles para formar parte de un torneo.
+     * El metodo muestra los equipos numerados, y el usuario ingresa los números correspondientes.
+     * La selección se valida de acuerdo a la modalidad del torneo:
+     *
+     * - Se requiere al menos 2 equipos para cualquier torneo.
+     * - Para modalidades de tipo Liga (1) o Mixto (3), se requiere una cantidad PAR de equipos.
+     * - No se permite seleccionar el mismo equipo dos veces.
+     *
+     * El proceso termina cuando el usuario ingresa 0 y la cantidad mínima (y par, si aplica) ha sido alcanzada.
+     *
+     * @param scanner objeto Scanner para capturar la entrada del usuario.
+     * @param modalidad número que representa la modalidad del torneo (1 = Liga, 2 = Eliminación, 3 = Mixto).
+     * @param disponibles lista de equipos que pueden ser seleccionados.
+     * @return una lista de equipos seleccionados por el usuario.
+     */
     private List<Equipo> seleccionarEquipos(Scanner scanner, int modalidad, List<Equipo> disponibles) {
         List<Equipo> seleccionados = new ArrayList<>();
 
@@ -567,7 +595,6 @@ public class GestorEquipos {
         }
     }
 
-
     /**
      * Muestra un menú interactivo post-simulación con estadísticas detalladas
      * sobre la liga simulada: fechas jugadas, goleadores, asistencias y tarjetas.
@@ -601,9 +628,27 @@ public class GestorEquipos {
         }
     }
 
+    /**
+     * Muestra un menú interactivo luego de la simulación de un torneo de eliminación directa.
+     * Permite al usuario consultar diferentes estadísticas del torneo ya finalizado.
+     *
+     * Las opciones disponibles son:
+     * <ul>
+     *   <li><b>1 - Ver fechas jugadas:</b> muestra los partidos organizados por jornadas.</li>
+     *   <li><b>2 - Ver top 10 goleadores:</b> muestra los 10 jugadores con más goles.</li>
+     *   <li><b>3 - Ver top 10 asistentes:</b> muestra los 10 jugadores con más asistencias.</li>
+     *   <li><b>4 - Ver jugadores con tarjetas:</b> muestra los jugadores que recibieron tarjetas.</li>
+     *   <li><b>0 - Volver al menú principal:</b> finaliza este submenú y retorna al menú principal.</li>
+     * </ul>
+     *
+     * El menú se mantiene activo hasta que el usuario seleccione la opción "0".
+     *
+     * @param scanner Objeto Scanner para leer la entrada del usuario.
+     * @param torneo Objeto Torneo ya simulado desde el cual se obtienen los datos estadísticos.
+     */
     private void mostrarMenuPostTorneo(Scanner scanner, Torneo torneo) {
         while (true) {
-            // Título del menú
+            // Título del menú contextual
             System.out.println("\n=== Estadísticas de la Liga " + torneo.getNombre() + " ===");
             System.out.println("1. Ver fechas jugadas");
             System.out.println("2. Ver top 10 goleadores");
@@ -614,46 +659,80 @@ public class GestorEquipos {
 
             String opcion = scanner.nextLine();
 
+            // Procesamiento de opciones del usuario
             switch (opcion) {
-                case "1" -> torneo.mostrarPartidosTorneo(scanner);  // Muestra los partidos jugados por jornada
-                case "2" -> mostrarTopGoleadores(torneo.getPartidos()); // Lista los 10 máximos goleadores
-                case "3" -> mostrarTopAsistencias(torneo.getPartidos()); // Lista los 10 máximos asistentes
-                case "4" -> mostrarJugadoresConTarjetas(torneo.getPartidos()); // Lista jugadores con tarjetas
+                case "1" ->
+                        torneo.mostrarPartidosTorneo(scanner); // Muestra los partidos por jornada
+                case "2" ->
+                        mostrarTopGoleadores(torneo.getPartidos()); // Lista top 10 goleadores
+                case "3" ->
+                        mostrarTopAsistencias(torneo.getPartidos()); // Lista top 10 asistentes
+                case "4" ->
+                        mostrarJugadoresConTarjetas(torneo.getPartidos()); // Lista jugadores con tarjetas
                 case "0" -> {
-                    return; // Sale del menú y vuelve al menú principal
+                    return; // Finaliza el menú y retorna al menú principal
                 }
-                default -> System.out.println("Opción inválida. Intente de nuevo."); // Manejo de errores
+                default ->
+                        System.out.println("Opción inválida. Intente de nuevo."); // Validación de error
             }
         }
     }
 
+    /**
+     * Muestra al usuario un menú de estadísticas luego de la finalización de un torneo mixto
+     * (fase de grupos + eliminación directa). Permite visualizar partidos jugados, goleadores,
+     * asistentes y jugadores con tarjetas.
+     *
+     * El menú se mantiene activo hasta que el usuario seleccione la opción 0 para salir.
+     *
+     * @param scanner Objeto Scanner para leer la entrada del usuario por consola.
+     * @param torneoMixto Torneo mixto ya simulado del cual se extraen las estadísticas a mostrar.
+     */
     private void mostrarMenuPostTorneoMixto(Scanner scanner, TorneoMixto torneoMixto) {
         while (true) {
-            // Título del menú
+            // Muestra el título del menú con el nombre del torneo mixto
             System.out.println("\n=== Estadísticas de la Liga " + torneoMixto.getNombre() + " ===");
+
+            // Imprime las opciones disponibles
             System.out.println("1. Ver fechas jugadas");
             System.out.println("2. Ver top 10 goleadores");
             System.out.println("3. Ver top 10 asistentes");
             System.out.println("4. Ver jugadores con tarjetas");
             System.out.println("0. Volver al menú principal");
-            System.out.print("Seleccione una opción: ");
 
+            // Solicita al usuario que seleccione una opción
+            System.out.print("Seleccione una opción: ");
             String opcion = scanner.nextLine();
 
+            // Procesa la opción ingresada por el usuario
             switch (opcion) {
-                case "1" -> torneoMixto.mostrarPartidosTorneo(scanner);  // Muestra los partidos jugados por jornada
-                case "2" -> mostrarTopGoleadores(torneoMixto.getPartidos()); // Lista los 10 máximos goleadores
-                case "3" -> mostrarTopAsistencias(torneoMixto.getPartidos()); // Lista los 10 máximos asistentes
-                case "4" -> mostrarJugadoresConTarjetas(torneoMixto.getPartidos()); // Lista jugadores con tarjetas
+                case "1" ->
+                    // Muestra todos los partidos disputados por jornada
+                        torneoMixto.mostrarPartidosTorneo(scanner);
+
+                case "2" ->
+                    // Muestra los 10 jugadores con más goles en el torneo
+                        mostrarTopGoleadores(torneoMixto.getPartidos());
+
+                case "3" ->
+                    // Muestra los 10 jugadores con más asistencias en el torneo
+                        mostrarTopAsistencias(torneoMixto.getPartidos());
+
+                case "4" ->
+                    // Muestra la lista de jugadores que recibieron tarjetas
+                        mostrarJugadoresConTarjetas(torneoMixto.getPartidos());
+
                 case "0" -> {
-                    return; // Sale del menú y vuelve al menú principal
+                    // Finaliza el menú y retorna al menú principal del sistema
+                    return;
                 }
-                default -> System.out.println("Opción inválida. Intente de nuevo."); // Manejo de errores
+
+                default ->
+                    // Informa al usuario que la opción ingresada no es válida
+                        System.out.println("Opción inválida. Intente de nuevo.");
             }
         }
     }
-
-
 
     /**
      * Muestra el Top 10 de goleadores de la liga, basado en la lista de partidos simulados.

@@ -7,6 +7,7 @@ import TP4.Implementacion.ConjuntoGenericoImpl;
 
 import java.util.IllegalFormatConversionException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Representa un equipo de fútbol dentro del sistema de gestión de torneos.
@@ -421,4 +422,19 @@ public class Equipo {
     return String.format("Escudo: %s, Nombre: %s, Elo: %d, Liga: %s",
             escudo, nombre, elo, liga);
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Equipo equipo = (Equipo) o;
+    return id == equipo.id; // o nombre.equals(...) si el nombre es único
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id); // o nombre si usás nombre en equals
+  }
+
+
 }

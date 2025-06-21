@@ -19,6 +19,10 @@ public class Validador {
   }
 
   public static void validarLiga(String liga) throws TorneoException {
+    if ("BYE".equalsIgnoreCase(liga) || "Ninguna".equalsIgnoreCase(liga)) {
+      return;
+    }
+
     boolean ligaValida = false;
     for (String ligaDisponible : Constantes.LIGAS_DISPONIBLES) {
       if (ligaDisponible.equalsIgnoreCase(liga)) {
@@ -26,10 +30,12 @@ public class Validador {
         break;
       }
     }
+
     if (!ligaValida) {
       throw new TorneoException("La liga especificada no es válida");
     }
   }
+
 
   public static void validarTipoTorneo(String tipo) throws TorneoException {
     if (!tipo.equals(Constantes.TORNEO_GRUPOS) &&

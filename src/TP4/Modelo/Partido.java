@@ -51,6 +51,10 @@ public class Partido {
   // Lista de jugadores que recibieron tarjeta roja (de ambos equipos)
   private List<Jugador> jugadoresRojas;
 
+  // Equipo ganador del partido
+  private Equipo ganador;
+
+
 
   /**
    * Crea un nuevo partido entre dos equipos, registrando el resultado y generando estadísticas de jugadores.
@@ -81,6 +85,7 @@ public class Partido {
     this.visitante = visitante;
     this.golesLocal = golesLocal;
     this.golesVisitante = golesVisitante;
+    this.ganador = determinarGanador(); // Determina el ganador al crear el partido
 
     // Inicialización de listas de eventos por jugador
     this.goleadoresLocal = new ArrayList<>();
@@ -98,11 +103,15 @@ public class Partido {
     simularEstadisticasJugadores();
   }
 
+  public Partido(Equipo local, Equipo visitante) throws TorneoException {
+    this(local, visitante, 0, 0); // Crea un partido inicializado en 0 a 0
+  }
+
 
   /**
    * Simula estadísticas de jugadores para el partido actual.
    *
-   * Este método utiliza generación aleatoria para:
+   * Este metodo utiliza generación aleatoria para:
    * - Asignar goleadores a partir de los goles registrados por cada equipo.
    * - Asignar asistentes con un 70% de probabilidad por gol.
    * - Asignar tarjetas amarillas (0 a 3 por equipo) y rojas (0 a 1 por equipo).
@@ -186,7 +195,43 @@ public class Partido {
       }
     }
   }
+    /**
+     * Determina el ganador del partido basándose en los goles anotados.
+     * Si el equipo local tiene más goles, es el ganador.
+     * Si el equipo visitante tiene más goles, es el ganador.
+     * Si ambos equipos tienen la misma cantidad de goles, no hay ganador (empate).
+     *
+     * @return El equipo ganador o null si hay empate.
+     */
+    private Equipo determinarGanador() {
+      if (local == null || visitante == null) return null;
+      if (golesLocal > golesVisitante) return local;
+      if (golesVisitante > golesLocal) return visitante;
+      return null; // Empate
+    }
 
+  public Equipo getGanadorConDesempate() {
+    if (ganador != null) return ganador;
+    // Desempate por ELO si hay empate y no se definió aún
+    if (local != null && visitante != null) {
+      return local.getElo() >= visitante.getElo() ? local : visitante;
+    }
+    return null;
+  }
+
+  public String resumenPartidoConGanador() {
+    return local.getNombre() + " vs " + visitante.getNombre() + " → 🏅 " +
+            (getGanadorConDesempate() != null ? getGanadorConDesempate().getNombre() : "¿?");
+  }
+
+
+  public Equipo getGanador() {
+    return ganador;
+  }
+
+  public void setGanador(Equipo ganador) {
+    this.ganador = ganador;
+  }
 
   /**
    * @return Lista de jugadores del equipo local que anotaron goles en el partido.
@@ -263,15 +308,12 @@ public class Partido {
    *
    * @return El equipo con más goles, o null si el resultado fue un empate.
    */
-  public Equipo getGanador() {
-    if (golesLocal > golesVisitante) {
-      return local;
-    } else if (golesVisitante > golesLocal) {
-      return visitante;
-    }
-    return null; // Empate
-  }
 
+//  public Equipo getGanadorConDesempate() {
+//    if (golesLocal > golesVisitante) return local;
+//    if (golesVisitante > golesLocal) return visitante;
+//    return local.getElo() >= visitante.getElo() ? local : visitante;
+//  }
 
   /**
    * Devuelve una representación detallada del partido en forma de texto.

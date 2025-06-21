@@ -412,7 +412,7 @@ public class GestorEquipos {
 
                     simuladoresPorLiga.put(nombre, simulador);
 
-                    System.out.println("✅ Torneo de liga '" + nombre + "' creado y simulado exitosamente.\n");
+                    System.out.println("Torneo de liga '" + nombre + "' creado y simulado exitosamente.\n");
 
                     simulador.mostrarTabla();
 
@@ -420,7 +420,7 @@ public class GestorEquipos {
                     mostrarMenuPostSimulacion(scanner, simulador);
 
                 } catch (TorneoException e) {
-                    System.out.println("❌ Error al generar el calendario: " + e.getMessage());
+                    System.out.println("Error al generar el calendario: " + e.getMessage());
                 }
             }
 
@@ -475,7 +475,7 @@ public class GestorEquipos {
                 }
 
                 simuladoresPorLiga.put(nombre, null);
-                System.out.println("\n✅ Torneo de eliminación directa '" + nombre + "' creado exitosamente.");
+                System.out.println("\nTorneo de eliminación directa '" + nombre + "' creado exitosamente.");
                 mostrarMenuPostTorneo(scanner, torneo);
             }
 
@@ -500,10 +500,10 @@ public class GestorEquipos {
                     grupos = 2;
                 }
 
-                System.out.printf("✅ Se usarán %d grupo(s) de %d equipos cada uno.%n", grupos, cantidadEquipos / grupos);
+                System.out.printf("Se usarán %d grupo(s) de %d equipos cada uno.%n", grupos, cantidadEquipos / grupos);
 
                 int clasificados = 2;
-                System.out.printf("✅ Se clasificarán %d equipos por grupo a la fase eliminatoria.%n", clasificados);
+                System.out.printf("Se clasificarán %d equipos por grupo a la fase eliminatoria.%n", clasificados);
 
                 TorneoMixto torneoMixto = new TorneoMixto(nombre, grupos, clasificados);
                 for (Equipo equipo : seleccionados) {
@@ -796,109 +796,110 @@ public class GestorEquipos {
     }
 
 
-//    public void mostrarEquiposPorNombreParcial(String fragmento) {
-//        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
-//
-//        if (resultados.isEmpty()) {
-//            System.out.println("No se encontraron equipos que coincidan con: " + fragmento);
-//            return;
-//        }
-//
-//        System.out.printf("%-28s | %-10s | %-20s | %4s\n", "Liga", "Escudo", "Equipo", "ELO");
-//        System.out.println("----------------------------------------------------------------------------");
-//        for (Equipo equipo : resultados) {
-//            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
-//                    equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getElo());
-//        }
-//    }
-//
-//    public List<Equipo> listarEquipos() {
-//        List<Equipo> todos = new ArrayList<>();
-//        for (List<Equipo> lista : equiposPorLiga.values()) {
-//            todos.addAll(lista);
-//        }
-//        return todos;
-//    }
-//
-//    public void mostrarTodosLosEquipos() {
-//        List<Equipo> equipos = listarEquipos();
-//        if (equipos.isEmpty()) {
-//            System.out.println("No hay equipos cargados.");
-//            return;
-//        }
-//        System.out.println("\n=== Listado de Equipos ===");
-//        System.out.println("\nLiga                         |   Escudo   | Equipo                  | ELO");
-//        System.out.println("----------------------------------------------------------------------------");
-//
-//        for (Equipo equipo : equipos) {
-//            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
-//                    equipo.getLiga(),
-//                    equipo.getEscudo(),
-//                    equipo.getNombre(),
-//                    equipo.getElo());
-//        }
-//    }
-//
-//    public boolean existeEquipo(String nombre) {
-//        return buscarEquipoPorNombre(nombre) != null;
-//    }
-//
-//    public void mostrarEquiposPorLiga(String nombreLiga) {
-//        for (String liga : equiposPorLiga.keySet()) {
-//            if (liga.equalsIgnoreCase(nombreLiga)) {
-//                System.out.println("\nLiga: " + liga);
-//                System.out.printf("%-5s %-20s %-30s %-10s\n", "ID", "Escudo", "Nombre", "Elo");
-//                System.out.println("---------------------------------------------------------------");
-//                for (Equipo e : equiposPorLiga.get(liga)) {
-//                    System.out.printf("%-5d %-20s %-30s %-10d\n",
-//                            e.getId(), e.getEscudo(), e.getNombre(), e.getElo());
-//                }
-//                return;
-//            }
-//        }
-//        System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
-//    }
-//    public void mostrarEquipo(String nombreEquipo) {
-//        for (String liga : equiposPorLiga.keySet()) {
-//            for (Equipo equipo : equiposPorLiga.get(liga)) {
-//                if (equipo.getNombre().equalsIgnoreCase(nombreEquipo)) {
-//                    equipo.mostrarJugadores();
-//                    return;
-//                }
-//            }
-//        }
-//        System.out.println("No se encontró el equipo: " + nombreEquipo);
-//    }
-//
-//    public List<Equipo> filtrarPorLiga(String liga) {
-//        return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
-//    }
-//
-//    public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
-//        Equipo equipoJugador = jugador.getEquipo();
-//        if (equipoJugador != null) {
-//            Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
-//            if (equipoRegistrado != null) {
-//                equipoRegistrado.agregarJugador(jugador);
-//            } else {
-//                agregarEquipo(equipoJugador);
-//                equipoJugador.agregarJugador(jugador);
-//            }
-//        }
-//    }
-//
-//    public boolean eliminarEquipo(String nombre) {
-//        for (String liga : equiposPorLiga.keySet()) {
-//            List<Equipo> lista = equiposPorLiga.get(liga);
-//            Iterator<Equipo> it = lista.iterator();
-//            while (it.hasNext()) {
-//                Equipo e = it.next();
-//                if (e.getNombre().equalsIgnoreCase(nombre)) {
-//                    it.remove();
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
+    public void mostrarEquiposPorNombreParcial(String fragmento) {
+        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
+
+        if (resultados.isEmpty()) {
+            System.out.println("No se encontraron equipos que coincidan con: " + fragmento);
+            return;
+        }
+
+        System.out.printf("%-28s | %-10s | %-20s | %4s\n", "Liga", "Escudo", "Equipo", "ELO");
+        System.out.println("----------------------------------------------------------------------------");
+        for (Equipo equipo : resultados) {
+            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
+                    equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getElo());
+        }
+    }
+
+    public List<Equipo> listarEquipos() {
+        List<Equipo> todos = new ArrayList<>();
+        for (List<Equipo> lista : equiposPorLiga.values()) {
+            todos.addAll(lista);
+        }
+        return todos;
+    }
+
+    public void mostrarTodosLosEquipos() {
+        List<Equipo> equipos = listarEquipos();
+        if (equipos.isEmpty()) {
+            System.out.println("No hay equipos cargados.");
+            return;
+        }
+        System.out.println("\n=== Listado de Equipos ===");
+        System.out.println("\nLiga                         |   Escudo   | Equipo                  | ELO");
+        System.out.println("----------------------------------------------------------------------------");
+
+        for (Equipo equipo : equipos) {
+            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
+                    equipo.getLiga(),
+                    equipo.getEscudo(),
+                    equipo.getNombre(),
+                    equipo.getElo());
+        }
+    }
+
+    public boolean existeEquipo(String nombre) {
+        return buscarEquipoPorNombre(nombre) != null;
+    }
+
+    public void mostrarEquiposPorLiga(String nombreLiga) {
+        for (String liga : equiposPorLiga.keySet()) {
+            if (liga.equalsIgnoreCase(nombreLiga)) {
+                System.out.println("\nLiga: " + liga);
+                System.out.printf("%-5s %-20s %-30s %-10s\n", "ID", "Escudo", "Nombre", "Elo");
+                System.out.println("---------------------------------------------------------------");
+                for (Equipo e : equiposPorLiga.get(liga)) {
+                    System.out.printf("%-5d %-20s %-30s %-10d\n",
+                            e.getId(), e.getEscudo(), e.getNombre(), e.getElo());
+                }
+                return;
+            }
+        }
+        System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
+    }
+
+    public void mostrarEquipo(String nombreEquipo) {
+        for (String liga : equiposPorLiga.keySet()) {
+            for (Equipo equipo : equiposPorLiga.get(liga)) {
+                if (equipo.getNombre().equalsIgnoreCase(nombreEquipo)) {
+                    equipo.mostrarJugadores();
+                    return;
+                }
+            }
+        }
+        System.out.println("No se encontró el equipo: " + nombreEquipo);
+    }
+
+    public List<Equipo> filtrarPorLiga(String liga) {
+        return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
+    }
+
+    public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
+        Equipo equipoJugador = jugador.getEquipo();
+        if (equipoJugador != null) {
+            Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
+            if (equipoRegistrado != null) {
+                equipoRegistrado.agregarJugador(jugador);
+            } else {
+                agregarEquipo(equipoJugador);
+                equipoJugador.agregarJugador(jugador);
+            }
+        }
+    }
+
+    public boolean eliminarEquipo(String nombre) {
+        for (String liga : equiposPorLiga.keySet()) {
+            List<Equipo> lista = equiposPorLiga.get(liga);
+            Iterator<Equipo> it = lista.iterator();
+            while (it.hasNext()) {
+                Equipo e = it.next();
+                if (e.getNombre().equalsIgnoreCase(nombre)) {
+                    it.remove();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

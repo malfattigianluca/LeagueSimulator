@@ -1,40 +1,79 @@
 # Sistema de Gestión de Torneos Deportivos
 
-## Descripción
-Sistema desarrollado en Java que permite simular torneos deportivos entre equipos de diferentes ligas del mundo. Permite seleccionar equipos predefinidos, organizar torneos personalizados, simular encuentros y registrar estadísticas.
+Este proyecto en Java implementa un sistema para la simulación de torneos de fútbol. Permite gestionar equipos, jugadores, y simular torneos en diferentes formatos: **liga**, **eliminación directa**, y **torneo mixto** (fase de grupos + eliminación). Fue desarrollado como parte del Proyecto Final de la materia *Programación II*.
 
-## Estructura del Proyecto
+---
+
+## 📁 Estructura del Proyecto
+
 ```
-src/
-├── TP4/
-│   ├── TDA/              # Interfaces de las estructuras de datos
-│   ├── Implementacion/   # Implementaciones de las estructuras
-│   ├── Modelo/           # Clases del modelo de negocio
-│   ├── Util/             # Clases de utilidad
-│   └── Excepciones/      # Manejo de excepciones personalizadas
+SimuladorTorneosFutbol_ProyectoFinal/
+├── App.java                      # Clase principal con menú interactivo
+├── teams.txt                    # Archivo de entrada con equipos
+├── players.txt                  # Archivo de entrada con jugadores
+├── Modelo/                      # Lógica del sistema (Equipo, Jugador, Partido, Torneo, etc.)
+├── Implementacion/              # Estructuras de datos personalizadas (colas, árboles, diccionarios)
+├── Util/                        # Utilidades (validaciones, constantes, consola)
+├── Excepciones/                 # Definición de excepciones personalizadas
+├── Propuesta de Trabajo Final...txt  # Enunciado del TP
 ```
 
-## Características Principales
-- Gestión de equipos por liga
-- Creación de torneos personalizados
-- Simulación de partidos
-- Registro de estadísticas
-- Historial de enfrentamientos
+---
 
-## Requisitos
-- Java 8 o superior
-- IDE compatible con Java (recomendado: IntelliJ IDEA, Eclipse)
+## ▶️ Cómo Ejecutar
 
-## Instalación
-1. Clonar el repositorio
-2. Importar el proyecto en tu IDE
-3. Compilar y ejecutar
+1. **Requisitos**: JDK 17+ instalado en el sistema.
 
-## Uso
-[Instrucciones de uso pendientes]
+2. **Compilar desde terminal**:
+   ```bash
+   javac -encoding UTF-8 -cp . SimuladorTorneosFutbol_ProyectoFinal/App.java
+   ```
 
-## Contribución
-[Instrucciones de contribución pendientes]
+3. **Ejecutar**:
+   ```bash
+   java SimuladorTorneosFutbol_ProyectoFinal.App
+   ```
 
-## Licencia
-[Información de licencia pendiente] 
+4. Si estás usando un entorno como IntelliJ o Eclipse, basta con abrir el proyecto y ejecutar `App.java`.
+
+---
+
+## 🧠 Funcionalidades
+
+- Simulación de torneos en tres modalidades:
+  - **Liga**: todos contra todos, ida o ida y vuelta.
+  - **Eliminación directa**: con llaves generadas automáticamente (tipo bracket).
+  - **Mixto**: fase de grupos y luego eliminación.
+- Gestión de:
+  - Equipos (nombre, país, ELO, etc.)
+  - Jugadores (nombre, posición, estadísticas)
+- Registro y visualización de:
+  - Partidos y resultados
+  - Goleadores, asistencias y tarjetas
+  - Tablas de posiciones
+  - Árbol de eliminación directa
+
+---
+
+## 🧪 Datos de Entrada
+
+- **`teams.txt`**: lista de equipos con su nombre, país, ELO y otros datos.
+- **`players.txt`**: lista de jugadores asociados a equipos.
+
+---
+
+## 🛠️ Dependencias
+
+Este proyecto **no utiliza librerías externas**. Todas las estructuras de datos necesarias (colas, árboles, diccionarios) han sido implementadas manualmente.
+
+---
+
+## 👨‍💻 Autores
+
+Trabajo desarrollado por **Malfatti Gianluca y Casalla Lazaro**, para la cátedra de *Programación II* - UADE].
+
+---
+
+## 📄 Licencia
+
+Uso académico y educativo.

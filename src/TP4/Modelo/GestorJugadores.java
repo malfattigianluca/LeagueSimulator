@@ -226,6 +226,9 @@ public class GestorJugadores {
     System.out.println("=============================");
   }
 
+
+  /** LOS SIGUIENTES METODOS NO SERAN UTILIZADOS EN ESTA VERSION DEL PROGRAMA*/
+
   /**
    * Retorna el conjunto que contiene todos los jugadores.
    *

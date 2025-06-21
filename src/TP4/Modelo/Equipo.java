@@ -395,7 +395,6 @@ public class Equipo {
     return (this.partidosGanados * 3) + this.partidosEmpatados;
   }
 
-
   /**
    * Establece un nuevo valor ELO para el equipo, respetando los límites definidos.
    * Si el ELO es menor a 1000, se ajusta a 1000. Si es mayor a 3000, se ajusta a 3000.
@@ -423,6 +422,13 @@ public class Equipo {
             escudo, nombre, elo, liga);
   }
 
+  /**
+   * Compara este equipo con otro objeto para determinar si son iguales.
+   * La comparación se basa en el ID del equipo, lo que garantiza unicidad.
+   *
+   * @param o el objeto con el que se va a comparar.
+   * @return true si el objeto es de tipo Equipo y tiene el mismo ID; false en caso contrario.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -431,10 +437,14 @@ public class Equipo {
     return id == equipo.id; // o nombre.equals(...) si el nombre es único
   }
 
+  /**
+   * Genera un código hash para este equipo, basado en su ID.
+   * Esto es consistente con el método equals, lo que permite su uso en estructuras hash.
+   *
+   * @return el código hash basado en el ID del equipo.
+   */
   @Override
   public int hashCode() {
     return Objects.hash(id); // o nombre si usás nombre en equals
   }
-
-
 }

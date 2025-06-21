@@ -190,35 +190,8 @@ public class Torneo {
     }
   }
 
-  private void imprimirNodo(NodoPartido nodo, int nivel) {
-    if (nodo == null) return;
-    imprimirNodo(nodo.getIzquierdo(), nivel + 1);
-    String esp = "  ".repeat(nivel);
-    String local = abreviar(nodo.getPartido().getLocal().getNombre());
-    String visitante = abreviar(nodo.getPartido().getVisitante().getNombre());
-    String ganador = abreviar(nodo.getPartido().getGanador().getNombre());
-    System.out.println(esp + "├─ " + local + " vs " + visitante + " → 🏅 " + ganador);
-    imprimirNodo(nodo.getDerecho(), nivel + 1);
-  }
-
-
   private String abreviar(String nombre) {
     return nombre.length() > 20 ? nombre.substring(0, 18) + "…" : nombre;
-  }
-
-  private String nombreFase(int ronda, int totalRondas) {
-    int desdeFinal = totalRondas - ronda;
-    return switch (desdeFinal) {
-      case 0 -> "Campeón";
-      case 1 -> "Final";
-      case 2 -> "Semifinales";
-      case 3 -> "Cuartos";
-      case 4 -> "Octavos";
-      case 5 -> "16avos";
-      case 6 -> "32avos";
-      case 7 -> "64avos";
-      default -> "";
-    };
   }
 
 
@@ -386,37 +359,6 @@ public class Torneo {
     return construirArbolEliminacionDesdeNodos(siguienteNivel);
   }
 
-  public void simularPartidos(NodoPartido nodo) throws TorneoException {
-    if (nodo == null) return;
-
-    if (nodo.getPartido() != null) {
-      nodo.getPartido().simular();
-      nodo.setGanador(nodo.getPartido().getGanador());
-      partidos.add(nodo.getPartido()); // 👈 Agregá esto
-    } else {
-      simularPartidos(nodo.getIzquierdo());
-      simularPartidos(nodo.getDerecho());
-
-      Equipo e1 = nodo.getIzquierdo() != null ? nodo.getIzquierdo().getGanador() : null;
-      Equipo e2 = nodo.getDerecho() != null ? nodo.getDerecho().getGanador() : null;
-
-      if (e1 != null && e2 != null) {
-        Partido partido = new Partido(e1, e2);
-        partido.simular();
-        nodo.setPartido(partido);
-        nodo.setGanador(partido.getGanador());
-        partidos.add(partido); // 👈 También acá
-      } else if (e1 != null) {
-        nodo.setGanador(e1);
-      } else if (e2 != null) {
-        nodo.setGanador(e2);
-      }
-    }
-  }
-
-
-
-
   /**
    * Muestra por consola los partidos jugados uno por uno en orden.
    *
@@ -487,34 +429,6 @@ public class Torneo {
 
 
 
-
-
-
-//  public void imprimirLlavesEliminacion() {
-//    System.out.println("\n=== Llave del Torneo (Formato Árbol) ===\n");
-//    imprimirLlaveRecursiva(raizEliminacion, 0);
-//    if (raizEliminacion != null && raizEliminacion.getPartido() != null && raizEliminacion.getPartido().getGanador() != null) {
-//      System.out.println("\n\uD83C\uDFC6 \u00a1" + raizEliminacion.getPartido().getGanador().getNombre() + " es el campeón del torneo!");
-//    }
-//  }
-//
-//  private void imprimirLlaveRecursiva(NodoPartido nodo, int nivel) {
-//    if (nodo == null || nodo.getPartido() == null) return;
-//
-//    String indent = " ".repeat(nivel * 4);
-//    Partido p = nodo.getPartido();
-//
-//    String local = p.getLocal() != null ? abreviar(p.getLocal().getNombre()) : "BYE";
-//    String visitante = p.getVisitante() != null ? abreviar(p.getVisitante().getNombre()) : "BYE";
-//    String ganador = p.getGanador() != null ? abreviar(p.getGanador().getNombre()) : "¿?";
-//
-//    System.out.println(indent + local + " vs " + visitante + " → 🏅 " + ganador);
-//
-//    imprimirLlaveRecursiva(nodo.getIzquierdo(), nivel + 1);
-//    imprimirLlaveRecursiva(nodo.getDerecho(), nivel + 1);
-//  }
-
-
   private NodoPartido simularRonda(List<Equipo> equipos) throws TorneoException {
     if (equipos.size() == 1) return null;
 
@@ -575,96 +489,6 @@ public class Torneo {
       return raiz;
     } else {
       return simularRonda(ganadores);
-    }
-  }
-
-  /**
-   * Muestra en consola la tabla de posiciones del torneo.
-   *
-   * La tabla se ordena por:
-   * 1. Puntos (de mayor a menor),
-   * 2. Diferencia de gol (goles a favor - goles en contra),
-   * 3. Goles a favor.
-   *
-   * Para cada equipo muestra:
-   * - Partidos jugados (PJ)
-   * - Partidos ganados (PG)
-   * - Partidos empatados (PE)
-   * - Partidos perdidos (PP)
-   * - Goles a favor (GF)
-   * - Goles en contra (GC)
-   * - Puntos (Pts)
-   * - ELO
-   *
-   * Esta tabla resume el rendimiento de cada equipo durante la simulación del
-   * torneo.
-   */
-  public void mostrarTablaPosiciones() {
-    System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
-    System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
-        "Equipo", "PJ", "PG", "PE", "PP", "GF", "GC", "Pts", "ELO");
-    System.out.println("--------------------------------------------------------------------------");
-
-    // Crear lista ordenada de equipos
-    List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
-    Collections.sort(equiposOrdenados, (e1, e2) -> {
-      int puntos1 = puntos.get(e1);
-      int puntos2 = puntos.get(e2);
-
-      if (puntos1 != puntos2)
-        return puntos2 - puntos1;
-
-      int difGoles1 = golesAFavor.get(e1) - golesEnContra.get(e1);
-      int difGoles2 = golesAFavor.get(e2) - golesEnContra.get(e2);
-      if (difGoles1 != difGoles2)
-        return difGoles2 - difGoles1;
-
-      return golesAFavor.get(e2) - golesAFavor.get(e1); // Tercer criterio: GF
-    });
-
-    // Mostrar fila por fila
-    for (Equipo equipo : equiposOrdenados) {
-      int pg = 0, pe = 0, pp = 0;
-
-      // Calcular partidos ganados, empatados y perdidos
-      for (Partido partido : partidos) {
-        if (partido.getLocal() == equipo) {
-          if (partido.getGolesLocal() > partido.getGolesVisitante())
-            pg++;
-          else if (partido.getGolesLocal() == partido.getGolesVisitante())
-            pe++;
-          else
-            pp++;
-        } else if (partido.getVisitante() == equipo) {
-          if (partido.getGolesVisitante() > partido.getGolesLocal())
-            pg++;
-          else if (partido.getGolesVisitante() == partido.getGolesLocal())
-            pe++;
-          else
-            pp++;
-        }
-      }
-
-      int pj = pg + pe + pp;
-      int puntosEquipo = puntos.get(equipo);
-      int eloEquipo = equipo.getElo();
-
-      System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
-          equipo.getNombre(), pj, pg, pe, pp,
-          golesAFavor.get(equipo), golesEnContra.get(equipo), puntosEquipo, eloEquipo);
-    }
-  }
-
-  /**
-   * Muestra por consola todos los partidos jugados en el torneo.
-   *
-   * Utiliza el método `toString()` de la clase {@link Partido} para imprimir
-   * cada encuentro con detalle (resultado, goleadores, tarjetas, etc.).
-   */
-  public void mostrarPartidos() {
-    System.out.println("\n=== Partidos Jugados ===");
-    for (Partido partido : partidos) {
-      System.out.println(partido);
     }
   }
 

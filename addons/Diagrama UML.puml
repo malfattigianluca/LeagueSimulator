@@ -1,0 +1,93 @@
+@startuml
+
+' === Clases principales ===
+class Equipo {
+  - id: int
+  - nombre: String
+  - elo: int
+  - pais: String
+  - escudo: String
+  - liga: String
+}
+
+class Jugador {
+  - id: int
+  - nombre: String
+  - posicion: String
+  - equipo: Equipo
+  - estadisticas...
+}
+
+class Partido {
+  - local: Equipo
+  - visitante: Equipo
+  - golesLocal: int
+  - golesVisitante: int
+  + getGanador(): Equipo
+}
+
+class NodoPartido {
+  - partido: Partido
+  - izquierdo: NodoPartido
+  - derecho: NodoPartido
+  - ganador: Equipo
+}
+
+class Liga {
+  - nombre: String
+  - equipos: List<Equipo>
+  - jornadas: List<List<Partido>>
+  + simular()
+}
+
+abstract class Torneo {
+  - nombre: String
+  - equipos: List<Equipo>
+  - partidos: List<Partido>
+  + simularTorneo()
+}
+
+class TorneoMixto {
+  - grupos: List<List<Equipo>>
+  - raizEliminacion: NodoPartido
+  + simularFaseGrupos()
+  + simularFaseEliminacion()
+}
+
+class SimuladorLiga {
+  - equipos: List<Equipo>
+  - jornadas: List<List<Partido>>
+  + simular()
+}
+
+class GestorEquipos {
+  - equiposPorLiga: Map<String, List<Equipo>>
+  + crearTorneoPersonalizado()
+  + simularLiga()
+}
+
+class GestorJugadores {
+  - jugadores: ListaEnlazadaSimple<Jugador>
+  + buscarJugadores()
+}
+
+class DiccionarioImpl
+class ListaEnlazadaSimpleImpl
+
+' === Relaciones ===
+Jugador --> Equipo
+Partido --> Equipo
+NodoPartido --> Partido
+Liga --> Partido
+Torneo --> Partido
+TorneoMixto --> NodoPartido
+Torneo <|-- TorneoMixto
+GestorEquipos --> Torneo
+GestorEquipos --> Liga
+GestorJugadores --> Jugador
+SimuladorLiga --> Partido
+
+DiccionarioImpl ..> Jugador : "clave/valor"
+ListaEnlazadaSimpleImpl ..> Jugador
+
+@enduml

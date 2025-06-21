@@ -298,26 +298,39 @@ public class SimuladorLiga {
    * - Puntuación ELO actual
    */
   public void mostrarTabla() {
+    // Título principal de la tabla
     System.out.println("\n=== Tabla de Posiciones: " + nombre + " ===");
+
+    // Encabezado con nombres de columnas
     System.out.printf("%-30s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-5s %-6s%n",
             "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC", "DG", "ELO");
+
+    // Línea separadora
     System.out.println("----------------------------------------------------------------------------------");
 
+    // Copia de la lista de equipos para no modificar el original
     List<Equipo> equiposOrdenados = new ArrayList<>(equipos);
+
+    // Ordenamiento personalizado según puntos, diferencia de goles y goles a favor
     equiposOrdenados.sort((e1, e2) -> {
-      int puntos1 = e1.getPuntos();  // o puntos.get(e1) si no usás atributo en Equipo
+      int puntos1 = e1.getPuntos();
       int puntos2 = e2.getPuntos();
+
+      // Primero ordena por puntos (descendente)
       if (puntos1 != puntos2)
         return puntos2 - puntos1;
 
+      // Luego por diferencia de goles (descendente)
       int difGoles1 = e1.getGolesAFavor() - e1.getGolesEnContra();
       int difGoles2 = e2.getGolesAFavor() - e2.getGolesEnContra();
       if (difGoles1 != difGoles2)
         return difGoles2 - difGoles1;
 
+      // Por último, por goles a favor (descendente)
       return e2.getGolesAFavor() - e1.getGolesAFavor();
     });
 
+    // Impresión de cada fila de equipo en la tabla
     for (Equipo equipo : equiposOrdenados) {
       int puntosEquipo = equipo.getPuntos();
       int partidosJugados = equipo.getPartidosJugados();
@@ -329,6 +342,7 @@ public class SimuladorLiga {
       int diferenciaGoles = golesFavor - golesContra;
       int eloEquipo = equipo.getElo();
 
+      // Impresión de los datos del equipo con formato alineado
       System.out.printf("%-30s %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-5d %-6d%n",
               equipo.getNombre(),
               puntosEquipo,
@@ -368,21 +382,24 @@ public class SimuladorLiga {
    * @param scanner el objeto Scanner utilizado para leer la entrada del usuario
    */
   public void mostrarPartidosJugados(Scanner scanner) {
+    // Verifica si hay jornadas cargadas
     if (jornadas.isEmpty()) {
       System.out.println("No se han simulado jornadas aún.");
       return;
     }
 
+    // Iterador bidireccional sobre las jornadas
     ListIterator<List<Partido>> iterador = jornadas.listIterator();
     int jornadaActual = 0;
 
-    // Muestra la primera jornada por defecto
+    // Muestra la primera jornada automáticamente
     if (iterador.hasNext()) {
       List<Partido> primera = iterador.next();
       jornadaActual++;
-      mostrarJornada(primera, jornadaActual);
+      mostrarJornada(primera, jornadaActual); // Método auxiliar que imprime la jornada actual
     }
 
+    // Bucle interactivo hasta que el usuario decida salir
     while (true) {
       System.out.println("\nIngrese N para siguiente, P para anterior, 0 para salir:");
       String entrada = scanner.nextLine().trim().toUpperCase();
@@ -399,14 +416,14 @@ public class SimuladorLiga {
         }
         case "P" -> {
           if (iterador.hasPrevious()) {
-            // Necesitamos retroceder dos veces para compensar la última llamada a next()
+            // Retrocede dos veces para mostrar correctamente la jornada anterior
             if (iterador.hasPrevious()) {
-              iterador.previous(); // retroceder al actual
+              iterador.previous(); // paso atrás desde el punto actual
               if (iterador.hasPrevious()) {
-                List<Partido> anterior = iterador.previous();
+                List<Partido> anterior = iterador.previous(); // obtiene la jornada previa
                 jornadaActual--;
                 mostrarJornada(anterior, jornadaActual);
-                iterador.next(); // reposicionarse
+                iterador.next(); // reposiciona el iterador después de mostrar
               } else {
                 System.out.println("Ya estás en la primera jornada.");
               }

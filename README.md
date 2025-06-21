@@ -42,7 +42,7 @@ SimuladorTorneosFutbol_ProyectoFinal/
 
 3. **Ejecutar**:
    ```bash
-java -cp bin SimuladorTorneosFutbol_ProyectoFinal.App
+  java -cp bin SimuladorTorneosFutbol_ProyectoFinal.App
    ```
 
 4. Si estás usando un entorno como IntelliJ o Eclipse, basta con abrir el proyecto y ejecutar `App.java`.

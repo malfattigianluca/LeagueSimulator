@@ -361,16 +361,17 @@ public class GestorEquipos {
 
 
 
-    public void crearTorneoPersonalizado(Scanner scanner) {
+    public void crearTorneoPersonalizado(Scanner scanner) throws TorneoException {
+        GestorJugadores gestorJugadores = new GestorJugadores(this);
         System.out.print("Ingrese el nombre del torneo personalizado: ");
         String nombre = scanner.nextLine();
 
         System.out.println("""
         Seleccione la modalidad del torneo:
-        1. Eliminación directa
-        2. Fase de grupos (todos contra todos)
-        3. Mixto (grupos + eliminación)
-        """);
+        1. Fase de grupos (todos contra todos - ida y vuelta)
+        2. Eliminación directa
+        3. Mixto (grupos + eliminación directa)
+    """);
 
         int modalidad = -1;
         while (modalidad < 1 || modalidad > 3) {
@@ -382,51 +383,159 @@ public class GestorEquipos {
             }
         }
 
-        // Cantidad de equipos
-        System.out.print("¿Cuántos equipos desea agregar? ");
-        int cantidad = Integer.parseInt(scanner.nextLine());
-
-        // Mostrar todos los equipos disponibles con índice
         List<Equipo> disponibles = getEquipos();
-        if (disponibles.size() < cantidad) {
-            System.out.println("No hay suficientes equipos disponibles para ese torneo.");
+        if (disponibles.isEmpty()) {
+            System.out.println("No hay equipos disponibles para crear un torneo.");
             return;
         }
 
-        System.out.println("\n=== Equipos disponibles ===");
-        for (int i = 0; i < disponibles.size(); i++) {
-            System.out.printf("%d. %s (%s)%n", i + 1, disponibles.get(i).getNombre(), disponibles.get(i).getLiga());
-        }
+        // 👇 Se reemplaza la lógica de selección por una sola línea
+        List<Equipo> seleccionados = seleccionarEquipos(scanner, modalidad, disponibles);
 
-        System.out.print("\nIngrese los números de los equipos separados por comas (ej: 1,3,5): ");
-        String[] indices = scanner.nextLine().split(",");
+        switch (modalidad) {
+            case 1 -> { // Fase de grupos estilo liga
+                SimuladorLiga simulador = new SimuladorLiga(nombre);
 
-        if (indices.length != cantidad) {
-            System.out.println("La cantidad ingresada no coincide con la cantidad esperada.");
-            return;
-        }
+                for (Equipo equipo : seleccionados) {
+                    equipo.reiniciarEstadisticas();
+                    simulador.agregarEquipo(equipo);
+                }
 
-        SimuladorLiga simulador = new SimuladorLiga(nombre);
-        Set<Integer> usados = new HashSet<>();
+                try {
+                    simulador.generarCalendario();
 
-        for (String idxStr : indices) {
-            try {
-                int idx = Integer.parseInt(idxStr.trim()) - 1;
-                if (idx < 0 || idx >= disponibles.size() || usados.contains(idx)) {
-                    System.out.println("Índice inválido o duplicado: " + (idx + 1));
+                    // Simular todas las jornadas ida y vuelta
+                    for (int i = 0; i < simulador.getTotalJornadas(); i++) {
+                        List<Partido> jornada = simulador.simularJornada();
+                        simulador.agregarJornada(jornada);
+                    }
+
+                    simuladoresPorLiga.put(nombre, simulador);
+
+                    System.out.println("✅ Torneo de liga '" + nombre + "' creado y simulado exitosamente.\n");
+
+                    simulador.mostrarTabla();
+
+                    // Menú post simulación (ver fechas, goleadores, asistencias, etc.)
+                    mostrarMenuPostSimulacion(scanner, simulador);
+
+                } catch (TorneoException e) {
+                    System.out.println("❌ Error al generar el calendario: " + e.getMessage());
+                }
+            }
+
+
+            case 2 -> { // Eliminación directa con árbol binario
+                if (seleccionados.size() % 2 != 0) {
+                    seleccionados.add(new Equipo(-1, "BYE", 1500, "Ninguna", "bye.png", "N/A"));
+                    System.out.println("Cantidad impar de equipos. Se agregó el equipo ficticio 'BYE'.");
+                }
+
+                Torneo torneo = new Torneo(nombre, true);
+                for (Equipo equipo : seleccionados) {
+                    equipo.reiniciarEstadisticas();
+                    torneo.agregarEquipo(equipo);
+                }
+
+                // Simular usando el árbol binario
+                try {
+                    torneo.simularTorneo();
+                } catch (TorneoException e) {
+                    System.out.println("Error al simular torneo: " + e.getMessage());
                     return;
                 }
-                simulador.agregarEquipo(disponibles.get(idx));
-                usados.add(idx);
-            } catch (NumberFormatException e) {
-                System.out.println("Valor inválido: " + idxStr);
-                return;
+
+                simuladoresPorLiga.put(nombre, null); // o usar otro mapa si hacés seguimiento
+                System.out.println("Torneo de eliminación directa '" + nombre + "' creado exitosamente.");
+                torneo.imprimirBracket();
+                mostrarMenuPostSimulacion(scanner, torneo);
+            }
+
+            case 3 -> { // Mixto (grupos + eliminación directa)
+                int cantidadEquipos = seleccionados.size();
+                int grupos = 1;
+
+                for (int g = 2; g <= cantidadEquipos / 2; g++) {
+                    if (cantidadEquipos % g == 0) {
+                        int equiposPorGrupo = cantidadEquipos / g;
+                        if (equiposPorGrupo >= 4 && equiposPorGrupo <= 6) {
+                            grupos = g;
+                            break;
+                        }
+                    }
+                }
+
+                if (grupos == 1) {
+                    System.out.println("No se pudo dividir en grupos razonables. Usando 2 grupos por defecto.");
+                    grupos = 2;
+                }
+
+                System.out.printf("✅ Se usarán %d grupo(s) de %d equipos cada uno.%n", grupos, cantidadEquipos / grupos);
+
+                int clasificados = 2;
+                System.out.printf("✅ Se clasificarán %d equipos por grupo a la fase eliminatoria.%n", clasificados);
+
+                TorneoMixto torneoMixto = new TorneoMixto(nombre, grupos, clasificados);
+                for (Equipo equipo : seleccionados) {
+                    equipo.reiniciarEstadisticas();
+                    torneoMixto.agregarEquipo(equipo);
+                }
+
+                try {
+                    torneoMixto.simularTorneo();
+                } catch (TorneoException e) {
+                    System.out.println("Error en torneo mixto: " + e.getMessage());
+                    return;
+                }
+
+                torneoMixto.imprimirLlavesEliminacion();
             }
         }
-
-        simuladoresPorLiga.put(nombre, simulador);
-        System.out.println("Torneo personalizado '" + nombre + "' creado con éxito.");
     }
+
+
+    private List<Equipo> seleccionarEquipos(Scanner scanner, int modalidad, List<Equipo> disponibles) {
+        List<Equipo> seleccionados = new ArrayList<>();
+
+        System.out.printf("%n=== Equipos disponibles ===%n");
+        for (int i = 0; i < disponibles.size(); i++) {
+            System.out.printf("%3d. %s (%s)%n", i + 1, disponibles.get(i).getNombre(), disponibles.get(i).getLiga());
+        }
+        while (true) {
+            System.out.printf("%nActualmente hay %d equipo(s) seleccionados.%n", seleccionados.size());
+            System.out.print("Ingrese el número del equipo a agregar (0 para finalizar): ");
+
+            try {
+                int index = Integer.parseInt(scanner.nextLine()) - 1;
+
+                if (index == -1) {
+                    if (seleccionados.size() < 2) {
+                        System.out.println("⚠️ Se necesitan al menos 2 equipos para un torneo.");
+                        continue;
+                    }
+
+                    if ((modalidad == 1 || modalidad == 3) && seleccionados.size() % 2 != 0) {
+                        System.out.println("⚠️ Esta modalidad requiere una cantidad PAR de equipos.");
+                        continue;
+                    }
+
+                    return seleccionados; // válido, sale del metodo
+                }
+
+                if (index < 0 || index >= disponibles.size()) {
+                    System.out.println("Índice fuera de rango.");
+                } else if (seleccionados.contains(disponibles.get(index))) {
+                    System.out.println("Ese equipo ya fue seleccionado.");
+                } else {
+                    seleccionados.add(disponibles.get(index));
+                    System.out.printf("✅ Equipo agregado: %s%n", disponibles.get(index).getNombre());
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida.");
+            }
+        }
+    }
+
 
     /**
      * Muestra un menú interactivo post-simulación con estadísticas detalladas
@@ -453,6 +562,32 @@ public class GestorEquipos {
                 case "2" -> mostrarTopGoleadores(simulador.getPartidos()); // Lista los 10 máximos goleadores
                 case "3" -> mostrarTopAsistencias(simulador.getPartidos()); // Lista los 10 máximos asistentes
                 case "4" -> mostrarJugadoresConTarjetas(simulador.getPartidos()); // Lista jugadores con tarjetas
+                case "0" -> {
+                    return; // Sale del menú y vuelve al menú principal
+                }
+                default -> System.out.println("Opción inválida. Intente de nuevo."); // Manejo de errores
+            }
+        }
+    }
+
+    private void mostrarMenuPostTorneo(Scanner scanner, Torneo torneo) {
+        while (true) {
+            // Título del menú
+            System.out.println("\n=== Estadísticas de la Liga " + torneo.getNombre() + " ===");
+            System.out.println("1. Ver fechas jugadas");
+            System.out.println("2. Ver top 10 goleadores");
+            System.out.println("3. Ver top 10 asistentes");
+            System.out.println("4. Ver jugadores con tarjetas");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("Seleccione una opción: ");
+
+            String opcion = scanner.nextLine();
+
+            switch (opcion) {
+                case "1" -> torneo.mostrarPartidosTorneo(scanner);  // Muestra los partidos jugados por jornada
+                case "2" -> mostrarTopGoleadores(torneo.getPartidos()); // Lista los 10 máximos goleadores
+                case "3" -> mostrarTopAsistencias(torneo.getPartidos()); // Lista los 10 máximos asistentes
+                case "4" -> mostrarJugadoresConTarjetas(torneo.getPartidos()); // Lista jugadores con tarjetas
                 case "0" -> {
                     return; // Sale del menú y vuelve al menú principal
                 }

@@ -8,6 +8,7 @@ public class TorneoMixto extends Torneo {
   private int equiposQuePasanPorGrupo;
   private List<Equipo> equiposClasificados;
   private NodoPartido raiz;
+  protected NodoPartido raizEliminacion;
 
   public TorneoMixto(String nombre, int numGrupos, int equiposQuePasanPorGrupo) {
     super(nombre, true);
@@ -99,15 +100,86 @@ public class TorneoMixto extends Torneo {
     }
 
     raiz = cola.poll();
-    imprimirLlavesDesdeRaiz(raiz, 0);
-    System.out.println("\n\uD83C\uDFC6 ¡" + raiz.getGanador().getNombre() + " es el campeón del torneo!");
+    imprimirLlavesEliminacion();
   }
+
+//  public void menuPostSimulacion(Scanner scanner) {
+//    while (true) {
+//      System.out.println("\nSeleccione una opción:");
+//      System.out.println("1. Ver cuadro de eliminación");
+//      System.out.println("2. Volver al menú principal");
+//      System.out.print("Opción: ");
+//
+//      String opcion = scanner.nextLine().trim();
+//      switch (opcion) {
+//        case "1" -> imprimirLlavesEliminacion();
+//        case "2" -> {
+//          System.out.println("Volviendo al menú principal...");
+//          return;
+//        }
+//        default -> System.out.println("Opción inválida. Intente nuevamente.");
+//      }
+//    }
+//  }
+
+  public void imprimirTablaDeGrupos() {
+    for (int i = 0; i < grupos.size(); i++) {
+      List<Equipo> grupo = grupos.get(i);
+
+      grupo.sort((a, b) -> Integer.compare(getPuntos(b), getPuntos(a))); // Orden descendente
+
+      System.out.println("\n=== Tabla de Posiciones - Grupo " + (i + 1) + " ===");
+      System.out.printf("%-25s %5s %5s %5s %5s %5s %5s %5s\n", "Equipo", "Pts", "PJ", "PG", "PE", "PP", "GF", "GC");
+      System.out.println("---------------------------------------------------------------");
+
+      for (Equipo eq : grupo) {
+        System.out.printf("%-25s %5d %5d %5d %5d %5d %5d %5d\n",
+                eq.getNombre(),
+                getPuntos(eq),
+                eq.getPartidosJugados(),
+                eq.getPartidosGanados(),
+                eq.getPartidosEmpatados(),
+                eq.getPartidosPerdidos(),
+                eq.getGolesAFavor(),
+                eq.getGolesEnContra());
+      }
+    }
+  }
+
 
   private void imprimirLlavesDesdeRaiz(NodoPartido nodo, int nivel) {
     if (nodo == null) return;
     imprimirLlavesDesdeRaiz(nodo.getDerecho(), nivel + 1);
     System.out.println("  ".repeat(nivel) + nodo.getPartido().resumenPartidoConGanador());
     imprimirLlavesDesdeRaiz(nodo.getIzquierdo(), nivel + 1);
+  }
+
+  public void imprimirLlavesEliminacion() {
+    System.out.println("\n=== Llave del Torneo (Formato Árbol) ===\n");
+    imprimirLlaveRecursiva(raizEliminacion, 0);
+    if (raizEliminacion != null && raizEliminacion.getPartido() != null && raizEliminacion.getPartido().getGanador() != null) {
+      System.out.println("\n\uD83C\uDFC6 ¡" + raizEliminacion.getPartido().getGanador().getNombre() + " es el campeón del torneo!");
+    }
+  }
+
+  private void imprimirLlaveRecursiva(NodoPartido nodo, int nivel) {
+    if (nodo == null || nodo.getPartido() == null) return;
+
+    String indent = " ".repeat(nivel * 4);
+    Partido p = nodo.getPartido();
+
+    String local = p.getLocal() != null ? abreviar(p.getLocal().getNombre()) : "BYE";
+    String visitante = p.getVisitante() != null ? abreviar(p.getVisitante().getNombre()) : "BYE";
+    String ganador = p.getGanador() != null ? abreviar(p.getGanador().getNombre()) : "¿?";
+
+    System.out.println(indent + local + " vs " + visitante + " → 🏅 " + ganador);
+
+    imprimirLlaveRecursiva(nodo.getIzquierdo(), nivel + 1);
+    imprimirLlaveRecursiva(nodo.getDerecho(), nivel + 1);
+  }
+
+  private String abreviar(String nombre) {
+    return nombre.length() <= 10 ? nombre : nombre.substring(0, 10);
   }
 
   public void mostrarTablasGrupos() {
@@ -131,6 +203,38 @@ public class TorneoMixto extends Torneo {
                 equipo.getElo());
       }
     }
+  }
+
+  private NodoPartido construirArbolEliminacion(List<Equipo> equipos) throws TorneoException {
+    if (equipos.size() == 1) return new NodoPartido(null);
+
+    List<NodoPartido> nodos = new ArrayList<>();
+    List<Equipo> ganadores = new ArrayList<>();
+
+    for (int i = 0; i < equipos.size(); i += 2) {
+      Equipo e1 = equipos.get(i);
+      Equipo e2 = equipos.get(i + 1);
+      Partido partido;
+      NodoPartido nodo;
+
+      if (e1.getNombre().equals("BYE")) {
+        nodo = new NodoPartido(null);
+        nodo.setGanador(e2);
+      } else if (e2.getNombre().equals("BYE")) {
+        nodo = new NodoPartido(null);
+        nodo.setGanador(e1);
+      } else {
+        partido = new Partido(e1, e2);
+        nodo = new NodoPartido(partido);
+        nodo.setGanador(partido.getGanadorConDesempate());
+      }
+      nodos.add(nodo);
+      ganadores.add(nodo.getGanador());
+    }
+
+    if (ganadores.size() == 1) return nodos.get(0);
+
+    return construirArbolEliminacion(ganadores);
   }
 
   public void mostrarEquiposClasificados() {

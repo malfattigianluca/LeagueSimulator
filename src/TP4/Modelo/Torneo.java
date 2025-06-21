@@ -274,10 +274,12 @@ public class Torneo {
     if (nodo == null) return;
 
     Partido p = nodo.getPartido();
-    String indent = "    ".repeat(nivel);
+    String indent = "        ".repeat(nivel); // 8 espacios por nivel
     String flecha = izquierdo ? "└── " : "┌── ";
 
     imprimirBracketRecursivo(nodo.getDerecho(), nivel + 1, false);
+
+    if (nivel > 0) System.out.println();
 
     String fase = switch (nivel) {
       case 0 -> "Final";
@@ -289,14 +291,17 @@ public class Torneo {
       default -> "Ronda " + (nivel + 1);
     };
 
-    String local = (p != null && p.getLocal() != null) ? abreviar(p.getLocal().getNombre()) : "BYE";
-    String visitante = (p != null && p.getVisitante() != null) ? abreviar(p.getVisitante().getNombre()) : "BYE";
-    String ganador = (p != null && p.getGanador() != null) ? " → 🏅" + abreviar(p.getGanador().getNombre()) : "";
+    String local = (p != null && p.getLocal() != null) ? String.format("%-22s", abreviar(p.getLocal().getNombre())) : "BYE                  ";
+    String visitante = (p != null && p.getVisitante() != null) ? String.format("%-22s", abreviar(p.getVisitante().getNombre())) : "BYE                  ";
+    String ganador = (p != null && p.getGanador() != null) ? "→ 🏅" + abreviar(p.getGanador().getNombre()) : "";
 
-    System.out.println(indent + flecha + "[" + fase + "] " + local + " vs " + visitante + ganador);
+    System.out.println(indent + flecha + "[" + fase + "] " + local + " vs " + visitante + " " + ganador);
 
     imprimirBracketRecursivo(nodo.getIzquierdo(), nivel + 1, true);
+
+    if (nivel <= 2) System.out.println();
   }
+
 
 
   /**
@@ -315,15 +320,21 @@ public class Torneo {
       return;
     }
 
-    ListIterator<Partido> iterador = partidos.listIterator();
-    int numeroPartido = 0;
+    List<List<Partido>> jornadas = new ArrayList<>();
 
-    // Mostrar el primer partido
+    int cantidadPorJornada = 4; // cantidad visual por "fecha"
+    for (int i = 0; i < partidos.size(); i += cantidadPorJornada) {
+      int fin = Math.min(i + cantidadPorJornada, partidos.size());
+      jornadas.add(partidos.subList(i, fin));
+    }
+
+    ListIterator<List<Partido>> iterador = jornadas.listIterator();
+    int jornadaActual = 0;
+
     if (iterador.hasNext()) {
-      Partido primero = iterador.next();
-      numeroPartido++;
-      System.out.println("\n=== Partido " + numeroPartido + " ===");
-      System.out.println(primero);
+      List<Partido> primera = iterador.next();
+      jornadaActual++;
+      mostrarJornadaFormatoLiga(primera, jornadaActual);
     }
 
     while (true) {
@@ -333,39 +344,54 @@ public class Torneo {
       switch (entrada) {
         case "N" -> {
           if (iterador.hasNext()) {
-            Partido siguiente = iterador.next();
-            numeroPartido++;
-            System.out.println("\n=== Partido " + numeroPartido + " ===");
-            System.out.println(siguiente);
+            List<Partido> siguiente = iterador.next();
+            jornadaActual++;
+            mostrarJornadaFormatoLiga(siguiente, jornadaActual);
           } else {
-            System.out.println("No hay más partidos siguientes.");
+            System.out.println("No hay más jornadas siguientes.");
           }
         }
         case "P" -> {
           if (iterador.hasPrevious()) {
-            // retroceder al partido actual y mostrar el anterior
+            iterador.previous();
             if (iterador.hasPrevious()) {
-              iterador.previous(); // posicionar al actual
-              Partido anterior = iterador.previous();
-              numeroPartido--;
-              System.out.println("\n=== Partido " + numeroPartido + " ===");
-              System.out.println(anterior);
-              iterador.next(); // reposicionar en el correcto
+              List<Partido> anterior = iterador.previous();
+              jornadaActual--;
+              mostrarJornadaFormatoLiga(anterior, jornadaActual);
+              iterador.next(); // reposicionarse
             } else {
-              System.out.println("Ya estás en el primer partido.");
+              System.out.println("Ya estás en la primera jornada.");
             }
           } else {
-            System.out.println("Ya estás en el primer partido.");
+            System.out.println("Ya estás en la primera jornada.");
           }
         }
         case "0" -> {
-          System.out.println("Saliendo del visor de partidos.");
+          System.out.println("Saliendo del visor de jornadas.");
           return;
         }
         default -> System.out.println("Opción inválida.");
       }
     }
   }
+
+
+
+  protected void mostrarJornadaFormatoLiga(List<Partido> jornada, int numero) {
+    System.out.printf("\n=== Jornada %d ===\n", numero);
+    System.out.printf("%-28s %3s - %-3s %-28s%n", "Equipo Local", "G", "G", "Equipo Visitante");
+    System.out.println("---------------------------------------------------------------");
+
+    for (Partido partido : jornada) {
+      String local = partido.getLocal() != null ? partido.getLocal().getNombre() : "BYE";
+      String visitante = partido.getVisitante() != null ? partido.getVisitante().getNombre() : "BYE";
+      int golesLocal = partido.getGolesLocal();
+      int golesVisitante = partido.getGolesVisitante();
+
+      System.out.printf("%-28s %3d - %-3d %-28s%n", local, golesLocal, golesVisitante, visitante);
+    }
+  }
+
 
 
 
@@ -500,6 +526,4 @@ public class Torneo {
   public List<Partido> getPartidos() {
     return partidos;
   }
-
-  //to do: Fixear salida de bracket
 }

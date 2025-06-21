@@ -90,7 +90,8 @@ public class GestorEquipos {
     public void agregarEquipo(Equipo equipo) {
         String liga = equipo.getLiga();
 
-        equipo.setId(idEquipo++); // Asigna un ID único y lo incrementa
+        // Asigna un ID único y lo incrementa
+        equipo.setId(idEquipo++);
 
         // Agrega el equipo a la lista correspondiente en el mapa, creando la lista si no existe
         equiposPorLiga.computeIfAbsent(liga, k -> new ArrayList<>()).add(equipo);
@@ -104,7 +105,9 @@ public class GestorEquipos {
      */
     public List<Equipo> buscarEquipoPorNombre(String fragmento) {
         List<Equipo> resultados = new ArrayList<>();
-        String fragmentoLower = fragmento.toLowerCase(); // Convierte el fragmento a minúsculas
+
+        // Convierte el fragmento a minúsculas
+        String fragmentoLower = fragmento.toLowerCase();
 
         // Recorre todas las listas de equipos por liga
         for (List<Equipo> lista : equiposPorLiga.values()) {
@@ -115,7 +118,7 @@ public class GestorEquipos {
                 }
             }
         }
-
+        // Devuelve la lista de equipos encontrados
         return resultados;
     }
 
@@ -126,7 +129,9 @@ public class GestorEquipos {
      */
     public void buscarEquipos(Scanner scanner) {
         System.out.print("Ingrese el fragmento a buscar en el nombre del equipo: ");
-        String fragmento = scanner.nextLine().toLowerCase(); // Lectura y normalización del fragmento
+
+        // Lectura y normalización del fragmento
+        String fragmento = scanner.nextLine().toLowerCase();
 
         // Busca equipos cuyo nombre contenga el fragmento, usando streams
         List<Equipo> resultados = equiposPorLiga.values().stream()
@@ -375,10 +380,14 @@ public class GestorEquipos {
      * @throws TorneoException si ocurre un error durante la simulación.
      */
     public void crearTorneoPersonalizado(Scanner scanner) throws TorneoException {
+        // Instancia el gestor de jugadores asociado a este gestor de equipos
         GestorJugadores gestorJugadores = new GestorJugadores(this);
+
+        // Solicita el nombre del torneo
         System.out.print("Ingrese el nombre del torneo personalizado: ");
         String nombre = scanner.nextLine();
 
+        // Muestra el menú de modalidades de torneo disponibles
         System.out.println("""
         Seleccione la modalidad del torneo:
         1. Fase de grupos (todos contra todos - ida y vuelta)
@@ -387,6 +396,8 @@ public class GestorEquipos {
     """);
 
         int modalidad = -1;
+
+        // Validación del ingreso: solo se permite 1, 2 o 3 como opción válida
         while (modalidad < 1 || modalidad > 3) {
             try {
                 System.out.print("Opción: ");
@@ -396,40 +407,50 @@ public class GestorEquipos {
             }
         }
 
+        // Obtiene la lista de equipos disponibles en el sistema
         List<Equipo> disponibles = getEquipos();
         if (disponibles.isEmpty()) {
             System.out.println("No hay equipos disponibles para crear un torneo.");
             return;
         }
 
+        // Llama al metodo para seleccionar equipos en base a la modalidad elegida
         List<Equipo> seleccionados = seleccionarEquipos(scanner, modalidad, disponibles);
 
+        // A partir de aquí comienza el bloque que define el comportamiento para cada modalidad
         switch (modalidad) {
-            // Fase de grupos (todos contra todos - ida y vuelta)
+
+            // --------------------------------------
+            // 1. FASE DE GRUPOS (SIMULADOR DE LIGA)
+            // --------------------------------------
             case 1 -> {
+                // Crea una nueva liga con el nombre indicado
                 SimuladorLiga simulador = new SimuladorLiga(nombre);
 
+                // Se reinician las estadísticas y se agregan los equipos seleccionados
                 for (Equipo equipo : seleccionados) {
                     equipo.reiniciarEstadisticas();
                     simulador.agregarEquipo(equipo);
                 }
 
                 try {
+                    // Genera el calendario de partidos (ida y vuelta)
                     simulador.generarCalendario();
 
-                    // Simular todas las jornadas ida y vuelta
+                    // Simula cada jornada y la agrega a la lista de fechas jugadas
                     for (int i = 0; i < simulador.getTotalJornadas(); i++) {
                         List<Partido> jornada = simulador.simularJornada();
                         simulador.agregarJornada(jornada);
                     }
 
+                    // Se guarda el simulador con el nombre del torneo para futuras consultas
                     simuladoresPorLiga.put(nombre, simulador);
 
+                    // Informa al usuario y muestra la tabla de posiciones final
                     System.out.println("Torneo de liga '" + nombre + "' creado y simulado exitosamente.\n");
-
                     simulador.mostrarTabla();
 
-                    // Menú post simulación para ver fechas, goleadores, asistencias, etc.)
+                    // Menú de opciones post-simulación (ver fechas, estadísticas, etc.)
                     mostrarMenuPostSimulacion(scanner, simulador);
 
                 } catch (TorneoException e) {
@@ -437,17 +458,21 @@ public class GestorEquipos {
                 }
             }
 
-
-            case 2 -> { // Eliminación directa
-
+            // --------------------------------------
+            // 2. ELIMINACIÓN DIRECTA
+            // --------------------------------------
+            case 2 -> {
+                // Obtiene los equipos que aún no fueron seleccionados
                 List<Equipo> equiposdisponibles = getEquipos().stream()
                         .filter(e -> !seleccionados.contains(e))
                         .toList();
 
+                // Muestra equipos restantes disponibles para completar la llave
                 for (int i = 0; i < equiposdisponibles.size(); i++) {
                     System.out.println((i + 1) + ". " + equiposdisponibles.get(i).getNombre());
                 }
 
+                // Asegura que la cantidad total de equipos sea una potencia de 2
                 while (!esPotenciaDeDos(seleccionados.size())) {
                     System.out.println("\n❌ Necesitás ingresar una cantidad de equipos que sea potencia de 2 (2, 4, 8, 16, ...).");
                     System.out.println("Actualmente hay " + seleccionados.size() + " equipo(s) seleccionados.");
@@ -473,13 +498,14 @@ public class GestorEquipos {
                     }
                 }
 
-                // Crear y simular el torneo
+                // Se crea el torneo y se reinician estadísticas
                 Torneo torneo = new Torneo(nombre, true);
                 for (Equipo equipo : seleccionados) {
                     equipo.reiniciarEstadisticas();
                     torneo.agregarEquipo(equipo);
                 }
 
+                // Simula el torneo en formato de eliminación directa (árbol binario)
                 try {
                     torneo.simularTorneo();
                 } catch (TorneoException e) {
@@ -487,17 +513,19 @@ public class GestorEquipos {
                     return;
                 }
 
-                simuladoresPorLiga.put(nombre, null);
+                simuladoresPorLiga.put(nombre, null); // No se guarda simulador de liga
                 System.out.println("\nTorneo de eliminación directa '" + nombre + "' creado exitosamente.");
-                mostrarMenuPostTorneo(scanner, torneo);
+                mostrarMenuPostTorneo(scanner, torneo); // Muestra menú post torneo
             }
 
-
-
-            case 3 -> { // Mixto (grupos + eliminación directa)
+            // --------------------------------------
+            // 3. TORNEO MIXTO (GRUPOS + ELIMINACIÓN)
+            // --------------------------------------
+            case 3 -> {
                 int cantidadEquipos = seleccionados.size();
                 int grupos = 1;
 
+                // Se calcula la cantidad de grupos razonable (entre 4 y 6 equipos por grupo)
                 for (int g = 2; g <= cantidadEquipos / 2; g++) {
                     if (cantidadEquipos % g == 0) {
                         int equiposPorGrupo = cantidadEquipos / g;
@@ -513,11 +541,13 @@ public class GestorEquipos {
                     grupos = 2;
                 }
 
+                // Se indica al usuario cómo se organizarán los grupos
                 System.out.printf("Se usarán %d grupo(s) de %d equipos cada uno.%n", grupos, cantidadEquipos / grupos);
 
-                int clasificados = 2;
+                int clasificados = 2; // Equipos que avanzan por grupo
                 System.out.printf("Se clasificarán %d equipos por grupo a la fase eliminatoria.%n", clasificados);
 
+                // Se construye el torneo mixto y se agregan los equipos
                 TorneoMixto torneoMixto = new TorneoMixto(nombre, grupos, clasificados);
                 for (Equipo equipo : seleccionados) {
                     equipo.reiniciarEstadisticas();
@@ -531,6 +561,7 @@ public class GestorEquipos {
                     return;
                 }
 
+                // Imprime las llaves de la fase eliminatoria y muestra menú de estadísticas
                 torneoMixto.imprimirLlavesEliminacion();
                 mostrarMenuPostTorneoMixto(scanner, torneoMixto);
             }
@@ -553,13 +584,29 @@ public class GestorEquipos {
      * @param disponibles lista de equipos que pueden ser seleccionados.
      * @return una lista de equipos seleccionados por el usuario.
      */
+    /**
+     * Permite al usuario seleccionar equipos desde una lista de disponibles para conformar un torneo.
+     *
+     * El usuario ingresa por consola los números correspondientes a los equipos. La selección se completa
+     * cuando se ingresa 0, siempre y cuando se cumplan las condiciones mínimas:
+     * - Al menos 2 equipos deben estar seleccionados.
+     * - Para torneos de modalidad 1 (liga) o 3 (mixto), la cantidad de equipos debe ser par.
+     *
+     * @param scanner Objeto Scanner utilizado para leer la entrada del usuario.
+     * @param modalidad Tipo de torneo (1: liga, 2: eliminación directa, 3: mixto).
+     * @param disponibles Lista de equipos disponibles para seleccionar.
+     * @return Una lista de equipos seleccionados por el usuario.
+     */
     private List<Equipo> seleccionarEquipos(Scanner scanner, int modalidad, List<Equipo> disponibles) {
         List<Equipo> seleccionados = new ArrayList<>();
 
+        // Muestra todos los equipos disponibles numerados
         System.out.printf("%n=== Equipos disponibles ===%n");
         for (int i = 0; i < disponibles.size(); i++) {
             System.out.printf("%3d. %s (%s)%n", i + 1, disponibles.get(i).getNombre(), disponibles.get(i).getLiga());
         }
+
+        // Bucle de selección interactiva
         while (true) {
             System.out.printf("%nActualmente hay %d equipo(s) seleccionados.%n", seleccionados.size());
             System.out.print("Ingrese el número del equipo a agregar (0 para finalizar): ");
@@ -567,25 +614,30 @@ public class GestorEquipos {
             try {
                 int index = Integer.parseInt(scanner.nextLine()) - 1;
 
+                // El usuario desea finalizar la selección
                 if (index == -1) {
+                    // Valida cantidad mínima
                     if (seleccionados.size() < 2) {
                         System.out.println("⚠️ Se necesitan al menos 2 equipos para un torneo.");
                         continue;
                     }
 
+                    // Valida paridad para modalidad 1 o 3
                     if ((modalidad == 1 || modalidad == 3) && seleccionados.size() % 2 != 0) {
                         System.out.println("⚠️ Esta modalidad requiere una cantidad PAR de equipos.");
                         continue;
                     }
 
-                    return seleccionados; // válido, sale del metodo
+                    return seleccionados; // Selección válida, retorna
                 }
 
+                // Validaciones de rango y duplicados
                 if (index < 0 || index >= disponibles.size()) {
                     System.out.println("Índice fuera de rango.");
                 } else if (seleccionados.contains(disponibles.get(index))) {
                     System.out.println("Ese equipo ya fue seleccionado.");
                 } else {
+                    // Agrega el equipo seleccionado
                     seleccionados.add(disponibles.get(index));
                     System.out.printf("✅ Equipo agregado: %s%n", disponibles.get(index).getNombre());
                 }
@@ -594,6 +646,7 @@ public class GestorEquipos {
             }
         }
     }
+
 
     /**
      * Muestra un menú interactivo post-simulación con estadísticas detalladas
@@ -870,27 +923,25 @@ public class GestorEquipos {
         return todos;
     }
 
+    /**
+     * Verifica si un número entero positivo es una potencia de dos.
+     * Utiliza una operación bit a bit eficiente: un número n es potencia de dos
+     * si solo tiene un bit en 1 en su representación binaria.
+     * Ejemplos válidos: 1, 2, 4, 8, 16, 32, ...
+     *
+     * @param n El número a verificar.
+     * @return true si n es potencia de dos, false en caso contrario.
+     */
     private boolean esPotenciaDeDos(int n) {
         return n > 0 && (n & (n - 1)) == 0;
     }
 
-
-    public void mostrarEquiposPorNombreParcial(String fragmento) {
-        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
-
-        if (resultados.isEmpty()) {
-            System.out.println("No se encontraron equipos que coincidan con: " + fragmento);
-            return;
-        }
-
-        System.out.printf("%-28s | %-10s | %-20s | %4s\n", "Liga", "Escudo", "Equipo", "ELO");
-        System.out.println("----------------------------------------------------------------------------");
-        for (Equipo equipo : resultados) {
-            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
-                    equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getElo());
-        }
-    }
-
+    /**
+     * Devuelve una lista con todos los equipos registrados en el sistema,
+     * sin importar la liga a la que pertenezcan.
+     *
+     * @return Lista de objetos Equipo que agrupa todos los equipos disponibles.
+     */
     public List<Equipo> listarEquipos() {
         List<Equipo> todos = new ArrayList<>();
         for (List<Equipo> lista : equiposPorLiga.values()) {
@@ -899,16 +950,61 @@ public class GestorEquipos {
         return todos;
     }
 
+
+
+
+
+
+    /** LOS SIGUIENTES METODOS NO SE UTILIZARAN EN LA VERSION ACTUAL DEL PROGRAMA*/
+
+    /**
+     * Muestra todos los equipos cuyo nombre contenga un fragmento parcial dado.
+     * El método busca coincidencias en los nombres de los equipos registrados
+     * (ignorando mayúsculas/minúsculas) y los imprime en formato tabular.
+     *
+     * @param fragmento Parte del nombre del equipo a buscar.
+     */
+    public void mostrarEquiposPorNombreParcial(String fragmento) {
+        // Busca coincidencias parciales en los nombres de los equipos
+        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
+
+        // Si no se encontraron coincidencias, se informa al usuario
+        if (resultados.isEmpty()) {
+            System.out.println("No se encontraron equipos que coincidan con: " + fragmento);
+            return;
+        }
+
+        // Encabezado de la tabla
+        System.out.printf("%-28s | %-10s | %-20s | %4s\n", "Liga", "Escudo", "Equipo", "ELO");
+        System.out.println("----------------------------------------------------------------------------");
+
+        // Imprime cada equipo coincidente con formato alineado
+        for (Equipo equipo : resultados) {
+            System.out.printf("%-28s | %-10s | %-20s | %4d\n",
+                    equipo.getLiga(), equipo.getEscudo(), equipo.getNombre(), equipo.getElo());
+        }
+    }
+
+    /**
+     * Muestra todos los equipos cargados en el sistema, agrupados por liga,
+     * en una tabla con formato claro y ordenado. Si no hay equipos, se informa al usuario.
+     */
     public void mostrarTodosLosEquipos() {
+        // Obtiene la lista completa de equipos registrados
         List<Equipo> equipos = listarEquipos();
+
+        // Verifica si hay equipos cargados
         if (equipos.isEmpty()) {
             System.out.println("No hay equipos cargados.");
             return;
         }
+
+        // Encabezado de la tabla
         System.out.println("\n=== Listado de Equipos ===");
         System.out.println("\nLiga                         |   Escudo   | Equipo                  | ELO");
         System.out.println("----------------------------------------------------------------------------");
 
+        // Muestra todos los equipos con formato tabular
         for (Equipo equipo : equipos) {
             System.out.printf("%-28s | %-10s | %-20s | %4d\n",
                     equipo.getLiga(),
@@ -918,16 +1014,33 @@ public class GestorEquipos {
         }
     }
 
+    /**
+     * Verifica si existe un equipo registrado con el nombre proporcionado.
+     *
+     * @param nombre Nombre del equipo a verificar.
+     * @return true si el equipo existe, false en caso contrario.
+     */
     public boolean existeEquipo(String nombre) {
+        // Reutiliza el método de búsqueda para determinar existencia
         return buscarEquipoPorNombre(nombre) != null;
     }
 
+    /**
+     * Muestra por consola todos los equipos pertenecientes a una liga específica,
+     * junto con información relevante como ID, escudo, nombre y ELO.
+     *
+     * @param nombreLiga Nombre de la liga cuyos equipos se desean visualizar.
+     */
     public void mostrarEquiposPorLiga(String nombreLiga) {
+        // Recorre todas las ligas registradas
         for (String liga : equiposPorLiga.keySet()) {
+            // Compara ignorando mayúsculas/minúsculas
             if (liga.equalsIgnoreCase(nombreLiga)) {
                 System.out.println("\nLiga: " + liga);
                 System.out.printf("%-5s %-20s %-30s %-10s\n", "ID", "Escudo", "Nombre", "Elo");
                 System.out.println("---------------------------------------------------------------");
+
+                // Imprime todos los equipos de la liga
                 for (Equipo e : equiposPorLiga.get(liga)) {
                     System.out.printf("%-5d %-20s %-30s %-10d\n",
                             e.getId(), e.getEscudo(), e.getNombre(), e.getElo());
@@ -935,50 +1048,96 @@ public class GestorEquipos {
                 return;
             }
         }
+
+        // Si la liga no fue encontrada
         System.out.println("No se encontraron equipos para la liga: " + nombreLiga);
     }
 
+    /**
+     * Busca y muestra los jugadores del equipo con el nombre especificado.
+     * Si el equipo existe, delega la impresión al mEtodo mostrarJugadores del equipo.
+     *
+     * @param nombreEquipo Nombre del equipo a mostrar.
+     */
     public void mostrarEquipo(String nombreEquipo) {
+        // Recorre todas las ligas registradas
         for (String liga : equiposPorLiga.keySet()) {
+            // Busca en cada lista de equipos de la liga
             for (Equipo equipo : equiposPorLiga.get(liga)) {
                 if (equipo.getNombre().equalsIgnoreCase(nombreEquipo)) {
-                    equipo.mostrarJugadores();
+                    equipo.mostrarJugadores();  // Muestra todos los jugadores del equipo
                     return;
                 }
             }
         }
+
+        // Si no se encontró el equipo
         System.out.println("No se encontró el equipo: " + nombreEquipo);
     }
 
+    /**
+     * Devuelve una lista de equipos pertenecientes a la liga especificada.
+     * Si no existen equipos asociados a esa liga, retorna una lista vacía.
+     *
+     * @param liga Nombre de la liga a buscar.
+     * @return Lista de equipos pertenecientes a la liga, o lista vacía si no existe.
+     */
     public List<Equipo> filtrarPorLiga(String liga) {
+        // Utiliza getOrDefault para devolver la lista asociada a la liga o una lista vacía si no hay coincidencias
         return equiposPorLiga.getOrDefault(liga, new ArrayList<>());
     }
 
+    /**
+     * Asigna un jugador a su equipo correspondiente dentro de la estructura de datos del sistema.
+     * Si el equipo del jugador ya existe, lo agrega al mismo. Si no, registra el equipo primero.
+     *
+     * @param jugador Objeto Jugador a asignar a un equipo.
+     * @throws TorneoException si ocurre algún error en la asignación.
+     */
     public void asignarJugadorAEquipo(Jugador jugador) throws TorneoException {
         Equipo equipoJugador = jugador.getEquipo();
+
         if (equipoJugador != null) {
+            // Busca si el equipo ya está registrado por nombre
             Equipo equipoRegistrado = (Equipo) buscarEquipoPorNombre(equipoJugador.getNombre());
+
             if (equipoRegistrado != null) {
+                // Agrega el jugador al equipo existente
                 equipoRegistrado.agregarJugador(jugador);
             } else {
+                // Registra el nuevo equipo y le asigna el jugador
                 agregarEquipo(equipoJugador);
                 equipoJugador.agregarJugador(jugador);
             }
         }
     }
 
+    /**
+     * Elimina un equipo del sistema dado su nombre, recorriendo todas las ligas registradas.
+     *
+     * @param nombre Nombre del equipo a eliminar (sin distinción de mayúsculas/minúsculas).
+     * @return true si el equipo fue encontrado y eliminado, false si no existía.
+     */
     public boolean eliminarEquipo(String nombre) {
+        // Recorre todas las ligas
         for (String liga : equiposPorLiga.keySet()) {
             List<Equipo> lista = equiposPorLiga.get(liga);
             Iterator<Equipo> it = lista.iterator();
+
+            // Itera sobre los equipos de cada liga
             while (it.hasNext()) {
                 Equipo e = it.next();
+
+                // Si coincide el nombre, elimina y finaliza
                 if (e.getNombre().equalsIgnoreCase(nombre)) {
                     it.remove();
                     return true;
                 }
             }
         }
+
+        // Si no se encuentra el equipo en ninguna liga
         return false;
     }
+
 }

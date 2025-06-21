@@ -1,8 +1,5 @@
 package TP4.Modelo;
 
-import TP4.Excepciones.TorneoException;
-import java.util.*;
-
 public class NodoPartido {
     private Partido partido;
     private NodoPartido izquierdo;

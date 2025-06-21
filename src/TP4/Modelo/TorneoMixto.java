@@ -7,7 +7,6 @@ public class TorneoMixto extends Torneo {
   private List<List<Equipo>> grupos;
   private int equiposQuePasanPorGrupo;
   private List<Equipo> equiposClasificados;
-  private NodoPartido raiz;
   protected NodoPartido raizEliminacion;
 
   public TorneoMixto(String nombre, int numGrupos, int equiposQuePasanPorGrupo) {
@@ -64,9 +63,7 @@ public class TorneoMixto extends Torneo {
     if (equiposClasificados.size() < 2) {
       throw new TorneoException("No hay suficientes equipos clasificados para la fase de eliminación");
     }
-    for (Equipo equipo : equiposClasificados) {
-      agregarEquipo(equipo);
-    }
+    for (Equipo equipo : equiposClasificados) agregarEquipo(equipo);
     Collections.shuffle(equiposClasificados);
 
     Queue<NodoPartido> cola = new LinkedList<>();
@@ -76,10 +73,9 @@ public class TorneoMixto extends Torneo {
               : new Equipo(-1, "BYE", 1500, "Libre", "bye.png", "N/A");
       simularPartido(local, visitante);
       Partido partido = getPartidos().get(getPartidos().size() - 1);
-      Equipo ganador = partido.getGanadorConDesempate();
 
       NodoPartido nodo = new NodoPartido(partido);
-      nodo.setGanador(ganador);
+      nodo.setGanador(partido.getGanadorConDesempate());
       cola.offer(nodo);
     }
 
@@ -95,12 +91,10 @@ public class TorneoMixto extends Torneo {
       padre.setIzquierdo(nodo1);
       padre.setDerecho(nodo2);
       padre.setGanador(nuevo.getGanadorConDesempate());
-
       cola.offer(padre);
     }
 
-    raiz = cola.poll();
-    imprimirLlavesEliminacion();
+    raizEliminacion = cola.poll();
   }
 
   public void imprimirTablaDeGrupos() {
@@ -136,28 +130,60 @@ public class TorneoMixto extends Torneo {
   }
 
   public void imprimirLlavesEliminacion() {
+    if (raizEliminacion == null) {
+      System.out.println("No hay partidos simulados aún.");
+      return;
+    }
+
     System.out.println("\n=== Llave del Torneo (Formato Árbol) ===\n");
-    imprimirLlaveRecursiva(raizEliminacion, 0);
-    if (raizEliminacion != null && raizEliminacion.getPartido() != null && raizEliminacion.getPartido().getGanador() != null) {
-      System.out.println("\n\uD83C\uDFC6 ¡" + raizEliminacion.getPartido().getGanador().getNombre() + " es el campeón del torneo!");
+    imprimirLlavesEstiloBracket(raizEliminacion, 0, true);
+
+    Equipo campeon = raizEliminacion.getGanador();
+    if (campeon != null) {
+      System.out.println("\n🏆 Campeón: " + campeon.getNombre());
+    } else {
+      System.out.println("\n🏆 Campeón: Desconocido");
     }
   }
 
-  private void imprimirLlaveRecursiva(NodoPartido nodo, int nivel) {
-    if (nodo == null || nodo.getPartido() == null) return;
 
-    String indent = " ".repeat(nivel * 4);
+  private void imprimirLlavesEstiloBracket(NodoPartido nodo, int nivel, boolean izquierdo) {
+    if (nodo == null) return;
+
     Partido p = nodo.getPartido();
+    String indent = "        ".repeat(nivel); // 8 espacios por nivel (más sangría)
+    String flecha = izquierdo ? "└── " : "┌── ";
 
-    String local = p.getLocal() != null ? abreviar(p.getLocal().getNombre()) : "BYE";
-    String visitante = p.getVisitante() != null ? abreviar(p.getVisitante().getNombre()) : "BYE";
-    String ganador = p.getGanador() != null ? abreviar(p.getGanador().getNombre()) : "¿?";
+    // Imprime rama derecha primero (arriba)
+    imprimirLlavesEstiloBracket(nodo.getDerecho(), nivel + 1, false);
 
-    System.out.println(indent + local + " vs " + visitante + " → 🏅 " + ganador);
+    // Más espacio entre fases (vertical)
+    if (nivel > 0) System.out.println();
 
-    imprimirLlaveRecursiva(nodo.getIzquierdo(), nivel + 1);
-    imprimirLlaveRecursiva(nodo.getDerecho(), nivel + 1);
+    String fase = switch (nivel) {
+      case 0 -> "Final";
+      case 1 -> "Semifinal";
+      case 2 -> "Cuartos";
+      case 3 -> "8vos";
+      case 4 -> "16vos";
+      case 5 -> "32vos";
+      default -> "Ronda " + (nivel + 1);
+    };
+
+    String local = (p != null && p.getLocal() != null) ? abreviar(p.getLocal().getNombre()) : "BYE";
+    String visitante = (p != null && p.getVisitante() != null) ? abreviar(p.getVisitante().getNombre()) : "BYE";
+    String ganador = (p != null && p.getGanador() != null) ? " → 🏅" + abreviar(p.getGanador().getNombre()) : "";
+
+    System.out.println(indent + flecha + "[" + fase + "] " + local + " vs " + visitante + ganador);
+
+    // Imprime rama izquierda después (abajo)
+    imprimirLlavesEstiloBracket(nodo.getIzquierdo(), nivel + 1, true);
+
+    // Más espacio después de una rama (opcional)
+    if (nivel <= 2) System.out.println();
   }
+
+
 
   private String abreviar(String nombre) {
     return nombre.length() <= 10 ? nombre : nombre.substring(0, 10);
@@ -218,6 +244,187 @@ public class TorneoMixto extends Torneo {
     return construirArbolEliminacion(ganadores);
   }
 
+  @Override
+  public void mostrarPartidosTorneo(Scanner scanner) {
+    if (grupos == null || grupos.isEmpty()) {
+      System.out.println("No hay grupos cargados.");
+      return;
+    }
+
+    // === FASE DE GRUPOS ===
+    for (int g = 0; g < grupos.size(); g++) {
+      List<Equipo> grupo = grupos.get(g);
+      List<Partido> partidosGrupo = filtrarPartidosPorGrupo(grupo);
+      List<List<Partido>> jornadas = generarJornadasGrupo(grupo, partidosGrupo);
+
+      if (jornadas.isEmpty()) continue;
+
+      ListIterator<List<Partido>> iterador = jornadas.listIterator();
+      int nroJornada = 0;
+
+      System.out.println("\n=== Fase de Grupos - Grupo " + (g + 1) + " ===");
+
+      if (iterador.hasNext()) {
+        List<Partido> primera = iterador.next();
+        nroJornada++;
+        mostrarJornadaFormatoLiga(primera, nroJornada);
+      }
+
+      while (true) {
+        System.out.println("\nIngrese N para siguiente, P para anterior, 0 para salir del grupo:");
+        String entrada = scanner.nextLine().trim().toUpperCase();
+
+        switch (entrada) {
+          case "N" -> {
+            if (iterador.hasNext()) {
+              List<Partido> siguiente = iterador.next();
+              nroJornada++;
+              mostrarJornadaFormatoLiga(siguiente, nroJornada);
+            } else {
+              System.out.println("No hay más jornadas en este grupo.");
+            }
+          }
+          case "P" -> {
+            if (iterador.hasPrevious()) {
+              iterador.previous();
+              if (iterador.hasPrevious()) {
+                List<Partido> anterior = iterador.previous();
+                nroJornada--;
+                mostrarJornadaFormatoLiga(anterior, nroJornada);
+                iterador.next();
+              } else {
+                System.out.println("Ya estás en la primera jornada.");
+              }
+            } else {
+              System.out.println("Ya estás en la primera jornada.");
+            }
+          }
+          case "0" -> {
+            System.out.println("Saliendo del grupo " + (g + 1));
+            break;
+          }
+          default -> System.out.println("Opción inválida.");
+        }
+
+        if (entrada.equals("0")) break;
+      }
+    }
+
+    // === FASE ELIMINATORIA ===
+    System.out.println("\n=== Fase Eliminatoria ===");
+
+    // Filtrar partidos que NO pertenecen a fase de grupos
+    Set<Partido> partidosGrupos = new HashSet<>();
+    for (List<Equipo> grupo : grupos) {
+      partidosGrupos.addAll(filtrarPartidosPorGrupo(grupo));
+    }
+
+    List<Partido> partidosEliminacion = getPartidos().stream()
+            .filter(p -> !partidosGrupos.contains(p))
+            .toList();
+
+    if (partidosEliminacion.isEmpty()) {
+      System.out.println("No hay partidos de eliminación directa registrados.");
+      return;
+    }
+
+    // Agrupar en "jornadas" de 4 partidos
+    List<List<Partido>> jornadasEliminacion = new ArrayList<>();
+    int cantidadPorJornada = 4;
+    for (int i = 0; i < partidosEliminacion.size(); i += cantidadPorJornada) {
+      int fin = Math.min(i + cantidadPorJornada, partidosEliminacion.size());
+      jornadasEliminacion.add(partidosEliminacion.subList(i, fin));
+    }
+
+    ListIterator<List<Partido>> it = jornadasEliminacion.listIterator();
+    int jornada = 0;
+
+    if (it.hasNext()) {
+      List<Partido> primera = it.next();
+      jornada++;
+      mostrarJornadaFormatoLiga(primera, jornada);
+    }
+
+    while (true) {
+      System.out.println("\nIngrese N para siguiente, P para anterior, 0 para salir:");
+      String entrada = scanner.nextLine().trim().toUpperCase();
+
+      switch (entrada) {
+        case "N" -> {
+          if (it.hasNext()) {
+            List<Partido> siguiente = it.next();
+            jornada++;
+            mostrarJornadaFormatoLiga(siguiente, jornada);
+          } else {
+            System.out.println("No hay más jornadas.");
+          }
+        }
+        case "P" -> {
+          if (it.hasPrevious()) {
+            it.previous();
+            if (it.hasPrevious()) {
+              List<Partido> anterior = it.previous();
+              jornada--;
+              mostrarJornadaFormatoLiga(anterior, jornada);
+              it.next();
+            } else {
+              System.out.println("Ya estás en la primera jornada.");
+            }
+          } else {
+            System.out.println("Ya estás en la primera jornada.");
+          }
+        }
+        case "0" -> {
+          System.out.println("Saliendo del visor.");
+          return;
+        }
+        default -> System.out.println("Opción inválida.");
+      }
+    }
+  }
+
+  private List<List<Partido>> generarJornadasGrupo(List<Equipo> grupo, List<Partido> partidosGrupo) {
+    List<List<Partido>> jornadas = new ArrayList<>();
+    int totalEquipos = grupo.size();
+    int totalJornadas = totalEquipos - 1;
+
+    List<Equipo> rotables = new ArrayList<>(grupo);
+
+    for (int j = 0; j < totalJornadas; j++) {
+      List<Partido> jornada = new ArrayList<>();
+
+      for (int i = 0; i < totalEquipos / 2; i++) {
+        Equipo local = rotables.get(i);
+        Equipo visitante = rotables.get(totalEquipos - 1 - i);
+
+        // Buscar partido jugado entre estos dos equipos
+        for (Partido p : partidosGrupo) {
+          if ((p.getLocal().equals(local) && p.getVisitante().equals(visitante)) ||
+                  (p.getLocal().equals(visitante) && p.getVisitante().equals(local))) {
+            jornada.add(p);
+            break;
+          }
+        }
+      }
+
+      jornadas.add(jornada);
+
+      // Rotar todos menos el primero
+      Collections.rotate(rotables.subList(1, totalEquipos), 1);
+    }
+
+    return jornadas;
+  }
+
+
+
+  private List<Partido> filtrarPartidosPorGrupo(List<Equipo> grupo) {
+    return getPartidos().stream()
+            .filter(p -> grupo.contains(p.getLocal()) && grupo.contains(p.getVisitante()))
+            .toList();
+  }
+
+
   public void mostrarEquiposClasificados() {
     System.out.println("\n=== Equipos Clasificados ===");
     for (Equipo equipo : equiposClasificados) {
@@ -243,6 +450,4 @@ public class TorneoMixto extends Torneo {
   private int getDiferenciaGoles(Equipo equipo) {
     return equipo.getGolesAFavor() - equipo.getGolesEnContra();
   }
-
-  //to do: Fixear salida de bracket
 }

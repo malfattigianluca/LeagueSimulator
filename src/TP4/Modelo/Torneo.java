@@ -522,4 +522,6 @@ public class Torneo {
   public List<Partido> getPartidos() {
     return partidos;
   }
+
+  //to do: Fixear salida de bracket
 }

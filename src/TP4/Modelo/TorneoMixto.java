@@ -243,4 +243,6 @@ public class TorneoMixto extends Torneo {
   private int getDiferenciaGoles(Equipo equipo) {
     return equipo.getGolesAFavor() - equipo.getGolesEnContra();
   }
+
+  //to do: Fixear salida de bracket
 }

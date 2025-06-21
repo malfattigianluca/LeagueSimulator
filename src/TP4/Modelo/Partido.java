@@ -329,17 +329,6 @@
       return golesVisitante;
     }
 
-    /**
-     * Determina el equipo ganador del partido.
-     *
-     * @return El equipo con más goles, o null si el resultado fue un empate.
-     */
-
-  //  public Equipo getGanadorConDesempate() {
-  //    if (golesLocal > golesVisitante) return local;
-  //    if (golesVisitante > golesLocal) return visitante;
-  //    return local.getElo() >= visitante.getElo() ? local : visitante;
-  //  }
 
     /**
      * Devuelve una representación detallada del partido en forma de texto.

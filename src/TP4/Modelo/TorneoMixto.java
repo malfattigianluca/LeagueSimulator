@@ -103,25 +103,6 @@ public class TorneoMixto extends Torneo {
     imprimirLlavesEliminacion();
   }
 
-//  public void menuPostSimulacion(Scanner scanner) {
-//    while (true) {
-//      System.out.println("\nSeleccione una opción:");
-//      System.out.println("1. Ver cuadro de eliminación");
-//      System.out.println("2. Volver al menú principal");
-//      System.out.print("Opción: ");
-//
-//      String opcion = scanner.nextLine().trim();
-//      switch (opcion) {
-//        case "1" -> imprimirLlavesEliminacion();
-//        case "2" -> {
-//          System.out.println("Volviendo al menú principal...");
-//          return;
-//        }
-//        default -> System.out.println("Opción inválida. Intente nuevamente.");
-//      }
-//    }
-//  }
-
   public void imprimirTablaDeGrupos() {
     for (int i = 0; i < grupos.size(); i++) {
       List<Equipo> grupo = grupos.get(i);

@@ -426,18 +426,47 @@ public class GestorEquipos {
 
 
             case 2 -> { // Eliminación directa con árbol binario
-                if (seleccionados.size() % 2 != 0) {
-                    seleccionados.add(new Equipo(-1, "BYE", 1500, "Ninguna", "bye.png", "N/A"));
-                    System.out.println("Cantidad impar de equipos. Se agregó el equipo ficticio 'BYE'.");
+
+                List<Equipo> equiposdisponibles = getEquipos().stream()
+                        .filter(e -> !seleccionados.contains(e))
+                        .toList();
+
+                for (int i = 0; i < equiposdisponibles.size(); i++) {
+                    System.out.println((i + 1) + ". " + equiposdisponibles.get(i).getNombre());
                 }
 
+                while (!esPotenciaDeDos(seleccionados.size())) {
+                    System.out.println("\n⚠ Necesitás ingresar una cantidad de equipos que sea potencia de 2 (2, 4, 8, 16, ...).");
+                    System.out.println("Actualmente hay " + seleccionados.size() + " equipo(s) seleccionados.");
+                    System.out.println("Ingrese el número del equipo a agregar (0 para cancelar):");
+
+                    try {
+                        int opcion = Integer.parseInt(scanner.nextLine());
+
+                        if (opcion == 0) {
+                            System.out.println("Operación cancelada.");
+                            return;
+                        }
+
+                        if (opcion >= 1 && opcion <= disponibles.size()) {
+                            Equipo elegido = equiposdisponibles.get(opcion - 1);
+                            seleccionados.add(elegido);
+                            System.out.println("Equipo agregado: " + elegido.getNombre());
+                        } else {
+                            System.out.println("Número fuera de rango.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Entrada inválida. Ingrese un número.");
+                    }
+                }
+
+                // Crear y simular el torneo
                 Torneo torneo = new Torneo(nombre, true);
                 for (Equipo equipo : seleccionados) {
                     equipo.reiniciarEstadisticas();
                     torneo.agregarEquipo(equipo);
                 }
 
-                // Simular usando el árbol binario
                 try {
                     torneo.simularTorneo();
                 } catch (TorneoException e) {
@@ -445,11 +474,12 @@ public class GestorEquipos {
                     return;
                 }
 
-                simuladoresPorLiga.put(nombre, null); // o usar otro mapa si hacés seguimiento
-                System.out.println("Torneo de eliminación directa '" + nombre + "' creado exitosamente.");
-                torneo.imprimirBracket();
-                mostrarMenuPostSimulacion(scanner, torneo);
+                simuladoresPorLiga.put(nombre, null);
+                System.out.println("\n✅ Torneo de eliminación directa '" + nombre + "' creado exitosamente.");
+                mostrarMenuPostTorneo(scanner, torneo);
             }
+
+
 
             case 3 -> { // Mixto (grupos + eliminación directa)
                 int cantidadEquipos = seleccionados.size();
@@ -489,6 +519,7 @@ public class GestorEquipos {
                 }
 
                 torneoMixto.imprimirLlavesEliminacion();
+                mostrarMenuPostTorneoMixto(scanner, torneoMixto);
             }
         }
     }
@@ -595,6 +626,34 @@ public class GestorEquipos {
             }
         }
     }
+
+    private void mostrarMenuPostTorneoMixto(Scanner scanner, TorneoMixto torneoMixto) {
+        while (true) {
+            // Título del menú
+            System.out.println("\n=== Estadísticas de la Liga " + torneoMixto.getNombre() + " ===");
+            System.out.println("1. Ver fechas jugadas");
+            System.out.println("2. Ver top 10 goleadores");
+            System.out.println("3. Ver top 10 asistentes");
+            System.out.println("4. Ver jugadores con tarjetas");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("Seleccione una opción: ");
+
+            String opcion = scanner.nextLine();
+
+            switch (opcion) {
+                case "1" -> torneoMixto.mostrarPartidosTorneo(scanner);  // Muestra los partidos jugados por jornada
+                case "2" -> mostrarTopGoleadores(torneoMixto.getPartidos()); // Lista los 10 máximos goleadores
+                case "3" -> mostrarTopAsistencias(torneoMixto.getPartidos()); // Lista los 10 máximos asistentes
+                case "4" -> mostrarJugadoresConTarjetas(torneoMixto.getPartidos()); // Lista jugadores con tarjetas
+                case "0" -> {
+                    return; // Sale del menú y vuelve al menú principal
+                }
+                default -> System.out.println("Opción inválida. Intente de nuevo."); // Manejo de errores
+            }
+        }
+    }
+
+
 
     /**
      * Muestra el Top 10 de goleadores de la liga, basado en la lista de partidos simulados.
@@ -731,6 +790,11 @@ public class GestorEquipos {
 
         return todos;
     }
+
+    private boolean esPotenciaDeDos(int n) {
+        return n > 0 && (n & (n - 1)) == 0;
+    }
+
 
 //    public void mostrarEquiposPorNombreParcial(String fragmento) {
 //        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);

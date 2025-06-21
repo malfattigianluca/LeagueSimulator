@@ -70,7 +70,7 @@ Este proyecto **no utiliza librerías externas**. Todas las estructuras de datos
 
 ## 👨‍💻 Autores
 
-Trabajo desarrollado por **Malfatti Gianluca y Casalla Lazaro**, para la cátedra de *Programación II* - UADE].
+Trabajo desarrollado por **Malfatti Gianluca y Casalla Lazaro**, para la cátedra de *Programación II* - UADE.
 
 ---
 

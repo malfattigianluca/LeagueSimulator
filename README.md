@@ -6,6 +6,17 @@ Este proyecto en Java implementa un sistema para la simulación de torneos de f�
 
 ## 📁 Estructura del Proyecto
 
+SimuladorTorneosFutbol_ProyectoFinal/
+├── src/
+│   └── SimuladorTorneosFutbol_ProyectoFinal/
+│       ├── App.java
+│       ├── Modelo/
+│       ├── Excepciones/
+│       └── Util/
+├── files/
+│   ├── teams.txt
+│   └── players.txt
+
 ```
 SimuladorTorneosFutbol_ProyectoFinal/
 ├── App.java                      # Clase principal con menú interactivo
@@ -26,12 +37,12 @@ SimuladorTorneosFutbol_ProyectoFinal/
 
 2. **Compilar desde terminal**:
    ```bash
-   javac -encoding UTF-8 -cp . SimuladorTorneosFutbol_ProyectoFinal/App.java
+   javac -encoding UTF-8 -cp src -d bin src/SimuladorTorneosFutbol_ProyectoFinal/App.java
    ```
 
 3. **Ejecutar**:
    ```bash
-   java SimuladorTorneosFutbol_ProyectoFinal.App
+java -cp bin SimuladorTorneosFutbol_ProyectoFinal.App
    ```
 
 4. Si estás usando un entorno como IntelliJ o Eclipse, basta con abrir el proyecto y ejecutar `App.java`.

@@ -56,6 +56,9 @@ public class Jugador {
   // Liga a la que pertenece el jugador (puede coincidir con la liga del equipo)
   private String liga;
 
+    // Indica si el jugador es titular en su equipo (por defecto es false)
+  private boolean esTitular;
+
 
 
   /**
@@ -73,11 +76,12 @@ public class Jugador {
    * @param asistencias   Asistencias realizadas.
    * @param amarillas     Tarjetas amarillas recibidas.
    * @param rojas         Tarjetas rojas recibidas.
+   * @param esTitular    Indica si el jugador es titular en su equipo (por defecto es false).
    *
    * @throws TorneoException Si algún valor no cumple con las restricciones de validación.
    */
   public Jugador(int id, String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
-                 int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
+                 int goles, int asistencias, int amarillas, int rojas, boolean esTitular) throws TorneoException {
     // Validación del número de camiseta (excepto si es -1)
     if ((numeroCamiseta != -1) && (numeroCamiseta < 1 || numeroCamiseta > 99)) {
       throw new TorneoException("El número de camiseta debe estar entre 1 y 99");
@@ -111,6 +115,7 @@ public class Jugador {
     this.asistencias = asistencias;
     this.amarillas = amarillas;
     this.rojas = rojas;
+    this.esTitular = esTitular;
   }
 
 
@@ -226,6 +231,10 @@ public class Jugador {
     return rojas;
   }
 
+  /** @return true si es titular */
+  public boolean isTitular() {
+    return esTitular;
+  }
 
   /**
    * Asigna un nuevo número de camiseta al jugador.

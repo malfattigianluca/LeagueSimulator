@@ -61,7 +61,7 @@ public class GestorJugadores {
         if (linea.trim().isEmpty())
           continue;
         String[] datos = linea.split(";");
-        if (datos.length == 11) {
+        if (datos.length == 12) {
           try {
             String liga = datos[0].trim();
             String nombreEquipo = datos[1].trim();
@@ -78,9 +78,10 @@ public class GestorJugadores {
             int asistencias = Integer.parseInt(datos[8].trim());
             int rojas = Integer.parseInt(datos[9].trim());
             int amarillas = Integer.parseInt(datos[10].trim());
+            boolean esTitular = Boolean.parseBoolean(datos[11].trim());
 
             Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-                goles, asistencias, amarillas, rojas);
+                goles, asistencias, amarillas, rojas, esTitular);
             jugadores.insertar(jugador);
 
             boolean equipoEncontrado = false;
@@ -218,6 +219,7 @@ public class GestorJugadores {
     System.out.println("Altura: " + j.getAltura());
     System.out.println("Equipo: " + (j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo"));
     System.out.println("Liga: " + j.getLiga());
+    System.out.println("Es titular?: " + j.isTitular());
     System.out.println("Estadísticas:");
     System.out.println("  - Goles: " + j.getGoles());
     System.out.println("  - Asistencias: " + j.getAsistencias());
@@ -257,7 +259,7 @@ public class GestorJugadores {
   public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
       int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
     Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
-        asistencias, amarillas, rojas);
+        asistencias, amarillas, rojas, false);
     jugadores.insertar(nuevoJugador);
     return nuevoJugador;
   }

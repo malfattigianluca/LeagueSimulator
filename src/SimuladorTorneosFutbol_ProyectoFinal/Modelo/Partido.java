@@ -4,6 +4,7 @@
   import SimuladorTorneosFutbol_ProyectoFinal.Util.Validador;
 
   import java.util.*;
+  import java.util.function.Function;
 
   /**
    * Representa un partido de fútbol entre dos equipos: local y visitante.
@@ -55,10 +56,9 @@
     private Equipo ganador;
 
 
-
     /**
      * Crea un nuevo partido entre dos equipos, registrando el resultado y generando estadísticas de jugadores.
-     *
+     * <p>
      * Este constructor:
      * - Valida que los equipos no sean nulos.
      * - Valida los goles anotados por cada equipo.
@@ -107,41 +107,14 @@
       this(local, visitante, 0, 0); // Crea un partido inicializado en 0 a 0
     }
 
-    private int generarPoisson(int elo) {
-      double lambda = Math.max(1.0, elo / 800.0); // Ajustá esto según tu sistema
-      double L = Math.exp(-lambda);
-      int k = 0;
-      double p = 1.0;
-      do {
-        k++;
-        p *= Math.random();
-      } while (p > L);
-      return k - 1;
-    }
-
-    public void simular() {
-      // Simular el partido usando tu lógica avanzada si está accesible desde acá
-      // Como no podés acceder directamente a `Torneo.simularPartido(...)`, simulá acá con lo mínimo:
-      this.golesLocal = generarPoisson(local.getElo());
-      this.golesVisitante = generarPoisson(visitante.getElo());
-
-      if (golesLocal > golesVisitante) {
-        this.ganador = local;
-      } else if (golesVisitante > golesLocal) {
-        this.ganador = visitante;
-      } else {
-        this.ganador = getGanadorConDesempate();
-      }
-    }
-
     /**
      * Simula estadísticas de jugadores para el partido actual.
-     *
+     * <p>
      * Este metodo utiliza generación aleatoria para:
      * - Asignar goleadores a partir de los goles registrados por cada equipo.
      * - Asignar asistentes con un 70% de probabilidad por gol.
      * - Asignar tarjetas amarillas (0 a 3 por equipo) y rojas (0 a 1 por equipo).
-     *
+     * <p>
      * Las estadísticas actualizan los objetos {@link Jugador} directamente
      * (goles, asistencias, amarillas, rojas) y también se registran en las listas del partido.
      *
@@ -150,21 +123,22 @@
     void simularEstadisticasJugadores() throws TorneoException {
       Random random = new Random();
 
-      // Obtener jugadores disponibles de cada equipo
-      List<Jugador> jugadoresLocal = local.getJugadores().getVertices();
-      List<Jugador> jugadoresVisitante = visitante.getJugadores().getVertices();
+      List<Jugador> jugadoresLocal = local.getJugadores().getVertices().stream()
+              .filter(Jugador::isTitular).toList();
+      List<Jugador> jugadoresVisitante = visitante.getJugadores().getVertices().stream()
+              .filter(Jugador::isTitular).toList();
 
-      // 🔹 Simular goles: elegir jugadores aleatorios como goleadores
+      // 🔹 Simular goles
       for (int i = 0; i < golesLocal; i++) {
-        if (!jugadoresLocal.isEmpty()) {
-          Jugador goleador = jugadoresLocal.get(random.nextInt(jugadoresLocal.size()));
+        Jugador goleador = elegirJugadorPorProbabilidad(jugadoresLocal, this::obtenerProbabilidadGol);
+        if (goleador != null) {
           goleador.registrarGol();
           goleadoresLocal.add(goleador);
         }
       }
       for (int i = 0; i < golesVisitante; i++) {
-        if (!jugadoresVisitante.isEmpty()) {
-          Jugador goleador = jugadoresVisitante.get(random.nextInt(jugadoresVisitante.size()));
+        Jugador goleador = elegirJugadorPorProbabilidad(jugadoresVisitante, this::obtenerProbabilidadGol);
+        if (goleador != null) {
           goleador.registrarGol();
           goleadoresVisitante.add(goleador);
         }
@@ -172,56 +146,173 @@
 
       // 🔹 Simular asistencias (70% de probabilidad por gol)
       for (int i = 0; i < golesLocal; i++) {
-        if (!jugadoresLocal.isEmpty() && random.nextDouble() < 0.7) {
-          Jugador asistente = jugadoresLocal.get(random.nextInt(jugadoresLocal.size()));
-          asistente.registrarAsistencia();
-          asistentesLocal.add(asistente);
+        if (random.nextDouble() < 0.7) {
+          Jugador asistente = elegirJugadorPorProbabilidad(jugadoresLocal, this::obtenerProbabilidadAsistencia);
+          if (asistente != null) {
+            asistente.registrarAsistencia();
+            asistentesLocal.add(asistente);
+          }
         }
       }
       for (int i = 0; i < golesVisitante; i++) {
-        if (!jugadoresVisitante.isEmpty() && random.nextDouble() < 0.7) {
-          Jugador asistente = jugadoresVisitante.get(random.nextInt(jugadoresVisitante.size()));
-          asistente.registrarAsistencia();
-          asistentesVisitante.add(asistente);
+        if (random.nextDouble() < 0.7) {
+          Jugador asistente = elegirJugadorPorProbabilidad(jugadoresVisitante, this::obtenerProbabilidadAsistencia);
+          if (asistente != null) {
+            asistente.registrarAsistencia();
+            asistentesVisitante.add(asistente);
+          }
         }
       }
 
-      // 🔹 Simular tarjetas amarillas (0 a 3 por equipo) y rojas (0 a 1 por equipo)
-      int amarillasLocal = random.nextInt(4);   // 0 a 3
-      int amarillasVisitante = random.nextInt(4);
-      int rojasLocal = random.nextInt(2);       // 0 o 1
-      int rojasVisitante = random.nextInt(2);
-
-      for (int i = 0; i < amarillasLocal; i++) {
-        if (!jugadoresLocal.isEmpty()) {
-          Jugador jugador = jugadoresLocal.get(random.nextInt(jugadoresLocal.size()));
+      // 🔹 Simular tarjetas amarillas
+      for (Jugador jugador : jugadoresLocal) {
+        if (random.nextDouble() < obtenerProbabilidadAmarilla(jugador.getPosicion())) {
           jugador.registrarAmarilla();
           jugadoresAmarillas.add(jugador);
         }
       }
-      for (int i = 0; i < amarillasVisitante; i++) {
-        if (!jugadoresVisitante.isEmpty()) {
-          Jugador jugador = jugadoresVisitante.get(random.nextInt(jugadoresVisitante.size()));
+      for (Jugador jugador : jugadoresVisitante) {
+        if (random.nextDouble() < obtenerProbabilidadAmarilla(jugador.getPosicion())) {
           jugador.registrarAmarilla();
           jugadoresAmarillas.add(jugador);
         }
       }
-      for (int i = 0; i < rojasLocal; i++) {
-        if (!jugadoresLocal.isEmpty()) {
-          Jugador jugador = jugadoresLocal.get(random.nextInt(jugadoresLocal.size()));
+
+      // 🔹 Simular tarjetas rojas
+      for (Jugador jugador : jugadoresLocal) {
+        if (random.nextDouble() < obtenerProbabilidadRoja(jugador.getPosicion())) {
           jugador.registrarRoja();
           jugadoresRojas.add(jugador);
         }
       }
-      for (int i = 0; i < rojasVisitante; i++) {
-        if (!jugadoresVisitante.isEmpty()) {
-          Jugador jugador = jugadoresVisitante.get(random.nextInt(jugadoresVisitante.size()));
+      for (Jugador jugador : jugadoresVisitante) {
+        if (random.nextDouble() < obtenerProbabilidadRoja(jugador.getPosicion())) {
           jugador.registrarRoja();
           jugadoresRojas.add(jugador);
         }
       }
     }
-      /**
+
+
+    /**
+     * Elige un jugador de una lista según una probabilidad basada en su posición.
+     * Utiliza una función que recibe la posición del jugador y devuelve una probabilidad.
+     *
+     * @param jugadores Lista de jugadores a evaluar.
+     * @param probabilidadFunc Función que recibe la posición del jugador y devuelve la probabilidad de selección.
+     * @return Un jugador seleccionado aleatoriamente según la probabilidad, o null si no hay candidatos.
+     */
+    private Jugador elegirJugadorPorProbabilidad(List<Jugador> jugadores, Function<String, Double> probabilidadFunc) {
+      Random random = new Random();
+      List<Jugador> candidatos = new ArrayList<>();
+      for (Jugador j : jugadores) {
+        double prob = probabilidadFunc.apply(j.getPosicion());
+        if (random.nextDouble() < prob) {
+          candidatos.add(j);
+        }
+      }
+      return candidatos.isEmpty() ? null : candidatos.get(random.nextInt(candidatos.size()));
+    }
+
+
+    /**
+     * Obtiene la probabilidad de que un jugador anote un gol según su posición.
+     * Las probabilidades son aproximadas y pueden ajustarse según el contexto del juego.
+     *
+     * @param posicion Posición del jugador (ej. "portero", "defensa central", etc.).
+     * @return Probabilidad de anotar un gol para esa posición.
+     */
+    private double obtenerProbabilidadGol(String posicion) {
+      return switch (posicion.toLowerCase()) {
+        case "portero" -> 0.001;
+        case "defensa central" -> 0.01;
+        case "lateral derecho", "lateral izquierdo" -> 0.02;
+        case "pivote" -> 0.03;
+        case "mediocentro" -> 0.05;
+        case "interior derecho", "interior izquierdo" -> 0.08;
+        case "mediocentro ofensivo" -> 0.10;
+        case "mediapunta" -> 0.13;
+        case "extremo derecho", "extremo izquierdo" -> 0.18;
+        case "delantero centro" -> 0.35;
+        default -> 0.02;
+      };
+    }
+
+
+
+    /**
+     * Obtiene la probabilidad de que un jugador realice una asistencia según su posición.
+     * Las probabilidades son aproximadas y pueden ajustarse según el contexto del juego.
+     *
+     * @param posicion Posición del jugador (ej. "portero", "defensa central", etc.).
+     * @return Probabilidad de asistencia para esa posición.
+     */
+    private double obtenerProbabilidadAsistencia(String posicion) {
+      return switch (posicion.toLowerCase()) {
+        case "portero" -> 0.001;
+        case "defensa central" -> 0.01;
+        case "lateral derecho", "lateral izquierdo" -> 0.05;
+        case "pivote" -> 0.10;
+        case "mediocentro" -> 0.12;
+        case "mediocentro ofensivo" -> 0.18;
+        case "interior derecho", "interior izquierdo" -> 0.15;
+        case "mediapunta" -> 0.25;
+        case "extremo derecho", "extremo izquierdo" -> 0.25;
+        case "delantero centro" -> 0.15;
+        default -> 0.10;
+      };
+    }
+
+
+    /**
+     * Obtiene la probabilidad de que un jugador reciba una tarjeta amarilla según su posición.
+     * Las probabilidades son aproximadas y pueden ajustarse según el contexto del juego.
+     *
+     * @param posicion Posición del jugador (ej. "portero", "defensa central", etc.).
+     * @return Probabilidad de recibir tarjeta amarilla para esa posición.
+     */
+    private double obtenerProbabilidadAmarilla(String posicion) {
+      return switch (posicion.toLowerCase()) {
+        case "portero" -> 0.02;
+        case "defensa central" -> 0.15;
+        case "lateral derecho", "lateral izquierdo" -> 0.10;
+        case "pivote" -> 0.12;
+        case "mediocentro" -> 0.08;
+        case "mediocentro ofensivo" -> 0.05;
+        case "interior derecho", "interior izquierdo" -> 0.06;
+        case "mediapunta" -> 0.04;
+        case "extremo derecho", "extremo izquierdo" -> 0.03;
+        case "delantero centro" -> 0.02;
+        default -> 0.05;
+      };
+    }
+
+
+    /**
+     * Obtiene la probabilidad de que un jugador reciba una tarjeta roja según su posición.
+     * Las probabilidades son aproximadas y pueden ajustarse según el contexto del juego.
+     *
+     * @param posicion Posición del jugador (ej. "portero", "defensa central", etc.).
+     * @return Probabilidad de recibir tarjeta roja para esa posición.
+     */
+    private double obtenerProbabilidadRoja(String posicion) {
+      return switch (posicion.toLowerCase()) {
+        case "portero" -> 0.002;
+        case "defensa central" -> 0.015;
+        case "lateral derecho", "lateral izquierdo" -> 0.010;
+        case "pivote" -> 0.012;
+        case "mediocentro" -> 0.008;
+        case "mediocentro ofensivo" -> 0.003;
+        case "interior derecho", "interior izquierdo" -> 0.004;
+        case "mediapunta" -> 0.002;
+        case "extremo derecho", "extremo izquierdo" -> 0.001;
+        case "delantero centro" -> 0.001;
+        default -> 0.005;
+      };
+    }
+
+
+    /**
        * Determina el ganador del partido basándose en los goles anotados.
        * Si el equipo local tiene más goles, es el ganador.
        * Si el equipo visitante tiene más goles, es el ganador.
@@ -229,13 +320,21 @@
        *
        * @return El equipo ganador o null si hay empate.
        */
-      private Equipo determinarGanador() {
+    private Equipo determinarGanador() {
         if (local == null || visitante == null) return null;
         if (golesLocal > golesVisitante) return local;
         if (golesVisitante > golesLocal) return visitante;
         return null; // Empate
-      }
+    }
 
+
+    /**
+     * Obtiene el ganador del partido considerando un desempate por ELO si es necesario.
+     * Si ya hay un ganador definido, lo devuelve directamente.
+     * Si hay empate, se utiliza el ELO de los equipos para determinar el ganador.
+     *
+     * @return El equipo ganador considerando el desempate por ELO, o null si no se puede determinar.
+     */
     public Equipo getGanadorConDesempate() {
       if (ganador != null) return ganador;
       // Desempate por ELO si hay empate y no se definió aún
@@ -245,19 +344,14 @@
       return null;
     }
 
-    public String resumenPartidoConGanador() {
-      return local.getNombre() + " vs " + visitante.getNombre() + " → 🏅 " +
-              (getGanadorConDesempate() != null ? getGanadorConDesempate().getNombre() : "¿?");
-    }
 
-
+    /**
+     * @return Equipo que ganó el partido, o null si fue un empate.
+     */
     public Equipo getGanador() {
       return ganador;
     }
 
-    public void setGanador(Equipo ganador) {
-      this.ganador = ganador;
-    }
 
     /**
      * @return Lista de jugadores del equipo local que anotaron goles en el partido.

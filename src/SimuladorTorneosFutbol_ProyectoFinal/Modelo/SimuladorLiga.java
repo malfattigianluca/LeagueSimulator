@@ -175,11 +175,11 @@ public class SimuladorLiga {
       Equipo visitante = enfrentamiento.visitante;
 
       // Calcular probabilidades ELO
-      double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
+      double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 2000.0));
       double pb = 1.0 - pa;
 
       // Ajuste para modelar ventaja local
-      double lambdaTotal = 2.0;
+      double lambdaTotal = 2.7;
       double ventajaLocal = 1.1;
       double desventajaVisitante = 0.9;
       double ajuste = lambdaTotal / (pa * ventajaLocal + pb * desventajaVisitante);
@@ -190,6 +190,10 @@ public class SimuladorLiga {
       // Introducir variación aleatoria
       lambdaLocal *= 0.9 + random.nextDouble() * 0.2;
       lambdaVisitante *= 0.9 + random.nextDouble() * 0.2;
+
+      // Asegura que no hayan goleadas extremas
+      lambdaLocal = Math.max(0.4, Math.min(lambdaLocal, 2.5));
+      lambdaVisitante = Math.max(0.4, Math.min(lambdaVisitante, 2.5));
 
       // Simular goles
       int golesLocal = simularGoles(lambdaLocal);

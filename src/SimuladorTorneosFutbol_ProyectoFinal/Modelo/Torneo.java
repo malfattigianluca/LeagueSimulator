@@ -109,17 +109,30 @@ public class Torneo {
     double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
     double pb = 1.0 - pa;
 
-    // Generación de goles según probabilidad
-    Random random = new Random();
-    int golesLocal = simularGoles(pa);
-    int golesVisitante = simularGoles(pb);
+    // Parámetros de ventaja local y ajuste
+    double ventajaLocal = 1.15;
+    double desventajaVisitante = 0.9;
+    double lambdaTotal = 2.8;
+
+    // Ajuste para que la suma esperada de goles se mantenga en promedio
+    double ajuste = lambdaTotal / (pa * ventajaLocal + pb * desventajaVisitante);
+    double lambdaLocal = pa * ventajaLocal * ajuste;
+    double lambdaVisitante = pb * desventajaVisitante * ajuste;
+
+    // Limitar extremos para evitar goleadas irreales
+    lambdaLocal = Math.max(0.4, Math.min(lambdaLocal, 2.5));
+    lambdaVisitante = Math.max(0.4, Math.min(lambdaVisitante, 2.5));
+
+    // Generación de goles usando distribución de Poisson
+    int golesLocal = generarGolesPoisson(lambdaLocal);
+    int golesVisitante = generarGolesPoisson(lambdaVisitante);
 
     // Crear el partido y registrar
     Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
     partidos.add(partido);
     actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
 
-    // Calcular resultado real
+    // Calcular resultado real para ELO
     double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
     double rb = 1 - ra;
 
@@ -129,6 +142,31 @@ public class Torneo {
     local.setElo(nuevoEloLocal);
     visitante.setElo(nuevoEloVisitante);
   }
+
+    /**
+     * Genera un número de goles utilizando la distribución de Poisson.
+     * Utiliza un metodo de generación aleatoria para simular la cantidad de goles
+     * anotados en un partido.
+     *
+     * @param lambda Parámetro de la distribución Poisson, representa la tasa promedio
+     *               de goles esperados.
+     * @return Número total de goles anotados (entre 0 y 10).
+     */
+  private int generarGolesPoisson(double lambda) {
+    Random rand = new Random();
+    double l = Math.exp(-lambda);
+    double p = 1.0;
+    int k = 0;
+
+    do {
+      k++;
+      p *= rand.nextDouble();
+    } while (p > l && k < 10); // límite superior razonable
+
+    return k - 1;
+  }
+
+
 
   /**
    * Simula la cantidad de goles que anota un equipo en un partido,

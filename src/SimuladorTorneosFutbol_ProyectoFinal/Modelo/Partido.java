@@ -250,18 +250,17 @@
     private double obtenerProbabilidadAsistencia(String posicion) {
       return switch (posicion.toLowerCase()) {
         case "portero" -> 0.001;
-        case "defensa central" -> 0.01;
-        case "lateral derecho", "lateral izquierdo" -> 0.05;
+        case "defensa central" -> 0.02;
+        case "lateral derecho", "lateral izquierdo" -> 0.08;
         case "pivote" -> 0.10;
-        case "mediocentro" -> 0.12;
-        case "mediocentro ofensivo" -> 0.18;
-        case "interior derecho", "interior izquierdo" -> 0.15;
-        case "mediapunta" -> 0.25;
-        case "extremo derecho", "extremo izquierdo" -> 0.25;
-        case "delantero centro" -> 0.15;
+        case "mediocentro" -> 0.20;
+        case "mediocentro ofensivo", "interior derecho", "interior izquierdo" -> 0.32;
+        case "mediapunta", "extremo derecho", "extremo izquierdo" -> 0.25;
+        case "delantero centro" -> 0.05;
         default -> 0.10;
       };
     }
+
 
 
     /**

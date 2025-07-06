@@ -33,19 +33,6 @@ public class GestorJugadores {
   }
 
   /**
-   * Devuelve la instancia singleton de GestorJugadores.
-   * Si no existe, la crea utilizando un nuevo GestorEquipos.
-   *
-   * @return Instancia única de GestorJugadores.
-   */
-  public static GestorJugadores getInstancia() {
-    if (instancia == null) {
-      instancia = new GestorJugadores(new GestorEquipos());
-    }
-    return instancia;
-  }
-
-  /**
    * Carga los jugadores desde un archivo especificado.
    * Cada línea del archivo debe tener 11 datos separados por punto y coma (;).
    *
@@ -81,7 +68,7 @@ public class GestorJugadores {
             boolean esTitular = Boolean.parseBoolean(datos[11].trim());
 
             Jugador jugador = new Jugador(idJugador++, nombreJugador, numeroCamiseta, posicion, liga, altura, edad,
-                goles, asistencias, amarillas, rojas, esTitular);
+                    goles, asistencias, amarillas, rojas, esTitular);
             jugadores.insertar(jugador);
 
             boolean equipoEncontrado = false;
@@ -142,18 +129,18 @@ public class GestorJugadores {
   public void mostrarJugadores() {
     System.out.printf("%-5s %-25s %-15s %-25s %-25s%n", "ID", "Nombre", "Nº Camiseta", "Posición", "Equipo");
     System.out
-        .println("-----------------------------------------------------------------------------------------------");
+            .println("-----------------------------------------------------------------------------------------------");
 
     List<Jugador> listaJugadores = new ArrayList<>(jugadores.getVertices());
     Collections.reverse(listaJugadores);
     for (Jugador j : listaJugadores) {
       String numeroCamiseta = j.getNumeroCamiseta() == -1 ? "N/A" : String.valueOf(j.getNumeroCamiseta());
       System.out.printf("%-5d %-25s %-15s %-25s %-25s%n",
-          j.getId(),
-          j.getNombre(),
-          numeroCamiseta,
-          j.getPosicion(),
-          j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo");
+              j.getId(),
+              j.getNombre(),
+              numeroCamiseta,
+              j.getPosicion(),
+              j.getEquipo() != null ? j.getEquipo().getNombre() : "Sin equipo");
     }
   }
 
@@ -238,86 +225,5 @@ public class GestorJugadores {
    */
   public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
-  }
-
-  /**
-   * Crea un nuevo jugador y lo inserta en el conjunto.
-   *
-   * @param nombre         Nombre del jugador.
-   * @param numeroCamiseta Número de camiseta del jugador.
-   * @param posicion       Posición en el campo.
-   * @param liga           Liga a la que pertenece.
-   * @param altura         Altura del jugador.
-   * @param edad           Edad del jugador.
-   * @param goles          Número de goles.
-   * @param asistencias    Número de asistencias.
-   * @param amarillas      Tarjetas amarillas.
-   * @param rojas          Tarjetas rojas.
-   * @return El jugador creado.
-   * @throws TorneoException Si ocurre algún error durante la creación.
-   */
-  public Jugador crearJugador(String nombre, int numeroCamiseta, String posicion, String liga, String altura, int edad,
-      int goles, int asistencias, int amarillas, int rojas) throws TorneoException {
-    Jugador nuevoJugador = new Jugador(++idJugador, nombre, numeroCamiseta, posicion, liga, altura, edad, goles,
-        asistencias, amarillas, rojas, false);
-    jugadores.insertar(nuevoJugador);
-    return nuevoJugador;
-  }
-
-  /**
-   * Elimina un jugador del conjunto, siempre y cuando no esté asociado a ningún
-   * equipo.
-   *
-   * @param jugador Jugador a eliminar.
-   */
-  public void eliminarJugador(Jugador jugador) {
-    if (jugador != null && jugador.getEquipo() == null) {
-      jugadores.eliminar(jugador);
-    }
-  }
-
-  /**
-   * Devuelve la cantidad de jugadores registrados.
-   *
-   * @return Número total de jugadores en el conjunto.
-   */
-  public int cantidadJugadores() {
-    return jugadores.tamanio();
-  }
-
-  /**
-   * Muestra las estadísticas de los jugadores de un equipo específico.
-   *
-   * @param nombreEquipo Nombre del equipo.
-   */
-  public void mostrarEstadisticasJugadores(String nombreEquipo) {
-    System.out.println("\n=== Estadísticas de Jugadores - " + nombreEquipo + " ===");
-    System.out.printf("%-20s %-10s %-10s %-10s %-10s%n",
-        "Jugador", "Goles", "Asistencias", "Amarillas", "Rojas");
-    System.out.println("------------------------------------------------------------");
-
-    List<Jugador> jugadoresEquipo = new ArrayList<>();
-    for (Jugador jugador : jugadores.getVertices()) {
-      if (jugador.getEquipo() != null && jugador.getEquipo().getNombre().equalsIgnoreCase(nombreEquipo)) {
-        jugadoresEquipo.add(jugador);
-      }
-    }
-
-    if (jugadoresEquipo.isEmpty()) {
-      System.out.println("No hay jugadores registrados para este equipo.");
-      return;
-    }
-
-    // Ordenar por goles
-    jugadoresEquipo.sort((j1, j2) -> Integer.compare(j2.getGoles(), j1.getGoles()));
-
-    for (Jugador jugador : jugadoresEquipo) {
-      System.out.printf("%-20s %-10d %-10d %-10d %-10d%n",
-          jugador.getNombre(),
-          jugador.getGoles(),
-          jugador.getAsistencias(),
-          jugador.getAmarillas(),
-          jugador.getRojas());
-    }
   }
 }

@@ -34,45 +34,6 @@ public class Liga {
   }
 
   /**
-   * Agrega un equipo a la liga, si su atributo de liga coincide con el nombre de esta liga.
-   *
-   * @param equipo Equipo a agregar.
-   * @throws TorneoException Si el equipo no pertenece a esta liga.
-   */
-  public void agregarEquipo(Equipo equipo) throws TorneoException {
-    if (equipo.getLiga().equals(this.nombre)) {
-      equipos.add(equipo);
-    } else {
-      throw new TorneoException("El equipo no pertenece a esta liga");
-    }
-  }
-
-  /**
-   * Elimina de la lista al equipo cuyo ID coincida con el especificado.
-   *
-   * @param idEquipo ID del equipo a eliminar.
-   */
-  public void eliminarEquipo(int idEquipo) {
-    equipos.removeIf(equipo -> equipo.getId() == idEquipo);
-  }
-
-
-  /**
-   * Busca un equipo por su ID dentro de la liga.
-   *
-   * @param idEquipo ID del equipo a buscar.
-   * @return El equipo si fue encontrado, o null en caso contrario.
-   */
-  public Equipo buscarEquipo(int idEquipo) {
-    for (Equipo equipo : equipos) {
-      if (equipo.getId() == idEquipo) {
-        return equipo;
-      }
-    }
-    return null;
-  }
-
-  /**
    * Devuelve una copia de la lista de equipos de la liga.
    *
    * @return Lista de equipos pertenecientes a la liga.
@@ -88,15 +49,6 @@ public class Liga {
    */
   public String getNombre() {
     return nombre;
-  }
-
-  /**
-   * Devuelve la cantidad de equipos registrados en esta liga.
-   *
-   * @return Número total de equipos en la liga.
-   */
-  public int cantidadEquipos() {
-    return equipos.size();
   }
 
   /**

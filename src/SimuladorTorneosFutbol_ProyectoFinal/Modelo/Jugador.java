@@ -136,20 +136,6 @@ public class Jugador {
     this.equipo = nuevoEquipo;
   }
 
-
-  /**
-   * Elimina la asociación del jugador con su equipo actual.
-   *
-   * @throws TorneoException Si el jugador no pertenece a ningún equipo.
-   */
-  public void salirDelEquipo() throws TorneoException {
-    if (this.equipo == null) {
-      throw new TorneoException("El jugador no pertenece a ningún equipo");
-    }
-    this.equipo.eliminarJugador(this);
-    this.equipo = null;
-  }
-
   /** Incrementa en uno la cantidad de goles del jugador. */
   public void registrarGol() {
     this.goles++;

@@ -176,34 +176,6 @@ public class Equipo {
   }
 
   /**
-   * Elimina un jugador del equipo si pertenece al mismo.
-   * También actualiza el estado del jugador para que deje de estar asociado al equipo.
-   *
-   * @param jugador Jugador a eliminar del conjunto.
-   */
-  public void eliminarJugador(Jugador jugador) {
-    if (jugador != null && jugadores.pertenece(jugador)) {
-      jugadores.eliminar(jugador);
-      try {
-        jugador.salirDelEquipo(); // Limpia la referencia al equipo desde el jugador
-      } catch (TorneoException e) {
-        // Silenciar excepción, aunque se podría registrar/loguear si se requiere seguimiento
-      }
-    }
-  }
-
-  /**
-   * Verifica si un jugador determinado forma parte del equipo.
-   *
-   * @param jugador Jugador a buscar.
-   * @return true si el jugador pertenece al equipo; false en caso contrario.
-   */
-  public boolean tieneJugador(Jugador jugador) {
-    return jugadores.pertenece(jugador);
-  }
-
-
-  /**
    * Reinicia todas las estadísticas del equipo:
    * puntos, partidos jugados, ganados, empatados, perdidos y goles.
    * Ideal para comenzar una nueva temporada o reiniciar un torneo.
@@ -434,7 +406,7 @@ public class Equipo {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Equipo equipo = (Equipo) o;
-    return id == equipo.id; // o nombre.equals(...) si el nombre es único
+    return id == equipo.id;
   }
 
   /**
@@ -445,6 +417,6 @@ public class Equipo {
    */
   @Override
   public int hashCode() {
-    return Objects.hash(id); // o nombre si usás nombre en equals
+    return Objects.hash(id);
   }
 }

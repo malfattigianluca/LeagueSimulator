@@ -123,6 +123,7 @@
     void simularEstadisticasJugadores() throws TorneoException {
       Random random = new Random();
 
+      // Filtrar jugadores titulares de cada equipo
       List<Jugador> jugadoresLocal = local.getJugadores().getVertices().stream()
               .filter(Jugador::isTitular).toList();
       List<Jugador> jugadoresVisitante = visitante.getJugadores().getVertices().stream()

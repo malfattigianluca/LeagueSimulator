@@ -106,7 +106,7 @@ public class Torneo {
     }
 
     // Probabilidad de victoria del local según diferencia de ELO
-    double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 1000.0));
+    double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 2000.0));
     double pb = 1.0 - pa;
 
     // Parámetros de ventaja local y ajuste
@@ -276,47 +276,6 @@ public class Torneo {
       }
     }
   }
-
-  /**
-   * Simula un torneo en formato de liga donde cada equipo juega contra todos los
-   * demás una vez.
-   * Los partidos se generan por combinaciones únicas (no se repiten encuentros).
-   *
-   * @throws TorneoException Si ocurre un error durante la simulación de un
-   *                         partido.
-   */
-  private void simularLiga() throws TorneoException {
-    for (int i = 0; i < equipos.size(); i++) {
-      for (int j = i + 1; j < equipos.size(); j++) {
-        simularPartido(equipos.get(i), equipos.get(j));
-      }
-    }
-  }
-
-  /**
-   * Simula un torneo por eliminación directa.
-   *
-   * - Los equipos son mezclados aleatoriamente para definir emparejamientos.
-   * - En cada ronda se enfrentan por pares.
-   * - El ganador de cada partido avanza a la siguiente ronda.
-   * - En caso de empate, avanza el equipo con mayor ELO.
-   * - Si hay un número impar de equipos en una ronda, uno pasa automáticamente.
-   *
-   * El proceso se repite hasta que queda un solo equipo: el campeón.
-   *
-   * @throws TorneoException Si ocurre un error durante la simulación de partidos.
-   */
-  private void simularEliminacionDirecta() throws TorneoException {
-    List<Equipo> equiposDisponibles = new ArrayList<>(equipos);
-    Collections.shuffle(equiposDisponibles);
-
-    // Simula el torneo completo y devuelve la raíz del árbol con todos los partidos jugados
-    this.raizEliminacion = simularRonda(equiposDisponibles);
-
-    // Mostrar el cuadro del torneo (ya simulado)
-    imprimirBracket();
-  }
-
 
 
   /**
@@ -673,14 +632,6 @@ public class Torneo {
    */
   public List<Equipo> getEquipos() {
     return equipos;
-  }
-
-  /**
-   * @return true si el torneo se juega en formato de eliminación directa; false
-   *         si es tipo liga.
-   */
-  public boolean isEliminacionDirecta() {
-    return eliminacionDirecta;
   }
 
   /**

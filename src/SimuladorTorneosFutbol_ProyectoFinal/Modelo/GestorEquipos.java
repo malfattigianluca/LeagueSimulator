@@ -144,21 +144,85 @@ public class GestorEquipos {
             System.out.println("No se encontraron equipos que coincidan.");
         } else {
 
-            // Encabezado de la tabla
-            System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Escudo", "Equipo", "País", "ELO");
-            System.out.println("---------------------------------------------------------------------------------------");
-
             // Cuerpo de la tabla con alineación formateada
             for (Equipo e : resultados) {
+                // Encabezado de la tabla
+                System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Escudo", "Equipo", "País", "ELO");
+                System.out.println("---------------------------------------------------------------------------------------");
                 System.out.printf("%-35s %-8s %-25s %-15s %-10d%n",
                         e.getLiga(),
                         e.getEscudo(),
                         e.getNombre(),
                         e.getPais(),
                         e.getElo());
+                        imprimirJugadores(e);
             }
         }
+
     }
+
+    private void imprimirJugadores(Equipo equipo) {
+        System.out.println("\nJugadores del equipo: " + equipo.getNombre());
+
+        List<Jugador> jugadores = equipo.getJugadores().getVertices();
+
+        List<Jugador> titulares = new ArrayList<>();
+        List<Jugador> suplentes = new ArrayList<>();
+
+        for (Jugador j : jugadores) {
+            if (j.isTitular()) {
+                titulares.add(j);
+            } else {
+                suplentes.add(j);
+            }
+        }
+
+        // Orden personalizado por posición
+        Map<String, Double> ordenPosiciones = new HashMap<>();
+        ordenPosiciones.put("portero", 0.001);
+        ordenPosiciones.put("defensa central", 0.01);
+        ordenPosiciones.put("lateral derecho", 0.02);
+        ordenPosiciones.put("lateral izquierdo", 0.02);
+        ordenPosiciones.put("pivote", 0.03);
+        ordenPosiciones.put("mediocentro", 0.05);
+        ordenPosiciones.put("interior derecho", 0.08);
+        ordenPosiciones.put("interior izquierdo", 0.08);
+        ordenPosiciones.put("mediocentro ofensivo", 0.10);
+        ordenPosiciones.put("mediapunta", 0.13);
+        ordenPosiciones.put("extremo derecho", 0.18);
+        ordenPosiciones.put("extremo izquierdo", 0.18);
+        ordenPosiciones.put("delantero centro", 0.35);
+
+        Comparator<Jugador> comparadorPorPosicion = Comparator.comparingDouble(
+                j -> ordenPosiciones.getOrDefault(j.getPosicion().toLowerCase(), Double.MAX_VALUE)
+        );
+
+        titulares.sort(comparadorPorPosicion);
+        suplentes.sort(comparadorPorPosicion);
+
+        // Titulares
+        System.out.println("Titulares:");
+        System.out.printf("%-5s %-25s %-25s%n", "N°", "Nombre", "Posición");
+        for (Jugador j : titulares) {
+            System.out.printf("%-5d %-25s %-25s%n",
+                    j.getNumeroCamiseta(),
+                    j.getNombre(),
+                    j.getPosicion());
+        }
+
+        // Suplentes
+        System.out.println("\nSuplentes:");
+        System.out.printf("%-5s %-25s %-25s%n", "N°", "Nombre", "Posición");
+        for (Jugador j : suplentes) {
+            System.out.printf("%-5d %-25s %-25s%n",
+                    j.getNumeroCamiseta(),
+                    j.getNombre(),
+                    j.getPosicion());
+        }
+
+        System.out.println("---------------------------------------------------------------------------------------\n");
+    }
+
 
     /**
      * Muestra por consola todos los equipos cargados, filtrando por liga si se especifica.

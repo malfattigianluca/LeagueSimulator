@@ -177,7 +177,7 @@ public class GestorEquipos {
             }
         }
 
-        // Orden personalizado por posición
+        // Se ordena segun niveles por posición de manera personalizada siguiendo el orden real de alineaciones
         Map<String, Double> ordenPosiciones = new HashMap<>();
         ordenPosiciones.put("portero", 0.001);
         ordenPosiciones.put("defensa central", 0.01);

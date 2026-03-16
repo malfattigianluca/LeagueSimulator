@@ -1,10 +1,10 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+package leaguesimulator.Modelo;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
+import leaguesimulator.Excepciones.TorneoException;
 
 /**
  * Clase GestorEquipos
@@ -1000,3 +1000,5 @@ public class GestorEquipos {
         return n > 0 && (n & (n - 1)) == 0;
     }
 }
+
+

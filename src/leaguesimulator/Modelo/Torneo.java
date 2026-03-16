@@ -1,6 +1,6 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+package leaguesimulator.Modelo;
 
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
+import leaguesimulator.Excepciones.TorneoException;
 import java.util.*;
 
 
@@ -643,3 +643,5 @@ public class Torneo {
     return partidos;
   }
 }
+
+

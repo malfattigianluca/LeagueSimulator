@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.TDA;
+package leaguesimulator.TDA;
 
 public interface ArbolBinario {
   void insertar(int dato);
@@ -21,3 +21,5 @@ public interface ArbolBinario {
 
   void mostrar();
 }
+
+

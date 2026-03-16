@@ -1,6 +1,6 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Implementacion;
+package leaguesimulator.Implementacion;
 
-import SimuladorTorneosFutbol_ProyectoFinal.TDA.ConjuntoGenericoTDA;
+import leaguesimulator.TDA.ConjuntoGenericoTDA;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,3 +97,5 @@ public class ConjuntoGenericoImpl<T> implements ConjuntoGenericoTDA<T>{
     return vertices;
   }
 }
+
+

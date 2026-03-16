@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.TDA;
+package leaguesimulator.TDA;
 
 import java.util.List;
 
@@ -18,3 +18,5 @@ public interface ConjuntoGenericoTDA<T> {
   List<T> getVertices();
 
 }
+
+

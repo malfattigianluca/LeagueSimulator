@@ -1,9 +1,9 @@
-package SimuladorTorneosFutbol_ProyectoFinal;
+package leaguesimulator;
 
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
-import SimuladorTorneosFutbol_ProyectoFinal.Modelo.*;
-import SimuladorTorneosFutbol_ProyectoFinal.Util.Consola;
-import SimuladorTorneosFutbol_ProyectoFinal.Modelo.GestorJugadores;
+import leaguesimulator.Excepciones.TorneoException;
+import leaguesimulator.Modelo.*;
+import leaguesimulator.Util.Consola;
+import leaguesimulator.Modelo.GestorJugadores;
 
 import java.util.*;
 
@@ -88,7 +88,7 @@ public class App {
      */
     private static void mostrarMenu() {
         Consola.mostrarMensaje("""
-                \n=== SISTEMA DE GESTIÓN DE TORNEOS FUTBOLÍSTICOS ===
+                \n=== LeagueSimulator: Sistema de Simulacion de Torneos Futbolísticos ===
                 1. Simular liga
                 2. Crear tu propio torneo
                 3. Buscar equipos
@@ -165,3 +165,6 @@ public class App {
         }
     }
 }
+
+
+

@@ -1,8 +1,8 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+package leaguesimulator.Modelo;
 
-import SimuladorTorneosFutbol_ProyectoFinal.TDA.ConjuntoGenericoTDA;
-import SimuladorTorneosFutbol_ProyectoFinal.Implementacion.ConjuntoGenericoImpl;
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
+import leaguesimulator.TDA.ConjuntoGenericoTDA;
+import leaguesimulator.Implementacion.ConjuntoGenericoImpl;
+import leaguesimulator.Excepciones.TorneoException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -227,3 +227,5 @@ public class GestorJugadores {
     return jugadores;
   }
 }
+
+

@@ -1,6 +1,6 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Implementacion;
+package leaguesimulator.Implementacion;
 
-import SimuladorTorneosFutbol_ProyectoFinal.TDA.ArbolBinario;
+import leaguesimulator.TDA.ArbolBinario;
 
 public class ArbolBinarioImpl implements ArbolBinario {
   private class Nodo {
@@ -186,3 +186,5 @@ public class ArbolBinarioImpl implements ArbolBinario {
     }
   }
 }
+
+

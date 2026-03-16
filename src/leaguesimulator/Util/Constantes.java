@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Util;
+package leaguesimulator.Util;
 
 /**
  * Clase utilitaria que contiene constantes globales utilizadas en el sistema de gestión de torneos.
@@ -46,3 +46,6 @@ public class Constantes {
   /** Clave para identificar torneos mixtos (grupos + eliminación). */
   public static final String TORNEO_MIXTO = "MIXTO";
 }
+
+
+

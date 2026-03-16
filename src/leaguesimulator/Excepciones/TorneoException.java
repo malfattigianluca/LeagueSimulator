@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Excepciones;
+package leaguesimulator.Excepciones;
 
 /**
  * Excepción personalizada utilizada para manejar errores específicos
@@ -29,3 +29,6 @@ public class TorneoException extends Exception {
     super(mensaje, causa);
   }
 }
+
+
+

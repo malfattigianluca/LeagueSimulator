@@ -1,6 +1,6 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Util;
+package leaguesimulator.Util;
 
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
+import leaguesimulator.Excepciones.TorneoException;
 
 /**
  * Clase utilitaria encargada de realizar validaciones centrales dentro del sistema de torneos.
@@ -83,3 +83,6 @@ public class Validador {
     }
   }
 }
+
+
+

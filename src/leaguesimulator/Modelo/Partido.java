@@ -1,7 +1,7 @@
-  package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+  package leaguesimulator.Modelo;
 
-  import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
-  import SimuladorTorneosFutbol_ProyectoFinal.Util.Validador;
+  import leaguesimulator.Excepciones.TorneoException;
+  import leaguesimulator.Util.Validador;
 
   import java.util.*;
   import java.util.function.Function;
@@ -492,3 +492,5 @@
       return sb.toString();
     }
   }
+
+

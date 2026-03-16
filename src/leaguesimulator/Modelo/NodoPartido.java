@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+package leaguesimulator.Modelo;
 
 /**
  * Clase NodoPartido.
@@ -95,3 +95,6 @@ public class NodoPartido {
         this.ganador = ganador;
     }
 }
+
+
+

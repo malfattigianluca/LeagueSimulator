@@ -1,9 +1,9 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Modelo;
+package leaguesimulator.Modelo;
 
-import SimuladorTorneosFutbol_ProyectoFinal.Excepciones.TorneoException;
-import SimuladorTorneosFutbol_ProyectoFinal.Util.Validador;
-import SimuladorTorneosFutbol_ProyectoFinal.TDA.ConjuntoGenericoTDA;
-import SimuladorTorneosFutbol_ProyectoFinal.Implementacion.ConjuntoGenericoImpl;
+import leaguesimulator.Excepciones.TorneoException;
+import leaguesimulator.Util.Validador;
+import leaguesimulator.TDA.ConjuntoGenericoTDA;
+import leaguesimulator.Implementacion.ConjuntoGenericoImpl;
 
 import java.util.IllegalFormatConversionException;
 import java.util.List;
@@ -420,3 +420,5 @@ public class Equipo {
     return Objects.hash(id);
   }
 }
+
+

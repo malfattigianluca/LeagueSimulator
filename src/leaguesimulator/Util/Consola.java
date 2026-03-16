@@ -1,4 +1,4 @@
-package SimuladorTorneosFutbol_ProyectoFinal.Util;
+package leaguesimulator.Util;
 
 /**
  * Clase de utilidad para mostrar mensajes en consola.
@@ -22,3 +22,6 @@ public class Consola {
         System.err.println("Error: " + mensaje);
     }
 }
+
+
+

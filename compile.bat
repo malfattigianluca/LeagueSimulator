@@ -1,18 +1,18 @@
 @echo off
 echo Compilando clases en orden...
 
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Excepciones/TorneoException.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Util/Validador.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/TDA/ConjuntoGenericoTDA.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Implementacion/ConjuntoGenericoImpl.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/Jugador.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/Equipo.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/GestorEquipos.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/GestorJugadores.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/Partido.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/SimuladorLiga.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/Modelo/Torneo.java
-javac -d . src/SimuladorTorneosFutbol_ProyectoFinal/App.java
+javac -d . -sourcepath src src/leaguesimulator/Excepciones/TorneoException.java
+javac -d . -sourcepath src src/leaguesimulator/Util/Validador.java
+javac -d . -sourcepath src src/leaguesimulator/TDA/ConjuntoGenericoTDA.java
+javac -d . -sourcepath src src/leaguesimulator/Implementacion/ConjuntoGenericoImpl.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/Jugador.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/Equipo.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/GestorEquipos.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/GestorJugadores.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/Partido.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/SimuladorLiga.java
+javac -d . -sourcepath src src/leaguesimulator/Modelo/Torneo.java
+javac -d . -sourcepath src src/leaguesimulator/App.java
 
 echo Compilacion completada.
 pause 

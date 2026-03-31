@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import leaguesimulator.Excepciones.TorneoException;
+import leaguesimulator.Util.Constantes;
 
 /**
  * Clase GestorEquipos
@@ -129,36 +130,20 @@ public class GestorEquipos {
      */
     public void buscarEquipos(Scanner scanner) {
         System.out.print("Ingrese el fragmento a buscar en el nombre del equipo: ");
+        String fragmento = scanner.nextLine();
+        List<Equipo> resultados = buscarEquipoPorNombre(fragmento);
 
-        // Lectura y normalización del fragmento
-        String fragmento = scanner.nextLine().toLowerCase();
-
-        // Busca equipos cuyo nombre contenga el fragmento, usando streams
-        List<Equipo> resultados = equiposPorLiga.values().stream()
-                .flatMap(List::stream)
-                .filter(equipo -> equipo.getNombre().toLowerCase().contains(fragmento))
-                .toList();
-
-        // Muestra los resultados o un mensaje si no se encontraron coincidencias
         if (resultados.isEmpty()) {
             System.out.println("No se encontraron equipos que coincidan.");
         } else {
-
-            // Cuerpo de la tabla con alineación formateada
             for (Equipo e : resultados) {
-                // Encabezado de la tabla
-                System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Escudo", "Equipo", "País", "ELO");
+                System.out.printf("%-35s %-8s %-25s %-15s %-10s%n", "Liga", "Escudo", "Equipo", "Pais", "ELO");
                 System.out.println("---------------------------------------------------------------------------------------");
                 System.out.printf("%-35s %-8s %-25s %-15s %-10d%n",
-                        e.getLiga(),
-                        e.getEscudo(),
-                        e.getNombre(),
-                        e.getPais(),
-                        e.getElo());
-                        imprimirJugadores(e);
+                        e.getLiga(), e.getEscudo(), e.getNombre(), e.getPais(), e.getElo());
+                imprimirJugadores(e);
             }
         }
-
     }
 
     private void imprimirJugadores(Equipo equipo) {
@@ -177,24 +162,8 @@ public class GestorEquipos {
             }
         }
 
-        // Se ordena segun niveles por posición de manera personalizada siguiendo el orden real de alineaciones
-        Map<String, Double> ordenPosiciones = new HashMap<>();
-        ordenPosiciones.put("portero", 0.001);
-        ordenPosiciones.put("defensa central", 0.01);
-        ordenPosiciones.put("lateral derecho", 0.02);
-        ordenPosiciones.put("lateral izquierdo", 0.02);
-        ordenPosiciones.put("pivote", 0.03);
-        ordenPosiciones.put("mediocentro", 0.05);
-        ordenPosiciones.put("interior derecho", 0.08);
-        ordenPosiciones.put("interior izquierdo", 0.08);
-        ordenPosiciones.put("mediocentro ofensivo", 0.10);
-        ordenPosiciones.put("mediapunta", 0.13);
-        ordenPosiciones.put("extremo derecho", 0.18);
-        ordenPosiciones.put("extremo izquierdo", 0.18);
-        ordenPosiciones.put("delantero centro", 0.35);
-
         Comparator<Jugador> comparadorPorPosicion = Comparator.comparingDouble(
-                j -> ordenPosiciones.getOrDefault(j.getPosicion().toLowerCase(), Double.MAX_VALUE)
+                j -> Constantes.ORDEN_POSICIONES.getOrDefault(j.getPosicion().toLowerCase(), Double.MAX_VALUE)
         );
 
         titulares.sort(comparadorPorPosicion);
@@ -373,8 +342,13 @@ public class GestorEquipos {
             System.out.println((i + 1) + ". " + ligas.get(i));
         }
 
-        // Lee la opción ingresada por el usuario
-        int opcion = Integer.parseInt(scanner.nextLine());
+        int opcion;
+        try {
+            opcion = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida. Ingrese un número.");
+            return;
+        }
         if (opcion < 1 || opcion > ligas.size()) {
             System.out.println("Opción inválida.");
             return;
@@ -444,9 +418,6 @@ public class GestorEquipos {
      * @throws TorneoException si ocurre un error durante la simulación.
      */
     public void crearTorneoPersonalizado(Scanner scanner) throws TorneoException {
-        // Instancia el gestor de jugadores asociado a este gestor de equipos
-        GestorJugadores gestorJugadores = new GestorJugadores(this);
-
         // Solicita el nombre del torneo
         System.out.print("Ingrese el nombre del torneo personalizado: ");
         String nombre = scanner.nextLine();
@@ -550,7 +521,7 @@ public class GestorEquipos {
                             return;
                         }
 
-                        if (opcion >= 1 && opcion <= disponibles.size()) {
+                        if (opcion >= 1 && opcion <= equiposdisponibles.size()) {
                             Equipo elegido = equiposdisponibles.get(opcion - 1);
                             seleccionados.add(elegido);
                             System.out.println("Equipo agregado: " + elegido.getNombre());
@@ -713,140 +684,64 @@ public class GestorEquipos {
 
 
     /**
-     * Muestra un menú interactivo post-simulación con estadísticas detalladas
-     * sobre la liga simulada: fechas jugadas, goleadores, asistencias y tarjetas.
-     *
-     * @param scanner   Objeto Scanner para leer la entrada del usuario.
-     * @param simulador Simulador de la liga previamente ejecutado.
+     * Muestra el menú interactivo de estadísticas post-simulación para una liga.
+     * Delega en el método genérico usando el simulador como fuente de datos.
      */
     private void mostrarMenuPostSimulacion(Scanner scanner, SimuladorLiga simulador) {
-        while (true) {
-            // Título del menú
-            System.out.println("\n=== Estadísticas de la Liga " + simulador.getNombre() + " ===");
-            System.out.println("1. Ver fechas jugadas");
-            System.out.println("2. Ver top 10 goleadores");
-            System.out.println("3. Ver top 10 asistentes");
-            System.out.println("4. Ver jugadores con tarjetas");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("Seleccione una opción: ");
-
-            String opcion = scanner.nextLine();
-
-            switch (opcion) {
-                case "1" -> simulador.mostrarPartidosJugados(scanner);  // Muestra los partidos jugados por jornada
-                case "2" -> mostrarTopGoleadores(simulador.getPartidos()); // Lista los 10 máximos goleadores
-                case "3" -> mostrarTopAsistencias(simulador.getPartidos()); // Lista los 10 máximos asistentes
-                case "4" -> mostrarJugadoresConTarjetas(simulador.getPartidos()); // Lista jugadores con tarjetas
-                case "0" -> {
-                    return; // Sale del menú y vuelve al menú principal
-                }
-                default -> System.out.println("Opción inválida. Intente de nuevo."); // Manejo de errores
-            }
-        }
+        mostrarMenuEstadisticas(scanner, simulador.getNombre(),
+                () -> simulador.mostrarPartidosJugados(scanner),
+                simulador.getPartidos());
     }
 
     /**
-     * Muestra un menú interactivo luego de la simulación de un torneo de eliminación directa.
-     * Permite al usuario consultar diferentes estadísticas del torneo ya finalizado.
-     *
-     * Las opciones disponibles son:
-     * <ul>
-     *   <li><b>1 - Ver fechas jugadas:</b> muestra los partidos organizados por jornadas.</li>
-     *   <li><b>2 - Ver top 10 goleadores:</b> muestra los 10 jugadores con más goles.</li>
-     *   <li><b>3 - Ver top 10 asistentes:</b> muestra los 10 jugadores con más asistencias.</li>
-     *   <li><b>4 - Ver jugadores con tarjetas:</b> muestra los jugadores que recibieron tarjetas.</li>
-     *   <li><b>0 - Volver al menú principal:</b> finaliza este submenú y retorna al menú principal.</li>
-     * </ul>
-     *
-     * El menú se mantiene activo hasta que el usuario seleccione la opción "0".
-     *
-     * @param scanner Objeto Scanner para leer la entrada del usuario.
-     * @param torneo Objeto Torneo ya simulado desde el cual se obtienen los datos estadísticos.
+     * Muestra el menú interactivo de estadísticas post-simulación para un torneo.
      */
     private void mostrarMenuPostTorneo(Scanner scanner, Torneo torneo) {
-        while (true) {
-            // Título del menú contextual
-            System.out.println("\n=== Estadísticas de la Liga " + torneo.getNombre() + " ===");
-            System.out.println("1. Ver fechas jugadas");
-            System.out.println("2. Ver top 10 goleadores");
-            System.out.println("3. Ver top 10 asistentes");
-            System.out.println("4. Ver jugadores con tarjetas");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("Seleccione una opción: ");
-
-            String opcion = scanner.nextLine();
-
-            // Procesamiento de opciones del usuario
-            switch (opcion) {
-                case "1" ->
-                        torneo.mostrarPartidosTorneo(scanner); // Muestra los partidos por jornada
-                case "2" ->
-                        mostrarTopGoleadores(torneo.getPartidos()); // Lista top 10 goleadores
-                case "3" ->
-                        mostrarTopAsistencias(torneo.getPartidos()); // Lista top 10 asistentes
-                case "4" ->
-                        mostrarJugadoresConTarjetas(torneo.getPartidos()); // Lista jugadores con tarjetas
-                case "0" -> {
-                    return; // Finaliza el menú y retorna al menú principal
-                }
-                default ->
-                        System.out.println("Opción inválida. Intente de nuevo."); // Validación de error
-            }
-        }
+        mostrarMenuEstadisticas(scanner, torneo.getNombre(),
+                () -> torneo.mostrarPartidosTorneo(scanner),
+                torneo.getPartidos());
     }
 
     /**
-     * Muestra al usuario un menú de estadísticas luego de la finalización de un torneo mixto
-     * (fase de grupos + eliminación directa). Permite visualizar partidos jugados, goleadores,
-     * asistentes y jugadores con tarjetas.
-     *
-     * El menú se mantiene activo hasta que el usuario seleccione la opción 0 para salir.
-     *
-     * @param scanner Objeto Scanner para leer la entrada del usuario por consola.
-     * @param torneoMixto Torneo mixto ya simulado del cual se extraen las estadísticas a mostrar.
+     * Muestra el menú interactivo de estadísticas post-simulación para un torneo mixto.
      */
     private void mostrarMenuPostTorneoMixto(Scanner scanner, TorneoMixto torneoMixto) {
-        while (true) {
-            // Muestra el título del menú con el nombre del torneo mixto
-            System.out.println("\n=== Estadísticas de la Liga " + torneoMixto.getNombre() + " ===");
+        mostrarMenuEstadisticas(scanner, torneoMixto.getNombre(),
+                () -> torneoMixto.mostrarPartidosTorneo(scanner),
+                torneoMixto.getPartidos());
+    }
 
-            // Imprime las opciones disponibles
+    /**
+     * Menú genérico de estadísticas post-simulación.
+     *
+     * Antes existían 3 métodos casi idénticos (mostrarMenuPostSimulacion,
+     * mostrarMenuPostTorneo, mostrarMenuPostTorneoMixto). La única diferencia
+     * entre ellos era la fuente de partidos y la acción de "ver fechas".
+     * Este método unifica los tres.
+     *
+     * @param scanner       Scanner para leer entrada del usuario.
+     * @param nombreTorneo  Nombre a mostrar en el título del menú.
+     * @param verFechas     Acción para mostrar las fechas/jornadas.
+     * @param partidos      Lista de partidos para calcular estadísticas.
+     */
+    private void mostrarMenuEstadisticas(Scanner scanner, String nombreTorneo,
+                                         Runnable verFechas, List<Partido> partidos) {
+        while (true) {
+            System.out.println("\n=== Estadisticas: " + nombreTorneo + " ===");
             System.out.println("1. Ver fechas jugadas");
             System.out.println("2. Ver top 10 goleadores");
             System.out.println("3. Ver top 10 asistentes");
             System.out.println("4. Ver jugadores con tarjetas");
-            System.out.println("0. Volver al menú principal");
+            System.out.println("0. Volver al menu principal");
+            System.out.print("Seleccione una opcion: ");
 
-            // Solicita al usuario que seleccione una opción
-            System.out.print("Seleccione una opción: ");
-            String opcion = scanner.nextLine();
-
-            // Procesa la opción ingresada por el usuario
-            switch (opcion) {
-                case "1" ->
-                    // Muestra todos los partidos disputados por jornada
-                        torneoMixto.mostrarPartidosTorneo(scanner);
-
-                case "2" ->
-                    // Muestra los 10 jugadores con más goles en el torneo
-                        mostrarTopGoleadores(torneoMixto.getPartidos());
-
-                case "3" ->
-                    // Muestra los 10 jugadores con más asistencias en el torneo
-                        mostrarTopAsistencias(torneoMixto.getPartidos());
-
-                case "4" ->
-                    // Muestra la lista de jugadores que recibieron tarjetas
-                        mostrarJugadoresConTarjetas(torneoMixto.getPartidos());
-
-                case "0" -> {
-                    // Finaliza el menú y retorna al menú principal del sistema
-                    return;
-                }
-
-                default ->
-                    // Informa al usuario que la opción ingresada no es válida
-                        System.out.println("Opción inválida. Intente de nuevo.");
+            switch (scanner.nextLine()) {
+                case "1" -> verFechas.run();
+                case "2" -> mostrarTopGoleadores(partidos);
+                case "3" -> mostrarTopAsistencias(partidos);
+                case "4" -> mostrarJugadoresConTarjetas(partidos);
+                case "0" -> { return; }
+                default  -> System.out.println("Opcion invalida. Intente de nuevo.");
             }
         }
     }

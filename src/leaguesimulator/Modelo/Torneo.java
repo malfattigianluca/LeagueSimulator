@@ -1,647 +1,294 @@
 package leaguesimulator.Modelo;
 
 import leaguesimulator.Excepciones.TorneoException;
+import leaguesimulator.Util.NavegadorJornadas;
+import leaguesimulator.Util.SimuladorPartido;
+
 import java.util.*;
 
-
 /**
- * Representa un torneo de fútbol, que puede jugarse en modalidad de liga o
- * eliminación directa.
+ * Representa un torneo de fútbol en modalidad de eliminación directa o liga simple.
  *
- * El torneo mantiene un registro de:
- * - Equipos participantes.
- * - Partidos disputados.
- * - Estadísticas por equipo (puntos, goles a favor/en contra).
- * - Cálculo de ranking ELO con un factor de impacto fijo.
+ * En modalidad eliminación directa construye un árbol binario de partidos
+ * (NodoPartido) que refleja el bracket completo del torneo.
  *
- * Se pueden simular diferentes tipos de torneos controlando la bandera
- * {@code eliminacionDirecta}.
- *
- * Esta clase permite agregar partidos, registrar resultados, y realizar un
- * seguimiento de la clasificación.
- *
- * @author
+ * La lógica de simulación de cada partido está delegada a {@link SimuladorPartido}.
+ * La navegación interactiva por partidos está delegada a {@link NavegadorJornadas}.
  */
 public class Torneo {
-  // Nombre del torneo (ej. "Champions League", "Torneo de Verano")
-  private String nombre;
 
-  // Lista de equipos participantes
-  private List<Equipo> equipos;
+    private final String           nombre;
+    private final List<Equipo>     equipos;
+    private final List<Partido>    partidos;
+    private final boolean          eliminacionDirecta;
 
-  // Lista de todos los partidos disputados en el torneo
-  private List<Partido> partidos;
+    // Raíz del árbol de eliminación (null si la modalidad es liga).
+    // Protected para que TorneoMixto pueda leerla sin exponer campo público.
+    protected NodoPartido raizEliminacion;
 
-  // Tabla de posiciones: puntos acumulados por equipo
-  private Map<Equipo, Integer> puntos;
 
-  // Registro de goles a favor por equipo
-  private Map<Equipo, Integer> golesAFavor;
-
-  // Registro de goles en contra por equipo
-  private Map<Equipo, Integer> golesEnContra;
-
-  // Bandera que indica si el torneo es de eliminación directa (true) o tipo liga
-  // (false)
-  private boolean eliminacionDirecta;
-
-  // Constante que define el factor de impacto para actualización del ranking ELO
-  private static final int K = 100;
-
-  public NodoPartido raizEliminacion;
-
-  /**
-   * Crea un nuevo torneo con el nombre y modalidad especificados.
-   *
-   * @param nombre             Nombre del torneo.
-   * @param eliminacionDirecta true si el torneo es de eliminación directa, false
-   *                           si es tipo liga.
-   */
-  public Torneo(String nombre, boolean eliminacionDirecta) {
-    this.nombre = nombre;
-    this.equipos = new ArrayList<>();
-    this.partidos = new ArrayList<>();
-    this.puntos = new HashMap<>();
-    this.golesAFavor = new HashMap<>();
-    this.golesEnContra = new HashMap<>();
-    this.eliminacionDirecta = eliminacionDirecta;
-  }
-
-  /**
-   * Agrega un equipo al torneo si no fue agregado previamente.
-   * Inicializa sus estadísticas en las tablas de puntos y goles.
-   *
-   * @param equipo Equipo a incorporar al torneo.
-   */
-  public void agregarEquipo(Equipo equipo) {
-    if (!equipos.contains(equipo)) {
-      equipos.add(equipo);
-      puntos.put(equipo, 0);
-      golesAFavor.put(equipo, 0);
-      golesEnContra.put(equipo, 0);
-    }
-  }
-
-  /**
-   * Simula un partido entre dos equipos utilizando el sistema ELO para determinar
-   * las probabilidades.
-   * <p>
-   * El metodo realiza:
-   * - Cálculo de probabilidades de victoria basado en ELO.
-   * - Generación aleatoria de goles en base a dichas probabilidades.
-   * - Creación y registro del objeto {@link Partido}.
-   * - Actualización de estadísticas del torneo (puntos, goles).
-   * - Reajuste de ELO para ambos equipos según el resultado.
-   *
-   * @param local     Equipo que juega como local.
-   * @param visitante Equipo que juega como visitante.
-   * @throws TorneoException Si alguno de los equipos no pertenece al torneo.
-   */
-  public void simularPartido(Equipo local, Equipo visitante) throws TorneoException {
-    if (local == null || visitante == null) {
-      throw new TorneoException("Uno de los equipos es null");
-    }
-    if (!equipos.contains(local) || !equipos.contains(visitante)) {
-      throw new TorneoException("Los equipos deben pertenecer al torneo");
+    public Torneo(String nombre, boolean eliminacionDirecta) {
+        this.nombre             = nombre;
+        this.equipos            = new ArrayList<>();
+        this.partidos           = new ArrayList<>();
+        this.eliminacionDirecta = eliminacionDirecta;
     }
 
-    // Probabilidad de victoria del local según diferencia de ELO
-    double pa = 1.0 / (1.0 + Math.pow(10, (visitante.getElo() - local.getElo()) / 2000.0));
-    double pb = 1.0 - pa;
-
-    // Parámetros de ventaja local y ajuste
-    double ventajaLocal = 1.15;
-    double desventajaVisitante = 0.9;
-    double lambdaTotal = 2.8;
-
-    // Ajuste para que la suma esperada de goles se mantenga en promedio
-    double ajuste = lambdaTotal / (pa * ventajaLocal + pb * desventajaVisitante);
-    double lambdaLocal = pa * ventajaLocal * ajuste;
-    double lambdaVisitante = pb * desventajaVisitante * ajuste;
-
-    // Limitar extremos para evitar goleadas irreales
-    lambdaLocal = Math.max(0.4, Math.min(lambdaLocal, 2.5));
-    lambdaVisitante = Math.max(0.4, Math.min(lambdaVisitante, 2.5));
-
-    // Generación de goles usando distribución de Poisson
-    int golesLocal = generarGolesPoisson(lambdaLocal);
-    int golesVisitante = generarGolesPoisson(lambdaVisitante);
-
-    // Crear el partido y registrar
-    Partido partido = new Partido(local, visitante, golesLocal, golesVisitante);
-    partidos.add(partido);
-    actualizarEstadisticas(local, visitante, golesLocal, golesVisitante);
-
-    // Calcular resultado real para ELO
-    double ra = golesLocal > golesVisitante ? 1 : (golesLocal == golesVisitante ? 0.5 : 0);
-    double rb = 1 - ra;
-
-    // Actualizar ELO
-    int nuevoEloLocal = (int) Math.round(local.getElo() + K * (ra - pa));
-    int nuevoEloVisitante = (int) Math.round(visitante.getElo() + K * (rb - pb));
-    local.setElo(nuevoEloLocal);
-    visitante.setElo(nuevoEloVisitante);
-  }
 
     /**
-     * Genera un número de goles utilizando la distribución de Poisson.
-     * Utiliza un metodo de generación aleatoria para simular la cantidad de goles
-     * anotados en un partido.
-     *
-     * @param lambda Parámetro de la distribución Poisson, representa la tasa promedio
-     *               de goles esperados.
-     * @return Número total de goles anotados (entre 0 y 10).
+     * Agrega un equipo al torneo si no fue agregado previamente.
      */
-  private int generarGolesPoisson(double lambda) {
-    Random rand = new Random();
-    double l = Math.exp(-lambda);
-    double p = 1.0;
-    int k = 0;
-
-    do {
-      k++;
-      p *= rand.nextDouble();
-    } while (p > l && k < 10); // límite superior razonable
-
-    return k - 1;
-  }
-
-
-
-  /**
-   * Simula la cantidad de goles que anota un equipo en un partido,
-   * en función de una probabilidad dada.
-   *
-   * Utiliza un modelo probabilístico: por cada intento (límite de 5),
-   * si un número aleatorio [0.0, 1.0) es menor a la probabilidad recibida,
-   * se incrementa el contador de goles.
-   *
-   * Este metodo simula un comportamiento aleatorio acumulativo
-   * controlado por una probabilidad, con un límite superior de 5 goles.
-   *
-   * @param probabilidad Valor entre 0.0 y 1.0 que representa la probabilidad de marcar un gol en un intento.
-   * @return Número total de goles anotados (entre 0 y 5).
-   */
-  private int simularGoles(double probabilidad) {
-    Random random = new Random();
-    int goles = 0;
-
-    // Mientras se supere el umbral de probabilidad y no se superen los 5 goles
-    while (random.nextDouble() < probabilidad && goles < 5) {
-      goles++; // Se considera un gol
-    }
-
-    return goles;
-  }
-
-  /**
-   * Actualiza las estadísticas de goles y puntos para los equipos
-   * involucrados en un partido una vez finalizado.
-   *
-   * Para cada equipo se actualizan:
-   * - Goles a favor
-   * - Goles en contra
-   * - Puntos según el resultado (victoria = 3, empate = 1, derrota = 0)
-   *
-   * @param local Equipo local del partido.
-   * @param visitante Equipo visitante del partido.
-   * @param golesLocal Cantidad de goles anotados por el equipo local.
-   * @param golesVisitante Cantidad de goles anotados por el equipo visitante.
-   */
-  private void actualizarEstadisticas(Equipo local, Equipo visitante, int golesLocal, int golesVisitante) {
-    // Goles a favor y en contra para el equipo local
-    golesAFavor.put(local, golesAFavor.get(local) + golesLocal);
-    golesEnContra.put(local, golesEnContra.get(local) + golesVisitante);
-
-    // Goles a favor y en contra para el visitante
-    golesAFavor.put(visitante, golesAFavor.get(visitante) + golesVisitante);
-    golesEnContra.put(visitante, golesEnContra.get(visitante) + golesLocal);
-
-    // Asignación de puntos según el resultado
-    if (golesLocal > golesVisitante)
-      puntos.put(local, puntos.get(local) + 3); // Gana el local
-    else if (golesLocal < golesVisitante)
-      puntos.put(visitante, puntos.get(visitante) + 3); // Gana el visitante
-    else {
-      // Empate
-      puntos.put(local, puntos.get(local) + 1);
-      puntos.put(visitante, puntos.get(visitante) + 1);
-    }
-  }
-
-  /**
-   * Devuelve una versión abreviada de un nombre si supera los 25 caracteres.
-   * Agrega "…" al final como indicativo de truncado.
-   *
-   * @param nombre Cadena original a abreviar.
-   * @return Nombre abreviado (máximo 25 caracteres), o el original si no excede el límite.
-   */
-  private String abreviar(String nombre) {
-    return nombre.length() > 25 ? nombre.substring(0, 23) + "…" : nombre;
-  }
-
-  /**
-   * Inicia la simulación completa del torneo.
-   *
-   * - Verifica que haya al menos 2 equipos.
-   * - Simula todos los partidos según el tipo de torneo:
-   * - Eliminación directa: mediante eliminación por rondas.
-   * - Liga: todos contra todos.
-   *
-   *
-   * @throws TorneoException Si hay menos de 2 equipos.
-   */
-  public void simularTorneo() throws TorneoException {
-    // Validación mínima: al menos dos equipos son necesarios
-    if (equipos.size() < 2) {
-      throw new TorneoException("Se necesitan al menos 2 equipos para simular un torneo");
-    }
-
-    if (eliminacionDirecta) {
-      // Elimina la ventaja de orden cargado mezclando los equipos
-      List<Equipo> disponibles = new ArrayList<>(equipos);
-      Collections.shuffle(disponibles);
-
-      // Simula la ronda completa y guarda la raíz del árbol
-      this.raizEliminacion = simularRonda(disponibles);
-
-      // Imprime visualmente el cuadro del torneo
-      imprimirBracket();
-    } else {
-      // Modalidad de liga: todos contra todos una vez (round robin)
-      for (int i = 0; i < equipos.size(); i++) {
-        for (int j = i + 1; j < equipos.size(); j++) {
-          simularPartido(equipos.get(i), equipos.get(j));
+    public void agregarEquipo(Equipo equipo) {
+        if (!equipos.contains(equipo)) {
+            equipos.add(equipo);
         }
-      }
-    }
-  }
-
-
-  /**
-   * Imprime el cuadro completo del torneo en formato de eliminación directa ("bracket").
-   * Si no se ha simulado el torneo aún (la raíz del árbol es null), informa al usuario.
-   * Al finalizar, también muestra el campeón del torneo, si ya está definido.
-   */
-  public void imprimirBracket() {
-    if (raizEliminacion == null) {
-      System.out.println("No hay partidos simulados aún.");
-      return;
     }
 
-    System.out.println("\n=== Cuadro del Torneo (Formato Bracket) ===\n");
 
-    // Inicia la impresión recursiva desde la raíz (nivel 0)
-    imprimirBracketRecursivo(raizEliminacion, 0, true);
-
-    // Muestra el campeón si está disponible
-    Equipo campeon = raizEliminacion.getGanador();
-    if (campeon != null) {
-      System.out.println("\n🏆 Campeón: " + campeon.getNombre());
-    } else {
-      System.out.println("\n🏆 Campeón: Desconocido");
-    }
-  }
-
-  /**
-   * Metodo recursivo que imprime el árbol binario de partidos del torneo en formato jerárquico.
-   *
-   * @param nodo      Nodo actual del árbol de eliminación.
-   * @param nivel     Nivel de profundidad en el árbol (usado para indentación y etiqueta de fase).
-   * @param izquierdo Indica si el nodo es hijo izquierdo (para usar símbolo de rama visual).
-   */
-  private void imprimirBracketRecursivo(NodoPartido nodo, int nivel, boolean izquierdo) {
-    if (nodo == null) return;
-
-    Partido p = nodo.getPartido();
-
-    // Genera la indentación visual para el nivel actual (8 espacios por nivel)
-    String indent = "        ".repeat(nivel);
-
-    // Rama visual: └── para hijo izquierdo, ┌── para derecho
-    String flecha = izquierdo ? "└── " : "┌── ";
-
-    // Imprime primero el hijo derecho (se verá arriba en consola)
-    imprimirBracketRecursivo(nodo.getDerecho(), nivel + 1, false);
-
-    if (nivel > 0) System.out.println();
-
-    // Determina la fase textual según el nivel
-    String fase = switch (nivel) {
-      case 0 -> "Final";
-      case 1 -> "Semifinal";
-      case 2 -> "Cuartos";
-      case 3 -> "8vos";
-      case 4 -> "16vos";
-      case 5 -> "32vos";
-      default -> "Ronda " + (nivel + 1);
-    };
-
-    // Construcción del texto de enfrentamiento (local vs visitante)
-    String local = (p != null && p.getLocal() != null)
-            ? String.format("%-22s", abreviar(p.getLocal().getNombre()))
-            : "BYE                  ";
-
-    String visitante = (p != null && p.getVisitante() != null)
-            ? String.format("%-22s", abreviar(p.getVisitante().getNombre()))
-            : "BYE                  ";
-
-    // Indicación visual del ganador si ya fue definido
-    String ganador = (p != null && p.getGanador() != null)
-            ? "→ 🏅" + abreviar(p.getGanador().getNombre())
-            : "";
-
-    // Imprime la línea con el enfrentamiento en la consola
-    System.out.println(indent + flecha + "[" + fase + "] " + local + " vs " + visitante + " " + ganador);
-
-    // Imprime el hijo izquierdo (se verá abajo en consola)
-    imprimirBracketRecursivo(nodo.getIzquierdo(), nivel + 1, true);
-
-    // Salto de línea adicional para fases altas (mejora visual en la consola)
-    if (nivel <= 2) System.out.println();
-  }
-
-  /**
-   * Muestra los partidos jugados de un torneo en formato de jornadas visuales,
-   * dividiendo los partidos en bloques de "jornadas" fijas para facilitar la navegación.
-   * Utiliza un paginador interactivo que permite al usuario recorrer las fechas.
-   *
-   * @param scanner Scanner para leer la entrada del usuario desde consola.
-   */
-  public void mostrarPartidosTorneo(Scanner scanner) {
-    // Si no hay partidos registrados aún, informa al usuario y sale
-    if (partidos.isEmpty()) {
-      System.out.println("No se han jugado partidos aún.");
-      return;
+    /**
+     * Simula un partido entre local y visitante usando ELO + Poisson.
+     * Registra el partido en la lista interna y actualiza el ELO de ambos equipos.
+     *
+     * @throws TorneoException Si alguno de los equipos no pertenece al torneo.
+     */
+    public void simularPartido(Equipo local, Equipo visitante) throws TorneoException {
+        if (local == null || visitante == null) {
+            throw new TorneoException("Uno de los equipos es null");
+        }
+        if (!equipos.contains(local) || !equipos.contains(visitante)) {
+            throw new TorneoException("Los equipos deben pertenecer al torneo");
+        }
+        Partido partido = SimuladorPartido.simular(local, visitante);
+        partidos.add(partido);
     }
 
-    // Divide los partidos en jornadas de 4 partidos por "fecha"
-    List<List<Partido>> jornadas = new ArrayList<>();
-    int cantidadPorJornada = 4;
-    for (int i = 0; i < partidos.size(); i += cantidadPorJornada) {
-      int fin = Math.min(i + cantidadPorJornada, partidos.size());
-      jornadas.add(partidos.subList(i, fin));
-    }
 
-    // Se prepara un iterador para recorrer las jornadas visualmente
-    ListIterator<List<Partido>> iterador = jornadas.listIterator();
-    int jornadaActual = 0;
-
-    // Muestra la primera jornada por defecto si existe
-    if (iterador.hasNext()) {
-      List<Partido> primera = iterador.next();
-      jornadaActual++;
-      mostrarJornadaFormatoLiga(primera, jornadaActual);
-    }
-
-    // Bucle interactivo para navegar por las jornadas
-    while (true) {
-      System.out.println("\nIngrese N para siguiente, P para anterior, 0 para salir:");
-      String entrada = scanner.nextLine().trim().toUpperCase();
-
-      switch (entrada) {
-        case "N" -> {
-          if (iterador.hasNext()) {
-            List<Partido> siguiente = iterador.next();
-            jornadaActual++;
-            mostrarJornadaFormatoLiga(siguiente, jornadaActual);
-          } else {
-            System.out.println("No hay más jornadas siguientes.");
-          }
+    /**
+     * Inicia la simulación completa del torneo.
+     *
+     * - Eliminación directa: construye el árbol bracket por rondas recursivas.
+     * - Liga: todos contra todos (round-robin simple).
+     *
+     * @throws TorneoException Si hay menos de 2 equipos.
+     */
+    public void simularTorneo() throws TorneoException {
+        if (equipos.size() < 2) {
+            throw new TorneoException("Se necesitan al menos 2 equipos para simular un torneo");
         }
 
-        case "P" -> {
-          if (iterador.hasPrevious()) {
-            iterador.previous(); // retroceder al actual
-            if (iterador.hasPrevious()) {
-              List<Partido> anterior = iterador.previous();
-              jornadaActual--;
-              mostrarJornadaFormatoLiga(anterior, jornadaActual);
-              iterador.next(); // reposicionarse para futuros movimientos
-            } else {
-              System.out.println("Ya estás en la primera jornada.");
+        if (eliminacionDirecta) {
+            List<Equipo> disponibles = new ArrayList<>(equipos);
+            Collections.shuffle(disponibles);
+            this.raizEliminacion = simularRonda(disponibles);
+            imprimirBracket();
+        } else {
+            for (int i = 0; i < equipos.size(); i++) {
+                for (int j = i + 1; j < equipos.size(); j++) {
+                    simularPartido(equipos.get(i), equipos.get(j));
+                }
             }
-          } else {
-            System.out.println("Ya estás en la primera jornada.");
-          }
+        }
+    }
+
+
+    /**
+     * Imprime el cuadro completo del torneo en formato bracket ASCII.
+     * Muestra al campeón al finalizar.
+     */
+    public void imprimirBracket() {
+        if (raizEliminacion == null) {
+            System.out.println("No hay partidos simulados aún.");
+            return;
+        }
+        System.out.println("\n=== Cuadro del Torneo (Formato Bracket) ===\n");
+        imprimirNodo(raizEliminacion, 0, true);
+
+        Equipo campeon = raizEliminacion.getGanador();
+        System.out.println(campeon != null
+                ? "\nCampeon: " + campeon.getNombre()
+                : "\nCampeon: Desconocido");
+    }
+
+
+    /**
+     * Muestra los partidos jugados del torneo en páginas de 4, navegables con N/P/0.
+     *
+     * @param scanner Scanner para leer la entrada del usuario.
+     */
+    public void mostrarPartidosTorneo(Scanner scanner) {
+        if (partidos.isEmpty()) {
+            System.out.println("No se han jugado partidos aún.");
+            return;
         }
 
-        case "0" -> {
-          System.out.println("Saliendo del visor de jornadas.");
-          return;
+        // Agrupa en páginas de 4 partidos
+        List<List<Partido>> paginas = new ArrayList<>();
+        int tamPagina = 4;
+        for (int i = 0; i < partidos.size(); i += tamPagina) {
+            paginas.add(partidos.subList(i, Math.min(i + tamPagina, partidos.size())));
         }
 
-        default -> System.out.println("Opción inválida.");
-      }
-    }
-  }
-
-  /**
-   * Muestra en consola los partidos de una jornada específica con formato estilo liga.
-   * Imprime nombre de los equipos y resultado del partido en una tabla alineada.
-   *
-   * @param jornada Lista de partidos que conforman una jornada.
-   * @param numero Número de la jornada a mostrar (con fines visuales).
-   */
-  protected void mostrarJornadaFormatoLiga(List<Partido> jornada, int numero) {
-    // Encabezado con número de jornada
-    System.out.printf("\n=== Jornada %d ===\n", numero);
-    System.out.printf("%-28s %3s - %-3s %-28s%n", "Equipo Local", "G", "G", "Equipo Visitante");
-    System.out.println("---------------------------------------------------------------");
-
-    // Itera por cada partido de la jornada
-    for (Partido partido : jornada) {
-      // Obtiene nombres de los equipos (si es un BYE, lo indica)
-      String local = partido.getLocal() != null ? partido.getLocal().getNombre() : "BYE";
-      String visitante = partido.getVisitante() != null ? partido.getVisitante().getNombre() : "BYE";
-
-      // Obtiene los goles convertidos
-      int golesLocal = partido.getGolesLocal();
-      int golesVisitante = partido.getGolesVisitante();
-
-      // Imprime la línea formateada del partido
-      System.out.printf("%-28s %3d - %-3d %-28s%n", local, golesLocal, golesVisitante, visitante);
-    }
-  }
-
-  /**
-   * Simula recursivamente las rondas de un torneo de eliminación directa.
-   * Genera un árbol binario de partidos (NodoPartido) que representa el progreso
-   * del torneo desde los equipos iniciales hasta el campeón.
-   *
-   * Cada ronda empareja los equipos en duelos, simula los partidos y crea nodos
-   * con los ganadores. En caso de cantidad impar, un equipo avanza automáticamente.
-   *
-   * @param equipos Lista de equipos participantes.
-   * @return NodoPartido raíz del árbol de eliminación (el partido final).
-   * @throws TorneoException Si ocurre un error al simular algún partido.
-   */
-  private NodoPartido simularRonda(List<Equipo> equipos) throws TorneoException {
-    // Caso base: sólo queda un equipo → se lo considera ganador directo
-    if (equipos.size() == 1) {
-      NodoPartido nodo = new NodoPartido(null);
-      nodo.setGanador(equipos.get(0));
-      return nodo;
+        NavegadorJornadas.navegar(paginas, scanner, this::mostrarJornadaFormatoLiga);
     }
 
-    List<NodoPartido> nodosRonda = new ArrayList<>();
 
-    // Fase de emparejamiento de equipos
-    for (int i = 0; i < equipos.size(); i += 2) {
-      Equipo e1 = equipos.get(i);
-      Equipo e2 = (i + 1 < equipos.size()) ? equipos.get(i + 1) : null;
-
-      if (e2 == null) {
-        // Si hay un número impar, e1 pasa de ronda sin jugar
-        NodoPartido nodo = new NodoPartido(null);
-        nodo.setGanador(e1);
-        nodosRonda.add(nodo);
-      } else {
-        // Simular partido entre e1 y e2
-        simularPartido(e1, e2);
-        Partido p = partidos.get(partidos.size() - 1);
-
-        // Si no hubo ganador (empate), decidir por ELO
-        Equipo ganador = p.getGanador();
-        if (ganador == null)
-          ganador = e1.getElo() >= e2.getElo() ? e1 : e2;
-
-        NodoPartido nodo = new NodoPartido(p);
-        nodo.setGanador(ganador);
-        nodosRonda.add(nodo);
-      }
+    /** Imprime los partidos de una jornada en formato tabla. */
+    protected void mostrarJornadaFormatoLiga(List<Partido> jornada, int numero) {
+        System.out.printf("\n=== Jornada %d ===\n", numero);
+        System.out.printf("%-28s %3s - %-3s %-28s%n", "Equipo Local", "G", "G", "Equipo Visitante");
+        System.out.println("---------------------------------------------------------------");
+        for (Partido partido : jornada) {
+            String local     = partido.getLocal()     != null ? partido.getLocal().getNombre()     : "BYE";
+            String visitante = partido.getVisitante() != null ? partido.getVisitante().getNombre() : "BYE";
+            System.out.printf("%-28s %3d - %-3d %-28s%n",
+                    local, partido.getGolesLocal(), partido.getGolesVisitante(), visitante);
+        }
     }
 
-    // Caso base: ya quedó un único nodo (ganador del torneo)
-    if (nodosRonda.size() == 1) return nodosRonda.get(0);
 
-    List<NodoPartido> siguienteNivel = new ArrayList<>();
-
-    // Emparejar nodos de la ronda actual para construir la siguiente
-    for (int i = 0; i < nodosRonda.size(); i += 2) {
-      NodoPartido izquierdo = nodosRonda.get(i);
-      NodoPartido derecho = (i + 1 < nodosRonda.size()) ? nodosRonda.get(i + 1) : null;
-
-      if (derecho == null) {
-        // Si queda un nodo sin par, pasa directamente
-        siguienteNivel.add(izquierdo);
-      } else {
-        Equipo local = izquierdo.getGanador();
-        Equipo visitante = derecho.getGanador();
-
-        if (local == null || visitante == null) {
-          // Uno de los equipos no válido → pasa el otro
-          NodoPartido pasoLibre = new NodoPartido(null);
-          pasoLibre.setGanador(local != null ? local : visitante);
-          pasoLibre.setIzquierdo(izquierdo);
-          pasoLibre.setDerecho(derecho);
-          siguienteNivel.add(pasoLibre);
-          continue;
+    /**
+     * Simula recursivamente las rondas de eliminación directa.
+     * Construye el árbol binario de NodoPartido desde la lista inicial de equipos.
+     *
+     * El árbol se construye en un único recorrido combinando emparejamiento y
+     * construcción de nodos, evitando la duplicación entre simularRonda y
+     * simularRondaDesdeNodos que existía en la versión anterior.
+     *
+     * @param equiposRonda Lista de equipos que participan en esta ronda.
+     * @return NodoPartido raíz del árbol de eliminación.
+     * @throws TorneoException Si ocurre un error al simular algún partido.
+     */
+    protected NodoPartido simularRonda(List<Equipo> equiposRonda) throws TorneoException {
+        if (equiposRonda.size() == 1) {
+            NodoPartido nodo = new NodoPartido(null);
+            nodo.setGanador(equiposRonda.get(0));
+            return nodo;
         }
 
-        // Simula el partido entre ganadores de nodos previos
-        simularPartido(local, visitante);
-        Partido partido = partidos.get(partidos.size() - 1);
-        Equipo ganador = partido.getGanador();
-        if (ganador == null)
-          ganador = local.getElo() >= visitante.getElo() ? local : visitante;
+        List<NodoPartido> nodosRonda = new ArrayList<>();
+        for (int i = 0; i < equiposRonda.size(); i += 2) {
+            Equipo e1 = equiposRonda.get(i);
+            Equipo e2 = (i + 1 < equiposRonda.size()) ? equiposRonda.get(i + 1) : null;
 
-        // Crea nodo padre que conecta los nodos previos
-        NodoPartido padre = new NodoPartido(partido);
-        padre.setGanador(ganador);
-        padre.setIzquierdo(izquierdo);
-        padre.setDerecho(derecho);
-        siguienteNivel.add(padre);
-      }
-    }
-
-    // Llamada recursiva con los ganadores de esta ronda
-    return simularRondaDesdeNodos(siguienteNivel);
-  }
-
-  /**
-   * Metodo recursivo que construye el árbol de eliminación directa a partir de una lista de nodos
-   * que representan los partidos ganados en la ronda anterior.
-   *
-   * Este metodo es una continuación del proceso iniciado por `simularRonda`, donde se van agrupando
-   * pares de nodos para generar nuevos partidos entre los ganadores hasta obtener un único nodo raíz.
-   *
-   * @param nodos Lista de nodos que representan partidos/jugadores ganadores de la ronda anterior.
-   * @return NodoPartido raíz del nuevo nivel o del árbol final del torneo.
-   * @throws TorneoException Si ocurre un error al simular un partido.
-   */
-  private NodoPartido simularRondaDesdeNodos(List<NodoPartido> nodos) throws TorneoException {
-    // Caso base: solo queda un nodo → es el campeón
-    if (nodos.size() == 1) return nodos.get(0);
-
-    List<NodoPartido> siguienteNivel = new ArrayList<>();
-
-    // Empareja los nodos de la ronda actual de a pares
-    for (int i = 0; i < nodos.size(); i += 2) {
-      NodoPartido izquierdo = nodos.get(i);
-      NodoPartido derecho = (i + 1 < nodos.size()) ? nodos.get(i + 1) : null;
-
-      if (derecho == null) {
-        // Nodo sin par → avanza automáticamente
-        siguienteNivel.add(izquierdo);
-      } else {
-        Equipo local = izquierdo.getGanador();
-        Equipo visitante = derecho.getGanador();
-
-        if (local == null || visitante == null) {
-          // Algún equipo es nulo → pasa el válido
-          NodoPartido pasoLibre = new NodoPartido(null);
-          pasoLibre.setGanador(local != null ? local : visitante);
-          pasoLibre.setIzquierdo(izquierdo);
-          pasoLibre.setDerecho(derecho);
-          siguienteNivel.add(pasoLibre);
-          continue;
+            if (e2 == null) {
+                // Número impar: e1 pasa sin jugar
+                NodoPartido nodo = new NodoPartido(null);
+                nodo.setGanador(e1);
+                nodosRonda.add(nodo);
+            } else {
+                simularPartido(e1, e2);
+                Partido p = partidos.get(partidos.size() - 1);
+                Equipo ganador = p.getGanador() != null ? p.getGanador()
+                        : (e1.getElo() >= e2.getElo() ? e1 : e2);
+                NodoPartido nodo = new NodoPartido(p);
+                nodo.setGanador(ganador);
+                nodosRonda.add(nodo);
+            }
         }
 
-        // Simula el partido entre ganadores previos
-        simularPartido(local, visitante);
-        Partido partido = partidos.get(partidos.size() - 1);
+        if (nodosRonda.size() == 1) {
+            return nodosRonda.get(0);
+        }
 
-        // En caso de empate, se elige el de mayor ELO
-        Equipo ganador = partido.getGanador();
-        if (ganador == null)
-          ganador = local.getElo() >= visitante.getElo() ? local : visitante;
-
-        // Se crea el nodo padre que unifica a ambos
-        NodoPartido padre = new NodoPartido(partido);
-        padre.setGanador(ganador);
-        padre.setIzquierdo(izquierdo);
-        padre.setDerecho(derecho);
-        siguienteNivel.add(padre);
-      }
+        // Construye el siguiente nivel emparejando ganadores de nodos
+        return construirNivelSuperior(nodosRonda);
     }
 
-    // Llamada recursiva con los nodos del siguiente nivel
-    return simularRondaDesdeNodos(siguienteNivel);
-  }
 
-  /**
-   * @return El nombre del torneo.
-   */
-  public String getNombre() {
-    return nombre;
-  }
+    /**
+     * Empareja los nodos de una ronda para construir la siguiente.
+     * Se llama recursivamente hasta que queda un único nodo raíz.
+     */
+    private NodoPartido construirNivelSuperior(List<NodoPartido> nodos) throws TorneoException {
+        if (nodos.size() == 1) return nodos.get(0);
 
-  /**
-   * @return Lista de equipos que participan en el torneo.
-   */
-  public List<Equipo> getEquipos() {
-    return equipos;
-  }
+        List<NodoPartido> siguienteNivel = new ArrayList<>();
+        for (int i = 0; i < nodos.size(); i += 2) {
+            NodoPartido izquierdo = nodos.get(i);
+            NodoPartido derecho   = (i + 1 < nodos.size()) ? nodos.get(i + 1) : null;
 
-  /**
-   * Devuelve la lista de partidos jugados en el torneo.
-   *
-   * @return Lista de partidos.
-   */
-  public List<Partido> getPartidos() {
-    return partidos;
-  }
+            if (derecho == null) {
+                siguienteNivel.add(izquierdo);
+                continue;
+            }
+
+            Equipo local     = izquierdo.getGanador();
+            Equipo visitante = derecho.getGanador();
+
+            if (local == null || visitante == null) {
+                NodoPartido pasoLibre = new NodoPartido(null);
+                pasoLibre.setGanador(local != null ? local : visitante);
+                pasoLibre.setIzquierdo(izquierdo);
+                pasoLibre.setDerecho(derecho);
+                siguienteNivel.add(pasoLibre);
+                continue;
+            }
+
+            simularPartido(local, visitante);
+            Partido partido = partidos.get(partidos.size() - 1);
+            Equipo ganador = partido.getGanador() != null ? partido.getGanador()
+                    : (local.getElo() >= visitante.getElo() ? local : visitante);
+
+            NodoPartido padre = new NodoPartido(partido);
+            padre.setGanador(ganador);
+            padre.setIzquierdo(izquierdo);
+            padre.setDerecho(derecho);
+            siguienteNivel.add(padre);
+        }
+
+        return construirNivelSuperior(siguienteNivel);
+    }
+
+
+    /**
+     * Imprime un nodo del árbol bracket de forma recursiva con indentación jerárquica.
+     * El hijo derecho se imprime arriba (visualmente) y el izquierdo abajo.
+     *
+     * @param nodo      Nodo actual.
+     * @param nivel     Profundidad (0 = Final).
+     * @param izquierdo Indica si es rama izquierda (afecta el símbolo visual).
+     */
+    protected void imprimirNodo(NodoPartido nodo, int nivel, boolean izquierdo) {
+        if (nodo == null) return;
+
+        imprimirNodo(nodo.getDerecho(), nivel + 1, false);
+
+        if (nivel > 0) System.out.println();
+
+        String fase = switch (nivel) {
+            case 0 -> "Final";
+            case 1 -> "Semifinal";
+            case 2 -> "Cuartos";
+            case 3 -> "8vos";
+            case 4 -> "16vos";
+            case 5 -> "32vos";
+            default -> "Ronda " + (nivel + 1);
+        };
+
+        Partido p = nodo.getPartido();
+        String indent    = "        ".repeat(nivel);
+        String flecha    = izquierdo ? "└── " : "┌── ";
+        String localStr  = p != null && p.getLocal()     != null ? String.format("%-22s", abreviar(p.getLocal().getNombre()))     : "BYE                   ";
+        String visitStr  = p != null && p.getVisitante() != null ? String.format("%-22s", abreviar(p.getVisitante().getNombre())) : "BYE                   ";
+        String ganadorStr= p != null && p.getGanador()   != null ? "-> " + abreviar(p.getGanador().getNombre()) : "";
+
+        System.out.println(indent + flecha + "[" + fase + "] " + localStr + " vs " + visitStr + " " + ganadorStr);
+
+        imprimirNodo(nodo.getIzquierdo(), nivel + 1, true);
+        if (nivel <= 2) System.out.println();
+    }
+
+
+    /**
+     * Abrevia un nombre a un máximo de 22 caracteres.
+     * Centralizado aquí para que TorneoMixto también lo use.
+     */
+    protected String abreviar(String nombre) {
+        return nombre.length() > 22 ? nombre.substring(0, 20) + "…" : nombre;
+    }
+
+
+    public String          getNombre()  { return nombre; }
+    public List<Equipo>    getEquipos() { return equipos; }
+    public List<Partido>   getPartidos(){ return new ArrayList<>(partidos); }
 }
-
-

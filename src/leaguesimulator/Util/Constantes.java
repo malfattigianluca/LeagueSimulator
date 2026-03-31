@@ -35,6 +35,29 @@ public class Constantes {
           "Ligue 1"
   };
 
+  // === Orden canónico de posiciones en el campo (de portero a delantero) ===
+  // Usado tanto para ordenar jugadores visualmente como para calcular probabilidades.
+  // Los valores reflejan la jerarquía posicional: menor = más defensivo.
+
+  public static final java.util.Map<String, Double> ORDEN_POSICIONES;
+  static {
+    java.util.Map<String, Double> m = new java.util.LinkedHashMap<>();
+    m.put("portero",              0.001);
+    m.put("defensa central",      0.010);
+    m.put("lateral derecho",      0.020);
+    m.put("lateral izquierdo",    0.020);
+    m.put("pivote",               0.030);
+    m.put("mediocentro",          0.050);
+    m.put("interior derecho",     0.080);
+    m.put("interior izquierdo",   0.080);
+    m.put("mediocentro ofensivo", 0.100);
+    m.put("mediapunta",           0.130);
+    m.put("extremo derecho",      0.180);
+    m.put("extremo izquierdo",    0.180);
+    m.put("delantero centro",     0.350);
+    ORDEN_POSICIONES = java.util.Collections.unmodifiableMap(m);
+  }
+
   // === Tipos de torneo admitidos en el sistema ===
 
   /** Clave para identificar torneos con fase de grupos. */

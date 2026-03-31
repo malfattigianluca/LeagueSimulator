@@ -2,6 +2,7 @@
 
   import leaguesimulator.Excepciones.TorneoException;
   import leaguesimulator.Util.Validador;
+  import leaguesimulator.Util.Constantes;
 
   import java.util.*;
   import java.util.function.Function;
@@ -218,25 +219,14 @@
 
     /**
      * Obtiene la probabilidad de que un jugador anote un gol según su posición.
-     * Las probabilidades son aproximadas y pueden ajustarse según el contexto del juego.
+     * Usa la tabla canónica definida en {@link Constantes#ORDEN_POSICIONES},
+     * que ya establece el valor relativo de cada posición en el campo.
      *
-     * @param posicion Posición del jugador (ej. "portero", "defensa central", etc.).
-     * @return Probabilidad de anotar un gol para esa posición.
+     * @param posicion Posición del jugador (ej. "portero", "delantero centro").
+     * @return Probabilidad de anotar para esa posición.
      */
     private double obtenerProbabilidadGol(String posicion) {
-      return switch (posicion.toLowerCase()) {
-        case "portero" -> 0.001;
-        case "defensa central" -> 0.01;
-        case "lateral derecho", "lateral izquierdo" -> 0.02;
-        case "pivote" -> 0.03;
-        case "mediocentro" -> 0.05;
-        case "interior derecho", "interior izquierdo" -> 0.08;
-        case "mediocentro ofensivo" -> 0.10;
-        case "mediapunta" -> 0.13;
-        case "extremo derecho", "extremo izquierdo" -> 0.18;
-        case "delantero centro" -> 0.35;
-        default -> 0.02;
-      };
+      return Constantes.ORDEN_POSICIONES.getOrDefault(posicion.toLowerCase(), 0.02);
     }
 
 

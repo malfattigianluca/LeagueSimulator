@@ -5,7 +5,6 @@ import leaguesimulator.Util.Validador;
 import leaguesimulator.TDA.ConjuntoGenericoTDA;
 import leaguesimulator.Implementacion.ConjuntoGenericoImpl;
 
-import java.util.IllegalFormatConversionException;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,9 +53,6 @@ public class Equipo {
   private int partidosGanados;
   private int partidosEmpatados;
   private int partidosPerdidos;
-
-  // Puntos acumulados (3 por victoria, 1 por empate)
-  private int puntos = 0;
 
   // Conjunto de jugadores del equipo (implementación genérica)
   private ConjuntoGenericoTDA<Jugador> jugadores;
@@ -147,31 +143,14 @@ public class Equipo {
       return;
     }
 
-    // Recorrer cada jugador y mostrar sus datos formateados
     for (Jugador jugador : listaJugadores) {
-      try {
-        // Manejo de valores nulos o inválidos
-        String nombreJugador = (jugador.getNombre() != null) ? jugador.getNombre() : "N/A";
-        String posicionJugador = (jugador.getPosicion() != null) ? jugador.getPosicion() : "N/A";
-        int camisetaJugador = jugador.getNumeroCamiseta() != -1 ? jugador.getNumeroCamiseta() : 0;
-        int edadJugador = jugador.getEdad() != -1 ? jugador.getEdad() : 0;
-        String alturaJugador = (jugador.getAltura() != null) ? jugador.getAltura() : "N/A";
-
-        // Imprimir datos del jugador en formato tabular
-        System.out.printf("%-30s %-25s %-10d %-10d %-10s%n",
-                nombreJugador, posicionJugador, camisetaJugador,
-                edadJugador, alturaJugador);
-
-      } catch (NullPointerException e) {
-        System.out.println("Error al procesar jugador: "
-                + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
-        e.printStackTrace();
-
-      } catch (IllegalFormatConversionException e) {
-        System.out.println("Error de formato para jugador: "
-                + (jugador != null && jugador.getNombre() != null ? jugador.getNombre() : "Jugador nulo"));
-        e.printStackTrace();
-      }
+      String camiseta = jugador.getNumeroCamiseta() != -1 ? String.valueOf(jugador.getNumeroCamiseta()) : "N/A";
+      System.out.printf("%-30s %-25s %-10s %-10d %-10s%n",
+              jugador.getNombre(),
+              jugador.getPosicion(),
+              camiseta,
+              jugador.getEdad(),
+              jugador.getAltura());
     }
   }
 
@@ -181,7 +160,6 @@ public class Equipo {
    * Ideal para comenzar una nueva temporada o reiniciar un torneo.
    */
   public void reiniciarEstadisticas() {
-    this.puntos = 0;
     this.partidosJugados = 0;
     this.partidosGanados = 0;
     this.partidosEmpatados = 0;
@@ -240,10 +218,8 @@ public class Equipo {
 
     if (golesAFavor > golesEnContra) {
       this.partidosGanados++;
-      this.puntos += 3;
     } else if (golesAFavor == golesEnContra) {
       this.partidosEmpatados++;
-      this.puntos += 1;
     } else {
       this.partidosPerdidos++;
     }
@@ -276,14 +252,6 @@ public class Equipo {
    * @param puntos Total de puntos a asignar.
    * @throws IllegalArgumentException Si los puntos son negativos.
    */
-  public void setPuntos(int puntos) {
-    if (puntos < 0) {
-      throw new IllegalArgumentException("Los puntos no pueden ser negativos");
-    }
-    this.partidosGanados = puntos / 3;
-    this.partidosEmpatados = puntos % 3;
-  }
-
   /** @return Nombre del equipo. */
   public String getNombre() {
     return nombre;
@@ -312,9 +280,9 @@ public class Equipo {
   }
 
 
-  /** @return Total de puntos calculados del equipo. */
+  /** @return Total de puntos del equipo (3 por victoria, 1 por empate). */
   public int getPuntos() {
-    return calcularPuntos();
+    return (this.partidosGanados * 3) + this.partidosEmpatados;
   }
 
   /** @return Goles a favor acumulados del equipo. */
@@ -355,16 +323,6 @@ public class Equipo {
   /** @return Conjunto de jugadores del equipo. */
   public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
-  }
-
-  /**
-   * Calcula el total de puntos del equipo en base a su rendimiento:
-   * 3 puntos por cada partido ganado y 1 por cada empate.
-   *
-   * @return Total de puntos calculado.
-   */
-  public int calcularPuntos() {
-    return (this.partidosGanados * 3) + this.partidosEmpatados;
   }
 
   /**

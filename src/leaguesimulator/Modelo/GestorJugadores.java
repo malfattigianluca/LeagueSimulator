@@ -14,10 +14,9 @@ import java.util.*;
  * jugadores.
  */
 public class GestorJugadores {
-  private static GestorJugadores instancia;
   private ConjuntoGenericoTDA<Jugador> jugadores;
-  public int idJugador;
-  private GestorEquipos gestorEquipos;
+  private int idJugador;
+  private final GestorEquipos gestorEquipos;
 
   /**
    * Constructor de la clase GestorJugadores.
@@ -216,13 +215,6 @@ public class GestorJugadores {
   }
 
 
-  /** LOS SIGUIENTES METODOS NO SERAN UTILIZADOS EN ESTA VERSION DEL PROGRAMA*/
-
-  /**
-   * Retorna el conjunto que contiene todos los jugadores.
-   *
-   * @return Conjunto de jugadores.
-   */
   public ConjuntoGenericoTDA<Jugador> getJugadores() {
     return jugadores;
   }
